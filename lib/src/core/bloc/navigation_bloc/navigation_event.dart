@@ -13,3 +13,10 @@ class DashboardEvent extends NavigationEvent {
   @override
   List<Object> get props => [];
 }
+
+class LogInPageEvent extends NavigationEvent {
+  const LogInPageEvent();
+
+  @override
+  List<Object> get props => [];
+}

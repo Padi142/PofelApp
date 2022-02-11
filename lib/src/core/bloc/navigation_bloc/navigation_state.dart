@@ -14,3 +14,9 @@ class ShowDashboardState extends NavigationState {
   @override
   List<Object> get props => [];
 }
+
+class ShowLogInPageState extends NavigationState {
+  const ShowLogInPageState();
+  @override
+  List<Object> get props => [];
+}

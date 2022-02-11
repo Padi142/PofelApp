@@ -5,6 +5,7 @@ import 'package:pofel_app/constants.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/ui/components/top_bar.dart';
 import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
+import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<NavigationBloc>(context).add(DashboardEvent());
+    BlocProvider.of<NavigationBloc>(context).add(LogInPageEvent());
     int _selectedIndex = 0;
     return Scaffold(
       body: Column(
@@ -28,6 +29,8 @@ class _MainPageState extends State<MainPage> {
                 builder: (context, state) {
                   if (state is ShowDashboardState) {
                     return DashboardPage();
+                  } else if (state is ShowLogInPageState) {
+                    return LogInPage();
                   } else {
                     return const Center(
                       child: CircularProgressIndicator(),
@@ -72,9 +75,18 @@ class _MainPageState extends State<MainPage> {
               ],
               selectedIndex: _selectedIndex,
               onTabChange: (index) {
-                //setState(() {
-                //  _selectedIndex = index;
-                //});
+                switch (index) {
+                  case 0:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(DashboardEvent());
+                    break;
+                  case 1:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(LogInPageEvent());
+                    break;
+                  case 2:
+                    break;
+                }
               },
             ),
           ),

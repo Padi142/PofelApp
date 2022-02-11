@@ -23,7 +23,7 @@ class _TopAppBar extends State<TopAppBar> {
     return Container(
       height: AppBar().preferredSize.height,
       decoration: const BoxDecoration(
-        color: secondaryColor,
+        color: Colors.white,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,12 +34,13 @@ class _TopAppBar extends State<TopAppBar> {
             child: Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 4, right: 4),
+                  padding: const EdgeInsets.only(left: 20, right: 4),
                   child: Text(
                     widget.labelText,
                     style: const TextStyle(
-                      color: primaryTxtColor,
-                      fontSize: 22,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
                     ),
                   ),
                 ),
