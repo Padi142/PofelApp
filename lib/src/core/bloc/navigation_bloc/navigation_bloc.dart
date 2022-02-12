@@ -6,14 +6,9 @@ part 'navigation_state.dart';
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   NavigationBloc() : super(NavigationInitial()) {
-    on<NavigationEvent>(_onLoadDashboard);
-    on<LogInPageEvent>(_onLoadLogIn);
+    on<DashboardEvent>(_onLoadDashboard);
   }
-  _onLoadDashboard(NavigationEvent event, Emitter<NavigationState> emit) async {
+  _onLoadDashboard(DashboardEvent event, Emitter<NavigationState> emit) async {
     emit(const ShowDashboardState());
-  }
-
-  _onLoadLogIn(NavigationEvent event, Emitter<NavigationState> emit) async {
-    emit(const ShowLogInPageState());
   }
 }

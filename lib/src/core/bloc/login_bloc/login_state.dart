@@ -14,9 +14,15 @@ abstract class LoginState extends Equatable {
 @CopyWith()
 class LoginStateWithData extends LoginState {
   final bool isLoggedIn;
-  final User user;
-  const LoginStateWithData({required this.isLoggedIn, required this.user});
+  final UserModel user;
+  final LoginStateEnum loginStateEnum;
+  const LoginStateWithData(
+      {required this.isLoggedIn,
+      required this.user,
+      required this.loginStateEnum});
 
   @override
   List<Object> get props => [isLoggedIn, user];
 }
+
+enum LoginStateEnum { NOT_LOGGED_IN, LOGGED_IN, LOG_IN_FAILED }

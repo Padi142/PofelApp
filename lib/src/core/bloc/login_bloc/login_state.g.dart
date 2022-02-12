@@ -9,7 +9,9 @@ part of 'login_state.dart';
 abstract class _$LoginStateWithDataCWProxy {
   LoginStateWithData isLoggedIn(bool isLoggedIn);
 
-  LoginStateWithData user(User user);
+  LoginStateWithData loginStateEnum(LoginStateEnum loginStateEnum);
+
+  LoginStateWithData user(UserModel user);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `LoginStateWithData(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -19,7 +21,8 @@ abstract class _$LoginStateWithDataCWProxy {
   /// ````
   LoginStateWithData call({
     bool? isLoggedIn,
-    User? user,
+    LoginStateEnum? loginStateEnum,
+    UserModel? user,
   });
 }
 
@@ -34,7 +37,11 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
       this(isLoggedIn: isLoggedIn);
 
   @override
-  LoginStateWithData user(User user) => this(user: user);
+  LoginStateWithData loginStateEnum(LoginStateEnum loginStateEnum) =>
+      this(loginStateEnum: loginStateEnum);
+
+  @override
+  LoginStateWithData user(UserModel user) => this(user: user);
 
   @override
 
@@ -46,6 +53,7 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
   /// ````
   LoginStateWithData call({
     Object? isLoggedIn = const $CopyWithPlaceholder(),
+    Object? loginStateEnum = const $CopyWithPlaceholder(),
     Object? user = const $CopyWithPlaceholder(),
   }) {
     return LoginStateWithData(
@@ -54,10 +62,15 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
               ? _value.isLoggedIn
               // ignore: cast_nullable_to_non_nullable
               : isLoggedIn as bool,
+      loginStateEnum: loginStateEnum == const $CopyWithPlaceholder() ||
+              loginStateEnum == null
+          ? _value.loginStateEnum
+          // ignore: cast_nullable_to_non_nullable
+          : loginStateEnum as LoginStateEnum,
       user: user == const $CopyWithPlaceholder() || user == null
           ? _value.user
           // ignore: cast_nullable_to_non_nullable
-          : user as User,
+          : user as UserModel,
     );
   }
 }

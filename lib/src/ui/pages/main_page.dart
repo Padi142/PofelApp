@@ -17,28 +17,28 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<NavigationBloc>(context).add(LogInPageEvent());
+    BlocProvider.of<NavigationBloc>(context).add(DashboardEvent());
     int _selectedIndex = 0;
     return Scaffold(
-      body: Column(
-        children: [
-          const Flexible(child: TopAppBar("Pofel app")),
-          Expanded(
-              flex: 5,
-              child: BlocBuilder<NavigationBloc, NavigationState>(
-                builder: (context, state) {
-                  if (state is ShowDashboardState) {
-                    return DashboardPage();
-                  } else if (state is ShowLogInPageState) {
-                    return LogInPage();
-                  } else {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                },
-              ))
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            const Flexible(child: TopAppBar("Pofel app")),
+            Expanded(
+                flex: 5,
+                child: BlocBuilder<NavigationBloc, NavigationState>(
+                  builder: (context, state) {
+                    if (state is ShowDashboardState) {
+                      return DashboardPage();
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  },
+                ))
+          ],
+        ),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -69,6 +69,10 @@ class _MainPageState extends State<MainPage> {
                   text: 'Home',
                 ),
                 GButton(
+                  icon: Icons.list_rounded,
+                  text: 'Moje pofely',
+                ),
+                GButton(
                   icon: Icons.search,
                   text: 'Search',
                 ),
@@ -81,8 +85,8 @@ class _MainPageState extends State<MainPage> {
                         .add(DashboardEvent());
                     break;
                   case 1:
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(LogInPageEvent());
+                    // BlocProvider.of<NavigationBloc>(context)
+                    //     .add(LogInPageEvent());
                     break;
                   case 2:
                     break;

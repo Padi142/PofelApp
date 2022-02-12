@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pofel app</string>
+    <string name="facebook_app_id">4393267207446351</string>
+    <string name="fb_login_protocol_scheme">fb4393267207446351</string>
+    <string name="facebook_client_token">1cf1b9d122e01b0286ca886d078eb849</string>
+</resources>

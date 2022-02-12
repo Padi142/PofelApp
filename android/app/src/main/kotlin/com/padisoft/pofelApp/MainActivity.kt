@@ -1,4 +1,4 @@
-package com.example.pofel_app
+package com.padisoft.pofelApp
 
 import io.flutter.embedding.android.FlutterActivity
 

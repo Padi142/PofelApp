@@ -31,6 +31,8 @@ dependencies:
   firebase_analytics: ^9.1.0
   firebase_messaging: ^11.2.6
   google_sign_in: ^5.2.3
+  flutter_facebook_auth: ^4.0.1
+  rflutter_alert: ^2.0.4
 
 dev_dependencies:
   flutter_test:
@@ -38,6 +40,7 @@ dev_dependencies:
   flutter_lints: ^1.0.0
   build_runner: ^2.1.7
   copy_with_extension_gen: ^4.0.0
+  change_app_package_name: ^1.0.0
 
 
 flutter:
