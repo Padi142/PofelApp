@@ -23,7 +23,7 @@ class PofelProvider {
                   dateFrom: doc["dateFrom"].toDate(),
                   dateTo: doc["dateTo"].toDate(),
                   joinCode: doc["joinId"],
-                  pofelId: "c",
+                  pofelId: doc["pofelId"],
                   signedUsers: [],
                   createdAt: doc["createdAt"].toDate(),
                 );
@@ -35,27 +35,65 @@ class PofelProvider {
     return pofels;
   }
 
+  Future<PofelModel> getPofel(String pofelId) async {
+    List<PofelModel> pofels = [];
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore
+        .collection("active_pofels")
+        .where("pofelId", isEqualTo: pofelId)
+        .get()
+        .then((querySnapshot) => {
+              // ignore: avoid_function_literals_in_foreach_calls
+              querySnapshot.docs.forEach((doc) {
+                PofelModel model = PofelModel(
+                  name: doc["name"],
+                  description: doc["description"],
+                  adminUid: doc["adminUid"],
+                  dateFrom: doc["dateFrom"].toDate(),
+                  dateTo: doc["dateTo"].toDate(),
+                  joinCode: doc["joinId"],
+                  pofelId: doc["pofelId"],
+                  signedUsers: pofelUsersFromList(doc["signedUsersList"]),
+                  createdAt: doc["createdAt"].toDate(),
+                );
+
+                pofels.add(model);
+              })
+            });
+
+    return pofels[0];
+  }
+
   Future<void> joinPofel(String uid, joinId) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    QuerySnapshot querySnap = await FirebaseFirestore.instance
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
         .collection('active_pofels')
         .where('joinId', isEqualTo: joinId)
         .get();
-    QueryDocumentSnapshot doc = querySnap.docs[0];
+    QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('uid', isEqualTo: uid)
+        .get();
+
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    QueryDocumentSnapshot userDoc = userQuery.docs[0];
     DocumentReference docRef = doc.reference;
+
+    Map<String, dynamic> signedUserMap = ({
+      "name": userDoc["name"],
+      "uid": userDoc["uid"],
+      "profile_pic": userDoc["profile_pic"],
+      "acceptedInvitation": true,
+      "signedOn": DateTime.now()
+    });
 
     Map<String, dynamic> signedUser =
         ({"uid": uid, "acceptedInvitation": true, "joinedOn": DateTime.now()});
     docRef.update({
       "signedUsers": FieldValue.arrayUnion([uid]),
+      "signedUsersList": FieldValue.arrayUnion([signedUserMap])
     }).then((value) => print("pofel created"));
-
-    docRef.collection("signedUsers").doc().set({
-      "signedOn": DateTime.now(),
-      "acceptedInvitation": true,
-      "uid": uid,
-    }).then((value) => print("user added"));
   }
 
   Future<void> createPofel(
@@ -72,9 +110,10 @@ class PofelProvider {
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     Map<String, dynamic> signedUser = ({
+      "name": name,
       "uid": adminUid,
       "acceptedInvitation": true,
-      "joinedOn": DateTime.now()
+      "signedOn": DateTime.now()
     });
     await firestore.collection("active_pofels").doc(documentId).set({
       "name": name,
@@ -84,19 +123,8 @@ class PofelProvider {
       "dateTo": dateTo,
       "pofelId": documentId,
       "adminUid": adminUid,
+      //"signedUsersList": [signedUser],
       "signedUsers": [adminUid],
     }).then((value) => print("pofel created"));
-
-    firestore
-        .collection("active_pofels")
-        .doc(documentId)
-        .collection("signedUsers")
-        .doc()
-        .set({
-      "name": name,
-      "signedOn": DateTime.now(),
-      "acceptedInvitation": true,
-      "uid": adminUid,
-    }).then((value) => print("user added"));
   }
 }

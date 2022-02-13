@@ -19,11 +19,12 @@ class PofelUserModel extends Equatable {
     Map<String, dynamic> map,
   ) {
     return PofelUserModel(
-        uid: map["uid"],
-        name: map["name"],
-        photo: map["photo"],
-        acceptedInvitation: map["acceptedInvitation"],
-        joinedOn: map["joinedOn"]);
+      uid: map["uid"],
+      name: map["name"],
+      photo: map["profile_pic"],
+      acceptedInvitation: map["acceptedInvitation"],
+      joinedOn: DateTime.now(),
+    );
   }
 
   @override

@@ -15,6 +15,13 @@ class ShowDashboardState extends NavigationState {
   List<Object> get props => [];
 }
 
+class ShowPofelDetailState extends NavigationState {
+  final String pofelId;
+  const ShowPofelDetailState(this.pofelId);
+  @override
+  List<Object> get props => [];
+}
+
 class ShowLogInPageState extends NavigationState {
   const ShowLogInPageState();
   @override

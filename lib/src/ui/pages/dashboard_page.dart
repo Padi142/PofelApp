@@ -4,6 +4,7 @@ import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_event.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_state.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
+import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
@@ -47,38 +48,46 @@ class _DashboardPageState extends State<DashboardPage> {
                           itemBuilder: (BuildContext ctx, index) {
                             return Padding(
                               padding: const EdgeInsets.all(4),
-                              child: Container(
-                                color: Colors.blueAccent,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: InkWell(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          state.myPofels[index].name,
-                                          style: const TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Row(
-                                          children: [
-                                            const Text("Pofel proběhne za: "),
-                                            Text(
-                                              daysBetween(
-                                                      DateTime.now(),
-                                                      state.myPofels[index]
-                                                          .dateFrom!)
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20),
-                                            ),
-                                            const Text(" dní"),
-                                          ],
-                                        )
-                                      ],
+                              child: GestureDetector(
+                                onTap: () {
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(PofelDetailPageEvent(
+                                    state.myPofels[index].pofelId,
+                                  ));
+                                },
+                                child: Container(
+                                  color: Colors.blueAccent,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: InkWell(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            state.myPofels[index].name,
+                                            style: const TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Text("Pofel proběhne za: "),
+                                              Text(
+                                                daysBetween(
+                                                        DateTime.now(),
+                                                        state.myPofels[index]
+                                                            .dateFrom!)
+                                                    .toString(),
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20),
+                                              ),
+                                              const Text(" dní"),
+                                            ],
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

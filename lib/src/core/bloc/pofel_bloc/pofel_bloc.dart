@@ -13,6 +13,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
             pofelStateEnum: PofelStateEnum.INITIAL)) {
     on<CreatePofel>(_onCreatePofel);
     on<JoinPofel>(_onJoinPofel);
+    on<LoadPofel>(_onLoadPofel);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -35,5 +36,11 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       emit((state as PofelStateWithData)
           .copyWith(pofelStateEnum: PofelStateEnum.POFEL_JOINED));
     }
+  }
+
+  _onLoadPofel(LoadPofel event, Emitter<PofelState> emit) async {
+    PofelModel pofel = await pofelApiProvider.getPofel(event.pofelId);
+    emit((state as PofelStateWithData).copyWith(
+        pofelStateEnum: PofelStateEnum.POFEL_LOADED, choosenPofel: pofel));
   }
 }

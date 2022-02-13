@@ -24,12 +24,17 @@ export const onPofelCreated = functions.firestore
         const pofel = await snapshot.ref.get();
         const userData = await db.collection("users")
             .doc(pofel.data()!.adminUid).get();
-        await snapshot.ref.update({"joinId": newGuid()});
-        const signedUsers = snapshot.ref.collection("signedUsers")
-            .doc("0");
-        await signedUsers.update({
+        const map = {
             "name": userData!.data()!.name,
             "profile_pic": userData!.data()!.profile_pic,
+            "uid": userData!.data()!.uid,
+            "acceptedInvitation": true,
+            "signedOn": Date(),
+        }
+            ;
+        await snapshot.ref.update({
+            "joinId": newGuid(),
+            "signedUsersList": [map],
         });
     });
 export const onUserJoined = functions.firestore
