@@ -20,3 +20,10 @@ class PofelSignedUsersState extends PofelNavigationState {
   @override
   List<Object> get props => [];
 }
+
+class PofelSettingsPageState extends PofelNavigationState {
+  final bool canAcces;
+  const PofelSettingsPageState({required this.canAcces});
+  @override
+  List<Object> get props => [canAcces];
+}

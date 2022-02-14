@@ -27,3 +27,15 @@ class ShowLogInPageState extends NavigationState {
   @override
   List<Object> get props => [];
 }
+
+class ShowMyPofelsState extends NavigationState {
+  const ShowMyPofelsState();
+  @override
+  List<Object> get props => [];
+}
+
+class ShowUserDetailState extends NavigationState {
+  const ShowUserDetailState();
+  @override
+  List<Object> get props => [];
+}

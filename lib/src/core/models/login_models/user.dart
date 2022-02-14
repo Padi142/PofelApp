@@ -24,7 +24,8 @@ class UserModel extends Equatable {
   factory UserModel.fromMap(
     Map<String, dynamic> map,
   ) {
-    return UserModel(uid: map["uid"], name: map["name"], photo: map["photo"]);
+    return UserModel(
+        uid: map["uid"], name: map["name"], photo: map["profile_pic"]);
   }
 
   @override

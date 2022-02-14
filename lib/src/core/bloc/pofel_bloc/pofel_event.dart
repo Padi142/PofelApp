@@ -26,8 +26,29 @@ class JoinPofel extends PofelEvent {
 class CreatePofel extends PofelEvent {
   final String pofelName;
   final String pofelDesc;
-  const CreatePofel({required this.pofelName, required this.pofelDesc});
+  final DateTime date;
+  const CreatePofel(
+      {required this.date, required this.pofelName, required this.pofelDesc});
 
   @override
-  List<Object> get props => [pofelName, pofelDesc];
+  List<Object> get props => [pofelName, date, pofelDesc];
 }
+
+class UpdatePofel extends PofelEvent {
+  final UpdatePofelEnum updatePofelEnum;
+  final String pofelId;
+  final String? newName;
+  final String? newDesc;
+  final DateTime? newDate;
+  const UpdatePofel(
+      {required this.updatePofelEnum,
+      required this.pofelId,
+      this.newName,
+      this.newDesc,
+      this.newDate});
+
+  @override
+  List<Object> get props => [updatePofelEnum, pofelId];
+}
+
+enum UpdatePofelEnum { UPDATE_NAME, UPDATE_DESC, UPDATE_DATE }

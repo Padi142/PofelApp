@@ -20,7 +20,13 @@ class PofelStateWithData extends PofelState {
       {required this.choosenPofel, required this.pofelStateEnum});
 
   @override
-  List<Object> get props => [choosenPofel];
+  List<Object> get props => [choosenPofel, pofelStateEnum];
 }
 
-enum PofelStateEnum { INITIAL, POFEL_LOADED, POFEL_JOINED, POFEL_CREATED }
+enum PofelStateEnum {
+  INITIAL,
+  POFEL_LOADED,
+  POFEL_JOINED,
+  POFEL_CREATED,
+  POFEL_UPDATED
+}

@@ -28,3 +28,17 @@ class LogInPageEvent extends NavigationEvent {
   @override
   List<Object> get props => [];
 }
+
+class LoadMyPofelsEvent extends NavigationEvent {
+  const LoadMyPofelsEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class LoadCurrentUserPage extends NavigationEvent {
+  const LoadCurrentUserPage();
+
+  @override
+  List<Object> get props => [];
+}

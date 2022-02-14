@@ -23,7 +23,7 @@ class PofelUserModel extends Equatable {
       name: map["name"],
       photo: map["profile_pic"],
       acceptedInvitation: map["acceptedInvitation"],
-      joinedOn: DateTime.now(),
+      joinedOn: map["signedOn"].toDate(),
     );
   }
 

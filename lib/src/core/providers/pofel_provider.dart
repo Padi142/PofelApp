@@ -127,4 +127,46 @@ class PofelProvider {
       "signedUsers": [adminUid],
     }).then((value) => print("pofel created"));
   }
+
+  Future<void> updateName(String name, pofelId) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .where('pofelId', isEqualTo: pofelId)
+        .get();
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    DocumentReference docRef = doc.reference;
+
+    docRef.update({
+      "name": name,
+    }).then((value) => print("pofel created"));
+  }
+
+  Future<void> updateDesc(String desc, pofelId) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .where('pofelId', isEqualTo: pofelId)
+        .get();
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    DocumentReference docRef = doc.reference;
+
+    docRef.update({
+      "description": desc,
+    }).then((value) => print("pofel created"));
+  }
+
+  Future<void> updateDatefrom(String pofelId, DateTime newdate) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .where('pofelId', isEqualTo: pofelId)
+        .get();
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    DocumentReference docRef = doc.reference;
+
+    docRef.update({
+      "dateFrom": newdate,
+    }).then((value) => print("pofel created"));
+  }
 }

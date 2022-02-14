@@ -19,7 +19,7 @@ class LoadPofelsWithData extends LoadpofelsState {
       {required this.myPofels, required this.loadPofelStateEnum});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [myPofels, loadPofelStateEnum];
 }
 
 enum LoadPofelsStateEnum { INITIAL, POFELS_EMPTY, POFELS_LOADED }

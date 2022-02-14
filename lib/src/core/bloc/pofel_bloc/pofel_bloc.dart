@@ -14,6 +14,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<CreatePofel>(_onCreatePofel);
     on<JoinPofel>(_onJoinPofel);
     on<LoadPofel>(_onLoadPofel);
+    on<UpdatePofel>(_onUpdatePofel);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -21,8 +22,8 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
     if (uid != null) {
-      pofelApiProvider.createPofel(event.pofelName, event.pofelDesc, uid,
-          DateTime.now(), DateTime.now());
+      pofelApiProvider.createPofel(
+          event.pofelName, event.pofelDesc, uid, event.date, DateTime.now());
       emit((state as PofelStateWithData)
           .copyWith(pofelStateEnum: PofelStateEnum.POFEL_CREATED));
     }
@@ -42,5 +43,22 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     PofelModel pofel = await pofelApiProvider.getPofel(event.pofelId);
     emit((state as PofelStateWithData).copyWith(
         pofelStateEnum: PofelStateEnum.POFEL_LOADED, choosenPofel: pofel));
+  }
+
+  _onUpdatePofel(UpdatePofel event, Emitter<PofelState> emit) async {
+    switch (event.updatePofelEnum) {
+      case UpdatePofelEnum.UPDATE_NAME:
+        await pofelApiProvider.updateName(event.newName!, event.pofelId);
+        break;
+      case UpdatePofelEnum.UPDATE_DESC:
+        await pofelApiProvider.updateDesc(event.newDesc!, event.pofelId);
+        break;
+      case UpdatePofelEnum.UPDATE_DATE:
+        await pofelApiProvider.updateDatefrom(event.pofelId, event.newDate!);
+        break;
+    }
+
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPDATED));
   }
 }

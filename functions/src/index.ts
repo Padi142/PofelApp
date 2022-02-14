@@ -21,6 +21,7 @@ export const onPofelCreated = functions.firestore
         functions.logger.info("New Pofel Created - Id: ",
             pofelId);
         const db = admin.firestore();
+        admin.firestore.FieldValue.serverTimestamp();
         const pofel = await snapshot.ref.get();
         const userData = await db.collection("users")
             .doc(pofel.data()!.adminUid).get();
@@ -29,7 +30,7 @@ export const onPofelCreated = functions.firestore
             "profile_pic": userData!.data()!.profile_pic,
             "uid": userData!.data()!.uid,
             "acceptedInvitation": true,
-            "signedOn": Date(),
+            "signedOn": admin.firestore.Timestamp.now(),
         }
             ;
         await snapshot.ref.update({

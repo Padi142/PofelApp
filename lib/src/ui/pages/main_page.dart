@@ -7,6 +7,8 @@ import 'package:pofel_app/src/ui/components/top_bar.dart';
 import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
+import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
+import 'package:pofel_app/src/ui/pages/user_detail_page.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);
@@ -18,7 +20,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<NavigationBloc>(context).add(DashboardEvent());
+    BlocProvider.of<NavigationBloc>(context).add(const DashboardEvent());
     int _selectedIndex = 0;
     return Scaffold(
       body: SafeArea(
@@ -31,11 +33,14 @@ class _MainPageState extends State<MainPage> {
                   builder: (context, state) {
                     if (state is ShowDashboardState) {
                       return DashboardPage();
-                    }
-                    if (state is ShowPofelDetailState) {
+                    } else if (state is ShowPofelDetailState) {
                       return PofelDetailPage(
                         pofelId: state.pofelId,
                       );
+                    } else if (state is ShowMyPofelsState) {
+                      return PofelListPage();
+                    } else if (state is ShowUserDetailState) {
+                      return const UserDetailPage();
                     } else {
                       return const Center(
                         child: CircularProgressIndicator(),
@@ -60,13 +65,13 @@ class _MainPageState extends State<MainPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
             child: GNav(
-              rippleColor: Color(0xFFFFC8DD),
+              rippleColor: const Color(0xFFFFC8DD),
               hoverColor: Colors.grey[100]!,
               gap: 8,
               activeColor: Colors.black,
               iconSize: 24,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              duration: Duration(milliseconds: 400),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              duration: const Duration(milliseconds: 400),
               tabBackgroundColor: primaryColor,
               color: Colors.black,
               tabs: const [
@@ -79,8 +84,8 @@ class _MainPageState extends State<MainPage> {
                   text: 'Moje pofely',
                 ),
                 GButton(
-                  icon: Icons.search,
-                  text: 'Search',
+                  icon: Icons.verified_user,
+                  text: 'Profil',
                 ),
               ],
               selectedIndex: _selectedIndex,
@@ -88,13 +93,15 @@ class _MainPageState extends State<MainPage> {
                 switch (index) {
                   case 0:
                     BlocProvider.of<NavigationBloc>(context)
-                        .add(DashboardEvent());
+                        .add(const DashboardEvent());
                     break;
                   case 1:
-                    // BlocProvider.of<NavigationBloc>(context)
-                    //    .add(LogInPageEvent());
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(const LoadMyPofelsEvent());
                     break;
                   case 2:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(const LoadCurrentUserPage());
                     break;
                 }
               },
