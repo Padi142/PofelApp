@@ -108,8 +108,10 @@ class _DashboardPageState extends State<UserDetailPage> {
                           final ImagePicker _picker = ImagePicker();
                           final XFile? image = await _picker.pickImage(
                               source: ImageSource.gallery);
-                          BlocProvider.of<UserBloc>(context)
-                              .add(UpdateUserProfilePic(newPic: image!));
+                          if (image != null) {
+                            BlocProvider.of<UserBloc>(context)
+                                .add(UpdateUserProfilePic(newPic: image));
+                          }
                         },
                         child: const Text("Upravit profilovku"),
                       ),

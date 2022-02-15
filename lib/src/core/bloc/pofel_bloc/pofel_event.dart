@@ -52,3 +52,12 @@ class UpdatePofel extends PofelEvent {
 }
 
 enum UpdatePofelEnum { UPDATE_NAME, UPDATE_DESC, UPDATE_DATE }
+
+class UpdateWillArrive extends PofelEvent {
+  final String pofelId;
+  final DateTime newDate;
+  const UpdateWillArrive({required this.pofelId, required this.newDate});
+
+  @override
+  List<Object> get props => [pofelId, newDate];
+}

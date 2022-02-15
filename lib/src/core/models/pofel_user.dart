@@ -4,6 +4,7 @@ class PofelUserModel extends Equatable {
   const PofelUserModel({
     required this.uid,
     required this.name,
+    required this.willArrive,
     required this.photo,
     required this.acceptedInvitation,
     required this.joinedOn,
@@ -14,6 +15,7 @@ class PofelUserModel extends Equatable {
   final String photo;
   final bool acceptedInvitation;
   final DateTime joinedOn;
+  final DateTime willArrive;
 
   factory PofelUserModel.fromMap(
     Map<String, dynamic> map,
@@ -24,6 +26,7 @@ class PofelUserModel extends Equatable {
       photo: map["profile_pic"],
       acceptedInvitation: map["acceptedInvitation"],
       joinedOn: map["signedOn"].toDate(),
+      willArrive: map["willArrive"].toDate(),
     );
   }
 
@@ -34,7 +37,7 @@ class PofelUserModel extends Equatable {
 List<PofelUserModel> pofelUsersFromList(List<dynamic> list) {
   List<PofelUserModel> users = [];
   for (var user in list) {
-    users.add(PofelUserModel.fromMap(user));
+    users.add(PofelUserModel.fromMap(user.data()));
   }
   return users;
 }

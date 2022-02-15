@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 
@@ -53,14 +54,18 @@ class PofelProvider {
                   dateTo: doc["dateTo"].toDate(),
                   joinCode: doc["joinId"],
                   pofelId: doc["pofelId"],
-                  signedUsers: pofelUsersFromList(doc["signedUsersList"]),
+                  signedUsers: [],
                   createdAt: doc["createdAt"].toDate(),
                 );
-
                 pofels.add(model);
               })
             });
-
+    var snapshot = await firestore
+        .collection("active_pofels")
+        .doc(pofelId)
+        .collection("signedUsers")
+        .get();
+    pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
     return pofels[0];
   }
 
@@ -80,20 +85,18 @@ class PofelProvider {
     QueryDocumentSnapshot userDoc = userQuery.docs[0];
     DocumentReference docRef = doc.reference;
 
-    Map<String, dynamic> signedUserMap = ({
+    docRef.update({
+      "signedUsers": FieldValue.arrayUnion([uid]),
+    }).then((value) => print("pofel created"));
+
+    docRef.collection("signedUsers").doc(uid).set({
       "name": userDoc["name"],
       "uid": userDoc["uid"],
       "profile_pic": userDoc["profile_pic"],
       "acceptedInvitation": true,
-      "signedOn": DateTime.now()
-    });
-
-    Map<String, dynamic> signedUser =
-        ({"uid": uid, "acceptedInvitation": true, "joinedOn": DateTime.now()});
-    docRef.update({
-      "signedUsers": FieldValue.arrayUnion([uid]),
-      "signedUsersList": FieldValue.arrayUnion([signedUserMap])
-    }).then((value) => print("pofel created"));
+      "signedOn": DateTime.now(),
+      "willArrive": DateTime.utc(1989, 11, 9)
+    }).then((value) => print("user added"));
   }
 
   Future<void> createPofel(
@@ -109,12 +112,6 @@ class PofelProvider {
     String documentId = getRandomString(18);
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    Map<String, dynamic> signedUser = ({
-      "name": name,
-      "uid": adminUid,
-      "acceptedInvitation": true,
-      "signedOn": DateTime.now()
-    });
     await firestore.collection("active_pofels").doc(documentId).set({
       "name": name,
       "description": description,
@@ -123,9 +120,18 @@ class PofelProvider {
       "dateTo": dateTo,
       "pofelId": documentId,
       "adminUid": adminUid,
-      //"signedUsersList": [signedUser],
       "signedUsers": [adminUid],
     }).then((value) => print("pofel created"));
+    firestore
+        .collection("active_pofels")
+        .doc(documentId)
+        .collection("signedUsers")
+        .doc(adminUid)
+        .set({
+      "signedOn": DateTime.now(),
+      "acceptedInvitation": true,
+      "uid": adminUid,
+    }).then((value) => print("user added"));
   }
 
   Future<void> updateName(String name, pofelId) async {
@@ -167,6 +173,23 @@ class PofelProvider {
 
     docRef.update({
       "dateFrom": newdate,
+    }).then((value) => print("pofel created"));
+  }
+
+  Future<void> updateUserArrivalDate(
+      String pofelId, uid, DateTime newdate) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("signedUsers")
+        .where("uid", isEqualTo: uid)
+        .get();
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    DocumentReference docRef = doc.reference;
+
+    docRef.update({
+      "willArrive": newdate,
     }).then((value) => print("pofel created"));
   }
 }

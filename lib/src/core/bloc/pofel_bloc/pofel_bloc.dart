@@ -8,13 +8,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PofelBloc extends Bloc<PofelEvent, PofelState> {
   PofelBloc()
-      : super(const PofelStateWithData(
-            choosenPofel: PofelModel.empty,
+      : super(PofelStateWithData(
+            choosenPofel: PofelModel(
+                adminUid: '',
+                createdAt: null,
+                description: '',
+                joinCode: '',
+                name: '',
+                pofelId: '',
+                signedUsers: []),
             pofelStateEnum: PofelStateEnum.INITIAL)) {
     on<CreatePofel>(_onCreatePofel);
     on<JoinPofel>(_onJoinPofel);
     on<LoadPofel>(_onLoadPofel);
     on<UpdatePofel>(_onUpdatePofel);
+    on<UpdateWillArrive>(_onUpdateWillArive);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -60,5 +68,15 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
 
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPDATED));
+  }
+
+  _onUpdateWillArive(UpdateWillArrive event, Emitter<PofelState> emit) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString("uid");
+
+    await pofelApiProvider.updateUserArrivalDate(
+        event.pofelId, uid, event.newDate);
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.WILL_ARIVE_UPDATED));
   }
 }

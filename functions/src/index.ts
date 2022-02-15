@@ -25,29 +25,16 @@ export const onPofelCreated = functions.firestore
         const pofel = await snapshot.ref.get();
         const userData = await db.collection("users")
             .doc(pofel.data()!.adminUid).get();
-        const map = {
-            "name": userData!.data()!.name,
-            "profile_pic": userData!.data()!.profile_pic,
-            "uid": userData!.data()!.uid,
-            "acceptedInvitation": true,
-            "signedOn": admin.firestore.Timestamp.now(),
-        }
-            ;
         await snapshot.ref.update({
             "joinId": newGuid(),
-            "signedUsersList": [map],
         });
-    });
-export const onUserJoined = functions.firestore
-    .document("active_pofels/{pofelId}/signedUsers/{docId}")
-    .onCreate(async (snapshot, context) => {
-        const db = admin.firestore();
-        const joinedUser = await snapshot.ref.get();
-        const userData = await db.collection("users")
-            .doc(joinedUser.data()!.uid).get();
-        await snapshot.ref.update({
-            "name": userData!.data()!.name,
+        const signedUsers = snapshot.ref.collection("signedUsers")
+            .doc(pofel.data()!.adminUid);
+        await signedUsers.update({
             "profile_pic": userData!.data()!.profile_pic,
+            "name": userData!.data()!.name,
+            "willArrive": admin.firestore.Timestamp
+                .fromDate(new Date("1989-11-9")),
         });
     });
 
