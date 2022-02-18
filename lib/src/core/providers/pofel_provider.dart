@@ -24,9 +24,11 @@ class PofelProvider {
                   dateFrom: doc["dateFrom"].toDate(),
                   dateTo: doc["dateTo"].toDate(),
                   joinCode: doc["joinId"],
+                  spotifyLink: doc["spotifyLink"],
                   pofelId: doc["pofelId"],
                   signedUsers: [],
                   createdAt: doc["createdAt"].toDate(),
+                  pofelLocation: doc["pofelLocation"],
                 );
 
                 pofels.add(model);
@@ -54,8 +56,10 @@ class PofelProvider {
                   dateTo: doc["dateTo"].toDate(),
                   joinCode: doc["joinId"],
                   pofelId: doc["pofelId"],
+                  spotifyLink: doc["spotifyLink"],
                   signedUsers: [],
                   createdAt: doc["createdAt"].toDate(),
+                  pofelLocation: doc["pofelLocation"],
                 );
                 pofels.add(model);
               })
@@ -118,7 +122,9 @@ class PofelProvider {
       "createdAt": DateTime.now(),
       "dateFrom": dateFrom,
       "dateTo": dateTo,
+      "pofelLocation": const GeoPoint(0, 0),
       "pofelId": documentId,
+      "spotifyLink": "",
       "adminUid": adminUid,
       "signedUsers": [adminUid],
     }).then((value) => print("pofel created"));
@@ -135,7 +141,6 @@ class PofelProvider {
   }
 
   Future<void> updateName(String name, pofelId) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     QuerySnapshot pofelQuery = await FirebaseFirestore.instance
         .collection('active_pofels')
         .where('pofelId', isEqualTo: pofelId)
@@ -149,7 +154,6 @@ class PofelProvider {
   }
 
   Future<void> updateDesc(String desc, pofelId) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     QuerySnapshot pofelQuery = await FirebaseFirestore.instance
         .collection('active_pofels')
         .where('pofelId', isEqualTo: pofelId)
@@ -163,7 +167,6 @@ class PofelProvider {
   }
 
   Future<void> updateDatefrom(String pofelId, DateTime newdate) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     QuerySnapshot pofelQuery = await FirebaseFirestore.instance
         .collection('active_pofels')
         .where('pofelId', isEqualTo: pofelId)
@@ -176,9 +179,34 @@ class PofelProvider {
     }).then((value) => print("pofel created"));
   }
 
+  Future<void> updateSpotifyLink(String pofelId, newLink) async {
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .where('pofelId', isEqualTo: pofelId)
+        .get();
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    DocumentReference docRef = doc.reference;
+
+    docRef.update({
+      "spotifyLink": newLink,
+    }).then((value) => print("spotify updated"));
+  }
+
+  Future<void> updatePofelLocation(String pofelId, GeoPoint newLocation) async {
+    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .where('pofelId', isEqualTo: pofelId)
+        .get();
+    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    DocumentReference docRef = doc.reference;
+
+    docRef.update({
+      "pofelLocation": newLocation,
+    }).then((value) => print("Location updated"));
+  }
+
   Future<void> updateUserArrivalDate(
       String pofelId, uid, DateTime newdate) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     QuerySnapshot pofelQuery = await FirebaseFirestore.instance
         .collection('active_pofels')
         .doc(pofelId)

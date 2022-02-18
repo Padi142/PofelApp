@@ -79,7 +79,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                     ));
                                   },
                                   child: Container(
-                                    color: Colors.blueAccent,
+                                    decoration: const BoxDecoration(
+                                        color: Color(0xFF73BCFC),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
                                     child: Padding(
                                       padding: const EdgeInsets.all(12),
                                       child: InkWell(

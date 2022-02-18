@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 
@@ -6,6 +7,8 @@ class PofelModel extends Equatable {
     required this.name,
     required this.description,
     required this.adminUid,
+    required this.spotifyLink,
+    required this.pofelLocation,
     this.dateFrom,
     this.dateTo,
     required this.pofelId,
@@ -19,6 +22,8 @@ class PofelModel extends Equatable {
   final String pofelId;
   final String joinCode;
   final String adminUid;
+  final String spotifyLink;
+  final GeoPoint pofelLocation;
   final DateTime? dateFrom;
   final DateTime? dateTo;
   final DateTime? createdAt;

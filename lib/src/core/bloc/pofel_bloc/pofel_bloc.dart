@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
@@ -11,12 +11,14 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       : super(PofelStateWithData(
             choosenPofel: PofelModel(
                 adminUid: '',
+                spotifyLink: "",
                 createdAt: null,
                 description: '',
                 joinCode: '',
                 name: '',
                 pofelId: '',
-                signedUsers: []),
+                signedUsers: const [],
+                pofelLocation: const GeoPoint(0, 0)),
             pofelStateEnum: PofelStateEnum.INITIAL)) {
     on<CreatePofel>(_onCreatePofel);
     on<JoinPofel>(_onJoinPofel);
@@ -63,6 +65,14 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
         break;
       case UpdatePofelEnum.UPDATE_DATE:
         await pofelApiProvider.updateDatefrom(event.pofelId, event.newDate!);
+        break;
+      case UpdatePofelEnum.UPDATE_SPOTIFY:
+        await pofelApiProvider.updateSpotifyLink(
+            event.pofelId, event.newSpotifyLink!);
+        break;
+      case UpdatePofelEnum.UPDATE_LOCATION:
+        await pofelApiProvider.updatePofelLocation(
+            event.pofelId, event.newLocation!);
         break;
     }
 

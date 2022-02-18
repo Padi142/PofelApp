@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class PofelEvent extends Equatable {
@@ -39,11 +40,15 @@ class UpdatePofel extends PofelEvent {
   final String pofelId;
   final String? newName;
   final String? newDesc;
+  final String? newSpotifyLink;
+  final GeoPoint? newLocation;
   final DateTime? newDate;
   const UpdatePofel(
       {required this.updatePofelEnum,
       required this.pofelId,
       this.newName,
+      this.newSpotifyLink,
+      this.newLocation,
       this.newDesc,
       this.newDate});
 
@@ -51,7 +56,13 @@ class UpdatePofel extends PofelEvent {
   List<Object> get props => [updatePofelEnum, pofelId];
 }
 
-enum UpdatePofelEnum { UPDATE_NAME, UPDATE_DESC, UPDATE_DATE }
+enum UpdatePofelEnum {
+  UPDATE_NAME,
+  UPDATE_DESC,
+  UPDATE_DATE,
+  UPDATE_SPOTIFY,
+  UPDATE_LOCATION
+}
 
 class UpdateWillArrive extends PofelEvent {
   final String pofelId;

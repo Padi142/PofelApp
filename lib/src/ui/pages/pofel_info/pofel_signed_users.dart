@@ -33,7 +33,9 @@ Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
               padding: const EdgeInsets.all(2),
               child: Container(
                 height: 60,
-                color: Colors.grey,
+                decoration: const BoxDecoration(
+                    color: Color(0xFF73BCFC),
+                    borderRadius: BorderRadius.all(Radius.circular(5))),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [

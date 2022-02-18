@@ -5,6 +5,7 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
+import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
@@ -28,10 +29,21 @@ class _DashboardPageState extends State<PofelDetailPage> {
       create: (context) => _pofelBloc,
       child: BlocListener<PofelBloc, PofelState>(
         listener: (context, pofelState) {
-          if (pofelState is PofelStateWithData &&
-              pofelState.pofelStateEnum == PofelStateEnum.POFEL_UPDATED) {
-            BlocProvider.of<PofelBloc>(context)
-                .add(LoadPofel(pofelId: widget.pofelId));
+          if (pofelState is PofelStateWithData) {
+            switch (pofelState.pofelStateEnum) {
+              case PofelStateEnum.POFEL_UPDATED:
+                BlocProvider.of<PofelBloc>(context)
+                    .add(LoadPofel(pofelId: widget.pofelId));
+                break;
+              case PofelStateEnum.WILL_ARIVE_UPDATED:
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBarAlert(context, 'Příjezd upraven'));
+                BlocProvider.of<PofelBloc>(context)
+                    .add(LoadPofel(pofelId: widget.pofelId));
+                break;
+              default:
+                break;
+            }
           }
         },
         child: BlocBuilder<PofelBloc, PofelState>(
@@ -46,7 +58,7 @@ class _DashboardPageState extends State<PofelDetailPage> {
                   children: [
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(4),
                         child: Text(pofelState.choosenPofel.name,
                             style: const TextStyle(
                                 color: Colors.black87,
@@ -55,7 +67,7 @@ class _DashboardPageState extends State<PofelDetailPage> {
                       ),
                     ),
                     Expanded(
-                        flex: 6,
+                        flex: 7,
                         child: Column(
                           children: [
                             Expanded(
