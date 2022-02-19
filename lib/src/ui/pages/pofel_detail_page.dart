@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/pofel_items_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
 
@@ -56,15 +57,13 @@ class _DashboardPageState extends State<PofelDetailPage> {
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Text(pofelState.choosenPofel.name,
-                            style: const TextStyle(
-                                color: Colors.black87,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold)),
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(pofelState.choosenPofel.name,
+                          style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold)),
                     ),
                     Expanded(
                         flex: 7,
@@ -90,6 +89,12 @@ class _DashboardPageState extends State<PofelDetailPage> {
                                   ),
                                   ElevatedButton(
                                     onPressed: () {
+                                      _pofelBloc.add(const PofelItemsEvent());
+                                    },
+                                    child: const Text("Items"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
                                       _pofelBloc.add(PofelSettingsEvent(
                                           adminUid: pofelState
                                               .choosenPofel.adminUid));
@@ -107,6 +112,9 @@ class _DashboardPageState extends State<PofelDetailPage> {
                                           context, pofelState.choosenPofel);
                                     } else if (state is PofelSignedUsersState) {
                                       return PofelSignedUsers(
+                                          context, pofelState.choosenPofel);
+                                    } else if (state is PofelItemsPageState) {
+                                      return PofelItemsPage(
                                           context, pofelState.choosenPofel);
                                     } else if (state
                                         is PofelSettingsPageState) {

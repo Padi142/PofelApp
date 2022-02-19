@@ -21,7 +21,6 @@ export const onPofelCreated = functions.firestore
         functions.logger.info("New Pofel Created - Id: ",
             pofelId);
         const db = admin.firestore();
-        admin.firestore.FieldValue.serverTimestamp();
         const pofel = await snapshot.ref.get();
         const userData = await db.collection("users")
             .doc(pofel.data()!.adminUid).get();
@@ -35,6 +34,22 @@ export const onPofelCreated = functions.firestore
             "name": userData!.data()!.name,
             "willArrive": admin.firestore.Timestamp
                 .fromDate(new Date("1989-11-9")),
+        });
+    });
+
+    export const onItemAdded = functions.firestore
+    .document("active_pofels/{pofelId}/items/{itemId}")
+    .onCreate(async (snapshot, context) => {
+        const pofelId = context.params.pofelId;
+        functions.logger.info("New Item Added - PofelId: ",
+            pofelId);
+        const db = admin.firestore();
+        const pofel = await snapshot.ref.get();
+        const userData = await db.collection("users")
+            .doc(pofel.data()!.addedByUid).get();
+        await snapshot.ref.update({
+            "addedByProfilePic": userData!.data()!.profile_pic,
+            "addedBy": userData!.data()!.name,
         });
     });
 

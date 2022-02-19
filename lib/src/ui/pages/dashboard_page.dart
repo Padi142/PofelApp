@@ -98,8 +98,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             ),
                                             Row(
                                               children: [
-                                                const Text(
-                                                    "Pofel proběhne za: "),
+                                                const Text("za: "),
                                                 Text(
                                                   daysBetween(
                                                           DateTime.now(),

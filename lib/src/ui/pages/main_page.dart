@@ -25,10 +25,11 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       body: SafeArea(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             const Flexible(child: TopAppBar("Pofel app")),
             Expanded(
-                flex: 5,
+                flex: 8,
                 child: BlocBuilder<NavigationBloc, NavigationState>(
                   builder: (context, state) {
                     if (state is ShowDashboardState) {

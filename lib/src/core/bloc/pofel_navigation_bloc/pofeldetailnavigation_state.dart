@@ -27,3 +27,9 @@ class PofelSettingsPageState extends PofelNavigationState {
   @override
   List<Object> get props => [canAcces];
 }
+
+class PofelItemsPageState extends PofelNavigationState {
+  const PofelItemsPageState();
+  @override
+  List<Object> get props => [];
+}

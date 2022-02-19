@@ -11,6 +11,7 @@ class PofelDetailNavigationBloc
     on<PofelInfoEvent>(_onLoadDashboard);
     on<PofelSignedUsersEvent>(_onPofelShowSignedUsers);
     on<PofelSettingsEvent>(_onPofelSettingsEvent);
+    on<PofelItemsEvent>(_onShowItems);
   }
   _onLoadDashboard(
       PofelInfoEvent event, Emitter<PofelNavigationState> emit) async {
@@ -31,5 +32,10 @@ class PofelDetailNavigationBloc
     } else {
       emit(const PofelSettingsPageState(canAcces: false));
     }
+  }
+
+  _onShowItems(
+      PofelItemsEvent event, Emitter<PofelNavigationState> emit) async {
+    emit(const PofelItemsPageState());
   }
 }
