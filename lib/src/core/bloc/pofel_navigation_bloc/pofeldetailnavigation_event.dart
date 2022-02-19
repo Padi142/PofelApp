@@ -28,3 +28,10 @@ class PofelSettingsEvent extends PofelNavigationEvent {
   @override
   List<Object> get props => [adminUid];
 }
+
+class PofelItemsEvent extends PofelNavigationEvent {
+  const PofelItemsEvent();
+
+  @override
+  List<Object> get props => [];
+}
