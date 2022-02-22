@@ -1,8 +1,10 @@
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Widget PofelInfo(BuildContext context, PofelModel pofel) {
@@ -18,25 +20,61 @@ Widget PofelInfo(BuildContext context, PofelModel pofel) {
                 child: Container(
                   height: double.maxFinite,
                   margin: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(
-                      color: Color(0xFF73BCFC),
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Join code: ",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal)),
-                        Text(pofel.joinCode,
-                            style: const TextStyle(
-                                color: Colors.purple,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold)),
-                      ],
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      FirebaseDynamicLinks dynamicLinks =
+                          FirebaseDynamicLinks.instance;
+                      final DynamicLinkParameters parameters =
+                          DynamicLinkParameters(
+                        // The Dynamic Link URI domain. You can view created URIs on your Firebase console
+                        uriPrefix: 'https://pofelapp.page.link',
+                        // The deep Link passed to your application which you can use to affect change
+                        link: Uri.parse(
+                            'https://pofelapp.page.link' + pofel.joinCode),
+                        // Android application details needed for opening correct app on device/Play Store
+                        androidParameters: const AndroidParameters(
+                          packageName: "com.padisoft.pofelApp",
+                          minimumVersion: 1,
+                        ),
+                        iosParameters: IOSParameters(
+                          bundleId: "com.padisoft.pofelApp",
+                          fallbackUrl: Uri.parse(
+                              "https://twitter.com/kfc_es/status/1402990746953601028"),
+                          minimumVersion: '2',
+                        ),
+                      );
+
+                      final ShortDynamicLink shortDynamicLink =
+                          await FirebaseDynamicLinks.instance
+                              .buildShortLink(parameters);
+                      Clipboard.setData(ClipboardData(
+                        text: shortDynamicLink.shortUrl.toString(),
+                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text("Zkopírováno do clipboardu")));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Join code: ",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal)),
+                          Text(pofel.joinCode,
+                              style: const TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: const Color(0xFF73BCFC),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
                     ),
                   ),
                 ),
@@ -58,7 +96,9 @@ Widget PofelInfo(BuildContext context, PofelModel pofel) {
                                 color: Colors.black,
                                 fontSize: 16,
                                 fontWeight: FontWeight.normal)),
-                        Text(DateFormat('dd.MM. – kk:mm').format(pofel.dateTo!),
+                        Text(
+                            DateFormat('dd.MM. – kk:mm')
+                                .format(pofel.dateFrom!),
                             style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 24,
@@ -77,7 +117,7 @@ Widget PofelInfo(BuildContext context, PofelModel pofel) {
                 width: double.maxFinite,
                 margin: const EdgeInsets.all(3),
                 decoration: const BoxDecoration(
-                    color: Color(0xFF87C3FD),
+                    color: Color(0xFF73BCFC),
                     borderRadius: BorderRadius.all(Radius.circular(20))),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
@@ -156,7 +196,7 @@ Widget PofelInfo(BuildContext context, PofelModel pofel) {
                             height: 45,
                             width: 45,
                           ),
-                          const Text("Shared playlist"),
+                          const Text("Spotify playlist"),
                         ],
                       ),
                       style: OutlinedButton.styleFrom(
@@ -214,7 +254,7 @@ Widget PofelInfo(BuildContext context, PofelModel pofel) {
                         ],
                       ),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3AD670),
+                        backgroundColor: const Color(0xFF23CF5F),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20)),
                       ),

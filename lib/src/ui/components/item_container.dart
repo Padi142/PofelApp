@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_event.dart';
@@ -24,11 +25,24 @@ Widget itemContainer(BuildContext context, PofelModel pofel, ItemModel item,
             color: Color(0xff7c94b6),
             borderRadius: BorderRadius.all(Radius.circular(5)),
           ),
-          child: Text(
-            item.name,
-            maxLines: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(1),
+            child: Text(
+              item.name,
+              maxLines: 3,
+            ),
           ),
         ),
+        Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 2, left: 4),
+              child: Text(item.count.toString() + "x",
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal)),
+            )),
         Align(
           alignment: Alignment.bottomRight,
           child: Container(
@@ -59,9 +73,8 @@ Alert alert(BuildContext context, PofelModel pofel, ItemModel item,
                     color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.normal)),
-            Container(
+            SizedBox(
               child: Text(item.name,
-                  maxLines: 5,
                   style: const TextStyle(
                       color: Colors.black,
                       fontSize: 20,
@@ -71,7 +84,7 @@ Alert alert(BuildContext context, PofelModel pofel, ItemModel item,
         ),
         Row(
           children: [
-            const Text("Přidáno: ",
+            const Text("Přidal: ",
                 style: TextStyle(
                     color: Colors.black,
                     fontSize: 16,
@@ -147,7 +160,7 @@ Alert alert(BuildContext context, PofelModel pofel, ItemModel item,
                 pofelId: pofel.pofelId));
             Navigator.pop(context);
           },
-          child: Text("Smazat"),
+          child: const Text("Smazat"),
           style: OutlinedButton.styleFrom(
             backgroundColor: Colors.redAccent,
             shape:

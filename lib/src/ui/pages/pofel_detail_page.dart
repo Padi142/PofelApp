@@ -10,6 +10,7 @@ import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_items_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/pofel_user_settings_page.dart';
 
 class PofelDetailPage extends StatefulWidget {
   const PofelDetailPage({Key? key, required this.pofelId}) : super(key: key);
@@ -122,8 +123,8 @@ class _DashboardPageState extends State<PofelDetailPage> {
                                         return PofelSettignsPage(
                                             context, pofelState.choosenPofel);
                                       } else {
-                                        return const Text("Nejsi admin :// ",
-                                            style: TextStyle(fontSize: 22));
+                                        return UserSettingPage(
+                                            context, pofelState.choosenPofel);
                                       }
                                     } else {
                                       return const Center(

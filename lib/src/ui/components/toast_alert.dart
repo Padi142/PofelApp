@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 SnackBar SnackBarAlert(BuildContext context, String message) {
@@ -9,8 +10,9 @@ SnackBar SnackBarAlert(BuildContext context, String message) {
       children: [
         const Icon(Icons.check_circle_rounded, color: Colors.white),
         const SizedBox(width: 15),
-        Text(
+        AutoSizeText(
           message,
+          maxLines: 2,
           style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
       ],

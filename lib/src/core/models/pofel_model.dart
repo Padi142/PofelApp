@@ -15,6 +15,7 @@ class PofelModel extends Equatable {
     required this.createdAt,
     required this.joinCode,
     required this.signedUsers,
+    required this.showDrugItems,
   });
 
   final String name;
@@ -28,6 +29,7 @@ class PofelModel extends Equatable {
   final DateTime? dateTo;
   final DateTime? createdAt;
   List<PofelUserModel> signedUsers;
+  final bool showDrugItems;
 
   @override
   List<Object?> get props => [pofelId];

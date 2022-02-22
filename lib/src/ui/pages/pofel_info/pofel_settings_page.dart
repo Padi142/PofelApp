@@ -1,16 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
+import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../core/bloc/pofel_bloc/pofel_event.dart';
 
 Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
   final myController = TextEditingController();
-
+  DateTime pickedDate = DateTime.utc(1989, 11, 9);
   return Padding(
       padding: const EdgeInsets.all(15),
       child: Column(
@@ -92,7 +96,42 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
           ),
           ElevatedButton(
             onPressed: () {
-              //BlocProvider.of<PofelBloc>(context).add(UpdatePofel());
+              Alert(
+                context: context,
+                type: AlertType.none,
+                title: "Zadejte nové datum",
+                content: Column(
+                  children: [
+                    DateTimePicker(
+                        type: DateTimePickerType.dateTime,
+                        initialValue: '',
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                        dateLabelText: 'Datum a čas',
+                        onChanged: (val) {
+                          pickedDate = DateTime.parse(val);
+                        })
+                  ],
+                ),
+                buttons: [
+                  DialogButton(
+                    child: const Text(
+                      "Update",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                    onPressed: () {
+                      if (pickedDate != DateTime.utc(1989, 11, 9)) {
+                        BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
+                            pofelId: pofel.pofelId,
+                            updatePofelEnum: UpdatePofelEnum.UPDATE_DATE,
+                            newDate: pickedDate));
+                        Navigator.pop(context);
+                      }
+                    },
+                    width: 120,
+                  )
+                ],
+              ).show();
             },
             child: const Text("Upravit datum"),
           ),
@@ -126,7 +165,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                             newSpotifyLink: myController.text));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBarAlert(
+                            SnackBarError(
                                 context, 'Neplatný spotify odkaz...'));
                       }
                       Navigator.pop(context);
@@ -145,7 +184,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 type: AlertType.none,
                 title: "Koordináty",
                 desc:
-                    "Jdi do google map, klikni na kokaci, kde se bude pofel odehrávat. Otevři okno s informacemi o míste. Zkopíruj koordináty ve tvaru: \"49.XXXXXXXX, 15.XXXXXXXX\" a vlož je sem. (sry, jinak to zatím nejde :/ )",
+                    "Jdi do google map, klikni na lokaci, kde se bude pofel odehrávat. Otevři okno s informacemi o míste. Zkopíruj koordináty ve tvaru: \"49.XXXXXXXX, 15.XXXXXXXX\" a vlož je sem. (sry, jinak to zatím nejde :/ )",
                 content: Column(
                   children: [
                     TextField(
@@ -178,7 +217,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                             newLocation: GeoPoint(lat, lng)));
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBarAlert(context,
+                            SnackBarError(context,
                                 'nepodařilo se zpracovat koordináty :/'));
                       }
                       Navigator.pop(context);
@@ -189,6 +228,56 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               ).show();
             },
             child: const Text("Upravit lokaci pofelu"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
+                  updatePofelEnum: UpdatePofelEnum.UPDATE_SHOW_DRUGS,
+                  pofelId: pofel.pofelId,
+                  showDrugs: pofel.showDrugItems));
+            },
+            child: const Text("Zapnout/vypnout substance itemy"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Alert(
+                context: context,
+                type: AlertType.none,
+                title: "Zpráva",
+                desc: "Pošli ostatním zprávu",
+                content: Column(
+                  children: [
+                    TextField(
+                      controller: myController,
+                      decoration: const InputDecoration(),
+                    ),
+                  ],
+                ),
+                buttons: [
+                  DialogButton(
+                    child: const Text(
+                      "Poslat",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                    onPressed: () async {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBarAlert(context, 'Notifikace poslána'));
+
+                      Navigator.pop(context);
+                      var func = FirebaseFunctions.instance
+                          .httpsCallable("notifyPofelUsers");
+                      await func.call(<String, dynamic>{
+                        "messageTitle": "Notifikace z polefu " + pofel.name,
+                        "messageBody": myController.text,
+                        "pofelId": pofel.pofelId
+                      });
+                    },
+                    width: 120,
+                  )
+                ],
+              ).show();
+            },
+            child: const Text("Pošli oznámění účastníkům pofelu"),
           ),
         ],
       ));

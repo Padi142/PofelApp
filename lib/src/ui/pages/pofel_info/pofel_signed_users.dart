@@ -9,9 +9,8 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 
 Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
   return Padding(
-    padding: const EdgeInsets.all(15),
-    child: Column(
-      children: [
+      padding: const EdgeInsets.all(15),
+      child: Column(children: [
         Row(
           children: [
             const Expanded(
@@ -123,7 +122,16 @@ Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
             );
           },
         ),
-      ],
-    ),
-  );
+        Row(
+          children: [
+            Expanded(flex: 2, child: Container()),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {},
+                child: const Text("Pozvat lidi"),
+              ),
+            )
+          ],
+        ),
+      ]));
 }

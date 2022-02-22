@@ -18,6 +18,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
                 name: '',
                 pofelId: '',
                 signedUsers: const [],
+                showDrugItems: false,
                 pofelLocation: const GeoPoint(0, 0)),
             pofelStateEnum: PofelStateEnum.INITIAL)) {
     on<CreatePofel>(_onCreatePofel);
@@ -25,6 +26,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<LoadPofel>(_onLoadPofel);
     on<UpdatePofel>(_onUpdatePofel);
     on<UpdateWillArrive>(_onUpdateWillArive);
+    on<LoadPofelByJoinId>(_onLoadPofelByJoinId);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -42,17 +44,59 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
   _onJoinPofel(JoinPofel event, Emitter<PofelState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
-    if (uid != null) {
-      pofelApiProvider.joinPofel(uid, event.joinId);
-      emit((state as PofelStateWithData)
-          .copyWith(pofelStateEnum: PofelStateEnum.POFEL_JOINED));
+    if (event.joinId.length != 5) {
+      emit((state as PofelStateWithData).copyWith(
+          pofelStateEnum: PofelStateEnum.ERROR_JOINING,
+          errorMessage: "Kratka pozvanka"));
+    } else {
+      if (uid != null) {
+        try {
+          String error = await pofelApiProvider.joinPofel(uid, event.joinId);
+          if (error == "") {
+            emit((state as PofelStateWithData)
+                .copyWith(pofelStateEnum: PofelStateEnum.POFEL_JOINED));
+          } else {
+            emit((state as PofelStateWithData).copyWith(
+                pofelStateEnum: PofelStateEnum.ERROR_JOINING,
+                errorMessage: error));
+          }
+        } catch (e) {
+          emit((state as PofelStateWithData).copyWith(
+              pofelStateEnum: PofelStateEnum.ERROR_JOINING,
+              errorMessage: "Nepodařilo se připojit"));
+          print(e);
+        }
+      }
     }
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.INITIAL));
   }
 
   _onLoadPofel(LoadPofel event, Emitter<PofelState> emit) async {
-    PofelModel pofel = await pofelApiProvider.getPofel(event.pofelId);
-    emit((state as PofelStateWithData).copyWith(
-        pofelStateEnum: PofelStateEnum.POFEL_LOADED, choosenPofel: pofel));
+    try {
+      PofelModel pofel = await pofelApiProvider.getPofel(event.pofelId);
+      emit((state as PofelStateWithData).copyWith(
+          pofelStateEnum: PofelStateEnum.POFEL_LOADED, choosenPofel: pofel));
+    } catch (e) {
+      print(e);
+      emit((state as PofelStateWithData).copyWith(
+          pofelStateEnum: PofelStateEnum.ERROR_LOADING,
+          errorMessage: "Nepodařilo se najit pofel"));
+    }
+  }
+
+  _onLoadPofelByJoinId(
+      LoadPofelByJoinId event, Emitter<PofelState> emit) async {
+    try {
+      PofelModel pofel = await pofelApiProvider.getPofelByJoinId(event.joinId);
+      emit((state as PofelStateWithData).copyWith(
+          pofelStateEnum: PofelStateEnum.POFEL_LOADED, choosenPofel: pofel));
+    } catch (e) {
+      print(e);
+      emit((state as PofelStateWithData).copyWith(
+          pofelStateEnum: PofelStateEnum.ERROR_LOADING,
+          errorMessage: "Nepodařilo se najit pofel"));
+    }
   }
 
   _onUpdatePofel(UpdatePofel event, Emitter<PofelState> emit) async {
@@ -73,6 +117,9 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       case UpdatePofelEnum.UPDATE_LOCATION:
         await pofelApiProvider.updatePofelLocation(
             event.pofelId, event.newLocation!);
+        break;
+      case UpdatePofelEnum.UPDATE_SHOW_DRUGS:
+        await pofelApiProvider.toggleShowDrug(event.pofelId, event.showDrugs!);
         break;
     }
 

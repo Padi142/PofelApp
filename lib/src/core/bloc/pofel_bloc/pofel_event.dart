@@ -16,6 +16,14 @@ class LoadPofel extends PofelEvent {
   List<Object> get props => [pofelId];
 }
 
+class LoadPofelByJoinId extends PofelEvent {
+  final String joinId;
+  const LoadPofelByJoinId({required this.joinId});
+
+  @override
+  List<Object> get props => [joinId];
+}
+
 class JoinPofel extends PofelEvent {
   final String joinId;
   const JoinPofel({required this.joinId});
@@ -43,6 +51,7 @@ class UpdatePofel extends PofelEvent {
   final String? newSpotifyLink;
   final GeoPoint? newLocation;
   final DateTime? newDate;
+  final bool? showDrugs;
   const UpdatePofel(
       {required this.updatePofelEnum,
       required this.pofelId,
@@ -50,6 +59,7 @@ class UpdatePofel extends PofelEvent {
       this.newSpotifyLink,
       this.newLocation,
       this.newDesc,
+      this.showDrugs,
       this.newDate});
 
   @override
@@ -61,7 +71,8 @@ enum UpdatePofelEnum {
   UPDATE_DESC,
   UPDATE_DATE,
   UPDATE_SPOTIFY,
-  UPDATE_LOCATION
+  UPDATE_LOCATION,
+  UPDATE_SHOW_DRUGS
 }
 
 class UpdateWillArrive extends PofelEvent {

@@ -16,13 +16,18 @@ class LoginStateWithData extends LoginState {
   final bool isLoggedIn;
   final UserModel user;
   final LoginStateEnum loginStateEnum;
+  final String invite;
+  final String inviteId;
   const LoginStateWithData(
       {required this.isLoggedIn,
       required this.user,
+      required this.invite,
+      required this.inviteId,
       required this.loginStateEnum});
 
   @override
-  List<Object> get props => [isLoggedIn, user];
+  List<Object> get props =>
+      [isLoggedIn, user, loginStateEnum, inviteId, invite];
 }
 
 enum LoginStateEnum { NOT_LOGGED_IN, LOGGED_IN, LOG_IN_FAILED }

@@ -37,7 +37,29 @@ export const onPofelCreated = functions.firestore
         });
     });
 
-    export const onItemAdded = functions.firestore
+export const onUserJoined = functions.firestore
+    .document("active_pofels/{pofelId}/signedUsers/{userId}")
+    .onCreate(async (snapshot, context) => {
+        const pofelId = context.params.pofelId;
+        functions.logger.info("User joined to: ",
+            pofelId);
+        const db = admin.firestore();
+        const user = await snapshot.ref.get();
+        const topic = pofelId;
+        const pofel = await db.collection("active_pofels")
+            .doc(pofelId).get();
+        // Notification details and Payload.
+        const payload = {
+            notification: {
+                title: "Někdo se právě připojit k pofelu!",
+                body: "K pofelu " + pofel.data()!.name +
+                    " se právě připojil uživatel " + user.data()!.name,
+            },
+        };
+        return admin.messaging().sendToTopic(topic, payload);
+    });
+
+export const onItemAdded = functions.firestore
     .document("active_pofels/{pofelId}/items/{itemId}")
     .onCreate(async (snapshot, context) => {
         const pofelId = context.params.pofelId;
@@ -53,6 +75,22 @@ export const onPofelCreated = functions.firestore
         });
     });
 
+export const notifyPofelUsers = functions.https.onCall(async (data, _) => {
+    try {
+        const topic = data.pofelId;
+        await admin.messaging().sendToTopic(topic, {
+            notification: {
+                title: data.messageTitle,
+                body: data.messageBody,
+            },
+        });
+        functions.logger.info("Notified users: ",
+            data.pofelId);
+        return true;
+    } catch (ex) {
+        return false;
+    }
+});
 /**
 * Creates uid.
 */

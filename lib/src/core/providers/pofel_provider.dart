@@ -29,6 +29,7 @@ class PofelProvider {
                   signedUsers: [],
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
+                  showDrugItems: doc["showDrugItems"] ?? false,
                 );
 
                 pofels.add(model);
@@ -60,6 +61,7 @@ class PofelProvider {
                   signedUsers: [],
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
+                  showDrugItems: doc["showDrugItems"] ?? false,
                 );
                 pofels.add(model);
               })
@@ -73,7 +75,43 @@ class PofelProvider {
     return pofels[0];
   }
 
-  Future<void> joinPofel(String uid, joinId) async {
+  Future<PofelModel> getPofelByJoinId(String joinId) async {
+    List<PofelModel> pofels = [];
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore
+        .collection("active_pofels")
+        .where("joinId", isEqualTo: joinId)
+        .get()
+        .then((querySnapshot) => {
+              // ignore: avoid_function_literals_in_foreach_calls
+              querySnapshot.docs.forEach((doc) {
+                PofelModel model = PofelModel(
+                  name: doc["name"],
+                  description: doc["description"],
+                  adminUid: doc["adminUid"],
+                  dateFrom: doc["dateFrom"].toDate(),
+                  dateTo: doc["dateTo"].toDate(),
+                  joinCode: doc["joinId"],
+                  pofelId: doc["pofelId"],
+                  spotifyLink: doc["spotifyLink"],
+                  signedUsers: [],
+                  createdAt: doc["createdAt"].toDate(),
+                  pofelLocation: doc["pofelLocation"],
+                  showDrugItems: doc["showDrugItems"] ?? false,
+                );
+                pofels.add(model);
+              })
+            });
+    var snapshot = await firestore
+        .collection("active_pofels")
+        .doc(pofels[0].pofelId)
+        .collection("signedUsers")
+        .get();
+    pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
+    return pofels[0];
+  }
+
+  Future<String> joinPofel(String uid, joinId) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     QuerySnapshot pofelQuery = await FirebaseFirestore.instance
@@ -85,22 +123,31 @@ class PofelProvider {
         .where('uid', isEqualTo: uid)
         .get();
 
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
+    QueryDocumentSnapshot pofelDoc = pofelQuery.docs[0];
     QueryDocumentSnapshot userDoc = userQuery.docs[0];
-    DocumentReference docRef = doc.reference;
+    DocumentReference docRef = pofelDoc.reference;
 
-    docRef.update({
-      "signedUsers": FieldValue.arrayUnion([uid]),
-    }).then((value) => print("pofel created"));
+    // subscribe to topic on each app start-up
+    await FirebaseMessaging.instance.subscribeToTopic(docRef.id);
+    var joinedUsers = pofelDoc["signedUsers"];
+    bool canJoin = !joinedUsers.contains(uid);
+    if (canJoin) {
+      docRef.update({
+        "signedUsers": FieldValue.arrayUnion([uid]),
+      }).then((value) => print("pofel created"));
 
-    docRef.collection("signedUsers").doc(uid).set({
-      "name": userDoc["name"],
-      "uid": userDoc["uid"],
-      "profile_pic": userDoc["profile_pic"],
-      "acceptedInvitation": true,
-      "signedOn": DateTime.now(),
-      "willArrive": DateTime.utc(1989, 11, 9)
-    }).then((value) => print("user added"));
+      docRef.collection("signedUsers").doc(uid).set({
+        "name": userDoc["name"],
+        "uid": userDoc["uid"],
+        "profile_pic": userDoc["profile_pic"],
+        "acceptedInvitation": true,
+        "signedOn": DateTime.now(),
+        "willArrive": DateTime.utc(1989, 11, 9)
+      }).then((value) => print("user added"));
+      return "";
+    } else {
+      return "Retarde, nemůžeš se dvakrat připojit na stejný pofel";
+    }
   }
 
   Future<void> createPofel(
@@ -114,6 +161,8 @@ class PofelProvider {
             length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 
     String documentId = getRandomString(18);
+    // subscribe to topic on each app start-up
+    await FirebaseMessaging.instance.subscribeToTopic(documentId);
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection("active_pofels").doc(documentId).set({
@@ -127,6 +176,7 @@ class PofelProvider {
       "spotifyLink": "",
       "adminUid": adminUid,
       "signedUsers": [adminUid],
+      "showDrugItems": false
     }).then((value) => print("pofel created"));
     firestore
         .collection("active_pofels")
@@ -141,66 +191,47 @@ class PofelProvider {
   }
 
   Future<void> updateName(String name, pofelId) async {
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('active_pofels')
-        .where('pofelId', isEqualTo: pofelId)
-        .get();
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
-    DocumentReference docRef = doc.reference;
-
-    docRef.update({
+        .doc(pofelId)
+        .update({
       "name": name,
     }).then((value) => print("pofel created"));
   }
 
   Future<void> updateDesc(String desc, pofelId) async {
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('active_pofels')
-        .where('pofelId', isEqualTo: pofelId)
-        .get();
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
-    DocumentReference docRef = doc.reference;
-
-    docRef.update({
+        .doc(pofelId)
+        .update({
       "description": desc,
     }).then((value) => print("pofel created"));
   }
 
   Future<void> updateDatefrom(String pofelId, DateTime newdate) async {
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('active_pofels')
-        .where('pofelId', isEqualTo: pofelId)
-        .get();
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
-    DocumentReference docRef = doc.reference;
-
-    docRef.update({
+        .doc(pofelId)
+        .update({
       "dateFrom": newdate,
     }).then((value) => print("pofel created"));
   }
 
   Future<void> updateSpotifyLink(String pofelId, newLink) async {
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('active_pofels')
-        .where('pofelId', isEqualTo: pofelId)
-        .get();
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
-    DocumentReference docRef = doc.reference;
-
-    docRef.update({
+        .doc(pofelId)
+        .update({
       "spotifyLink": newLink,
     }).then((value) => print("spotify updated"));
+    ;
   }
 
   Future<void> updatePofelLocation(String pofelId, GeoPoint newLocation) async {
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('active_pofels')
-        .where('pofelId', isEqualTo: pofelId)
-        .get();
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
-    DocumentReference docRef = doc.reference;
-
-    docRef.update({
+        .doc(pofelId)
+        .update({
       "pofelLocation": newLocation,
     }).then((value) => print("Location updated"));
   }
@@ -219,5 +250,14 @@ class PofelProvider {
     docRef.update({
       "willArrive": newdate,
     }).then((value) => print("pofel created"));
+  }
+
+  Future<void> toggleShowDrug(String pofelId, bool showDrugs) async {
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .update({
+      "showDrugItems": !showDrugs,
+    }).then((value) => print("drugs toggled"));
   }
 }

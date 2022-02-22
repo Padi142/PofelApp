@@ -114,28 +114,32 @@ Widget PofelItemsPage(BuildContext context, PofelModel pofel) {
                               ],
                             ),
                           ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Substance"),
-                                Expanded(
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: state.itemsByCategory[3].length,
-                                    itemBuilder: (context, index) {
-                                      return itemContainer(
-                                          context,
-                                          pofel,
-                                          state.itemsByCategory[3][index],
-                                          _itemsBloc);
-                                    },
-                                    scrollDirection: Axis.horizontal,
+                          pofel.showDrugItems
+                              ? Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Substance"),
+                                      Expanded(
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount:
+                                              state.itemsByCategory[3].length,
+                                          itemBuilder: (context, index) {
+                                            return itemContainer(
+                                                context,
+                                                pofel,
+                                                state.itemsByCategory[3][index],
+                                                _itemsBloc);
+                                          },
+                                          scrollDirection: Axis.horizontal,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
+                                )
+                              : Container(),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,7 +278,7 @@ final form = fb.group({
   'name': ['', Validators.required],
   'count': ['', Validators.required, Validators.number],
   'type': ["", Validators.required],
-  'price': [''],
+  'price': ['0'],
 });
 const List<DropdownMenuItem<String>> items = [
   DropdownMenuItem(

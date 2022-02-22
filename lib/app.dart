@@ -8,6 +8,7 @@ import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
+import 'package:pofel_app/src/ui/pages/invite_link_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/main_page.dart';
 
@@ -35,7 +36,13 @@ class PofelApp extends StatelessWidget {
             builder: (context, state) {
               if (state is LoginStateWithData) {
                 if (state.loginStateEnum == LoginStateEnum.LOGGED_IN) {
-                  return MainPage();
+                  if (state.invite == "") {
+                    return MainPage();
+                  } else {
+                    return (InviteLinkPage(
+                      joinId: state.inviteId,
+                    ));
+                  }
                 } else {
                   return LogInPage();
                 }

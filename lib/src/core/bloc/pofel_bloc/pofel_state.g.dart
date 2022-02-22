@@ -9,6 +9,8 @@ part of 'pofel_state.dart';
 abstract class _$PofelStateWithDataCWProxy {
   PofelStateWithData choosenPofel(PofelModel choosenPofel);
 
+  PofelStateWithData errorMessage(String? errorMessage);
+
   PofelStateWithData pofelStateEnum(PofelStateEnum pofelStateEnum);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `PofelStateWithData(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
@@ -19,6 +21,7 @@ abstract class _$PofelStateWithDataCWProxy {
   /// ````
   PofelStateWithData call({
     PofelModel? choosenPofel,
+    String? errorMessage,
     PofelStateEnum? pofelStateEnum,
   });
 }
@@ -34,6 +37,10 @@ class _$PofelStateWithDataCWProxyImpl implements _$PofelStateWithDataCWProxy {
       this(choosenPofel: choosenPofel);
 
   @override
+  PofelStateWithData errorMessage(String? errorMessage) =>
+      this(errorMessage: errorMessage);
+
+  @override
   PofelStateWithData pofelStateEnum(PofelStateEnum pofelStateEnum) =>
       this(pofelStateEnum: pofelStateEnum);
 
@@ -47,6 +54,7 @@ class _$PofelStateWithDataCWProxyImpl implements _$PofelStateWithDataCWProxy {
   /// ````
   PofelStateWithData call({
     Object? choosenPofel = const $CopyWithPlaceholder(),
+    Object? errorMessage = const $CopyWithPlaceholder(),
     Object? pofelStateEnum = const $CopyWithPlaceholder(),
   }) {
     return PofelStateWithData(
@@ -55,6 +63,10 @@ class _$PofelStateWithDataCWProxyImpl implements _$PofelStateWithDataCWProxy {
               ? _value.choosenPofel
               // ignore: cast_nullable_to_non_nullable
               : choosenPofel as PofelModel,
+      errorMessage: errorMessage == const $CopyWithPlaceholder()
+          ? _value.errorMessage
+          // ignore: cast_nullable_to_non_nullable
+          : errorMessage as String?,
       pofelStateEnum: pofelStateEnum == const $CopyWithPlaceholder() ||
               pofelStateEnum == null
           ? _value.pofelStateEnum

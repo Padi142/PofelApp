@@ -16,7 +16,7 @@ class DashboardEvent extends NavigationEvent {
 
 class PofelDetailPageEvent extends NavigationEvent {
   final String pofelId;
-  const PofelDetailPageEvent(this.pofelId);
+  const PofelDetailPageEvent({required this.pofelId});
 
   @override
   List<Object> get props => [];

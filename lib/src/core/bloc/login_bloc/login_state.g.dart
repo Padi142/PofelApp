@@ -7,6 +7,10 @@ part of 'login_state.dart';
 // **************************************************************************
 
 abstract class _$LoginStateWithDataCWProxy {
+  LoginStateWithData invite(String invite);
+
+  LoginStateWithData inviteId(String inviteId);
+
   LoginStateWithData isLoggedIn(bool isLoggedIn);
 
   LoginStateWithData loginStateEnum(LoginStateEnum loginStateEnum);
@@ -20,6 +24,8 @@ abstract class _$LoginStateWithDataCWProxy {
   /// LoginStateWithData(...).copyWith(id: 12, name: "My name")
   /// ````
   LoginStateWithData call({
+    String? invite,
+    String? inviteId,
     bool? isLoggedIn,
     LoginStateEnum? loginStateEnum,
     UserModel? user,
@@ -31,6 +37,12 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
   final LoginStateWithData _value;
 
   const _$LoginStateWithDataCWProxyImpl(this._value);
+
+  @override
+  LoginStateWithData invite(String invite) => this(invite: invite);
+
+  @override
+  LoginStateWithData inviteId(String inviteId) => this(inviteId: inviteId);
 
   @override
   LoginStateWithData isLoggedIn(bool isLoggedIn) =>
@@ -52,11 +64,21 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
   /// LoginStateWithData(...).copyWith(id: 12, name: "My name")
   /// ````
   LoginStateWithData call({
+    Object? invite = const $CopyWithPlaceholder(),
+    Object? inviteId = const $CopyWithPlaceholder(),
     Object? isLoggedIn = const $CopyWithPlaceholder(),
     Object? loginStateEnum = const $CopyWithPlaceholder(),
     Object? user = const $CopyWithPlaceholder(),
   }) {
     return LoginStateWithData(
+      invite: invite == const $CopyWithPlaceholder() || invite == null
+          ? _value.invite
+          // ignore: cast_nullable_to_non_nullable
+          : invite as String,
+      inviteId: inviteId == const $CopyWithPlaceholder() || inviteId == null
+          ? _value.inviteId
+          // ignore: cast_nullable_to_non_nullable
+          : inviteId as String,
       isLoggedIn:
           isLoggedIn == const $CopyWithPlaceholder() || isLoggedIn == null
               ? _value.isLoggedIn
