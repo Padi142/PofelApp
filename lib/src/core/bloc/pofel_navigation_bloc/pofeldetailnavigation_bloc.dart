@@ -12,10 +12,13 @@ class PofelDetailNavigationBloc
     on<PofelSignedUsersEvent>(_onPofelShowSignedUsers);
     on<PofelSettingsEvent>(_onPofelSettingsEvent);
     on<PofelItemsEvent>(_onShowItems);
+    on<LoadChatPage>(_onLoadChatPage);
   }
   _onLoadDashboard(
       PofelInfoEvent event, Emitter<PofelNavigationState> emit) async {
-    emit(const ShowPofelInfoState());
+    final prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString("uid");
+    emit(ShowPofelInfoState(uid: uid!));
   }
 
   _onPofelShowSignedUsers(
@@ -37,5 +40,12 @@ class PofelDetailNavigationBloc
   _onShowItems(
       PofelItemsEvent event, Emitter<PofelNavigationState> emit) async {
     emit(const PofelItemsPageState());
+  }
+
+  _onLoadChatPage(
+      LoadChatPage event, Emitter<PofelNavigationState> emit) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString("uid");
+    emit(LoadChatPageState(uid: uid!));
   }
 }

@@ -5,7 +5,7 @@ description: Epicka pofel apka.
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ">=2.16.0-51.0.dev <3.0.0"
@@ -41,6 +41,10 @@ dependencies:
   firebase_crashlytics: ^2.5.1
   cloud_functions: ^3.2.7
   firebase_dynamic_links: ^4.0.6
+  flutterfire_ui: ^0.3.4
+  flutter_share: ^2.0.0
+  sizer: ^2.0.15
+  expandable: ^5.0.1
 
 dev_dependencies:
   flutter_test:

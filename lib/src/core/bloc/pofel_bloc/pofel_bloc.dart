@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
@@ -33,6 +34,9 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
   _onCreatePofel(CreatePofel event, Emitter<PofelState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
+    await FirebaseAnalytics.instance.logEvent(
+      name: 'pofel_created',
+    );
     if (uid != null) {
       pofelApiProvider.createPofel(
           event.pofelName, event.pofelDesc, uid, event.date, DateTime.now());
@@ -55,15 +59,24 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
           if (error == "") {
             emit((state as PofelStateWithData)
                 .copyWith(pofelStateEnum: PofelStateEnum.POFEL_JOINED));
+            await FirebaseAnalytics.instance.logEvent(
+              name: 'pofel_joined',
+            );
           } else {
             emit((state as PofelStateWithData).copyWith(
                 pofelStateEnum: PofelStateEnum.ERROR_JOINING,
                 errorMessage: error));
+            await FirebaseAnalytics.instance.logEvent(
+              name: 'pofel_join_error',
+            );
           }
         } catch (e) {
           emit((state as PofelStateWithData).copyWith(
               pofelStateEnum: PofelStateEnum.ERROR_JOINING,
               errorMessage: "Nepodařilo se připojit"));
+          await FirebaseAnalytics.instance.logEvent(
+            name: 'pofel_join_error',
+          );
           print(e);
         }
       }
@@ -82,6 +95,9 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       emit((state as PofelStateWithData).copyWith(
           pofelStateEnum: PofelStateEnum.ERROR_LOADING,
           errorMessage: "Nepodařilo se najit pofel"));
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'pofel_load_error',
+      );
     }
   }
 
@@ -96,6 +112,9 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       emit((state as PofelStateWithData).copyWith(
           pofelStateEnum: PofelStateEnum.ERROR_LOADING,
           errorMessage: "Nepodařilo se najit pofel"));
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'pofel_load_error',
+      );
     }
   }
 
@@ -125,6 +144,9 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
 
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPDATED));
+    await FirebaseAnalytics.instance.logEvent(
+      name: 'pofel_updated',
+    );
   }
 
   _onUpdateWillArive(UpdateWillArrive event, Emitter<PofelState> emit) async {

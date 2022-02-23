@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class ItemModel extends Equatable {
@@ -27,6 +28,18 @@ class ItemModel extends Equatable {
   factory ItemModel.fromMap(
     Map<String, dynamic> map,
   ) {
+    return ItemModel(
+      name: map["name"],
+      count: map["count"],
+      price: map["price"],
+      addedBy: map["addedBy"],
+      addedByUid: map["addedByUid"],
+      addedByProfilePic: map["addedByProfilePic"],
+      addedOn: map["addedOn"].toDate(),
+      itemType: getTypeFromString(map["itemType"]),
+    );
+  }
+  factory ItemModel.fromObject(QueryDocumentSnapshot<Object?> map) {
     return ItemModel(
       name: map["name"],
       count: map["count"],

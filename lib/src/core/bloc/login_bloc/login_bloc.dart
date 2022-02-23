@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +25,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LogOut>(_onLogOut);
     on<LogInInitial>(_onInitial);
     on<ReturnFromInvite>(_onReturnFromInivte);
+    on<GoogleSupportLogIn>(_onGoogleSupportLogin);
   }
   _onInitial(LogInInitial event, Emitter<LoginState> emit) async {
     final prefs = await SharedPreferences.getInstance();
@@ -33,6 +35,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       UserModel logedInUser = UserModel(
           uid: (auth.currentUser!.uid), name: auth.currentUser!.displayName);
       prefs.setString("uid", auth.currentUser!.uid);
+      await FirebaseAnalytics.instance.setUserId(id: auth.currentUser!.uid);
 
       final PendingDynamicLinkData? initialLink =
           await FirebaseDynamicLinks.instance.getInitialLink();
@@ -127,5 +130,23 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       invite: "",
       inviteId: "",
     ));
+  }
+
+  _onGoogleSupportLogin(
+      GoogleSupportLogIn event, Emitter<LoginState> emit) async {
+    final prefs = await SharedPreferences.getInstance();
+    // Trigger the sign-in flow
+    try {
+      UserModel logedInUser = UserModel(
+        uid: "google",
+        name: "google",
+      );
+      prefs.setString("uid", "google");
+      emit((state as LoginStateWithData).copyWith(
+          user: logedInUser, loginStateEnum: LoginStateEnum.LOGGED_IN));
+    } catch (_) {
+      emit((state as LoginStateWithData)
+          .copyWith(loginStateEnum: LoginStateEnum.LOG_IN_FAILED));
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pofel_app/constants.dart';
+import 'package:pofel_app/src/core/bloc/chat_bloc/chat_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
@@ -26,6 +27,7 @@ class PofelApp extends StatelessWidget {
         BlocProvider<LoginBloc>(create: (ctx) => LoginBloc()),
         BlocProvider<PofelBloc>(create: (ctx) => PofelBloc()),
         BlocProvider<LoadpofelsBloc>(create: (ctx) => LoadpofelsBloc()),
+        BlocProvider<ChatBloc>(create: (ctx) => ChatBloc()),
       ],
       child: MaterialApp(
           theme: ThemeData(

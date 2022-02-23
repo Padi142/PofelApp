@@ -25,6 +25,12 @@ class GoogleLogInEvent extends LoginEvent {
   List<Object> get props => [];
 }
 
+class GoogleSupportLogIn extends LoginEvent {
+  GoogleSupportLogIn();
+  @override
+  List<Object> get props => [];
+}
+
 class ReturnFromInvite extends LoginEvent {
   ReturnFromInvite();
   @override
