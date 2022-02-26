@@ -159,7 +159,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                       onPressed: () {
-                        if (myController.text.contains("spotify")) {
+                        if (myController.text.contains("spotify") ||
+                            myController.text.contains("apple")) {
                           BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
                               updatePofelEnum: UpdatePofelEnum.UPDATE_SPOTIFY,
                               pofelId: pofel.pofelId,

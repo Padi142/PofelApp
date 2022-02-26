@@ -353,41 +353,161 @@ Widget PofelInfo(
               ],
             ),
             const SizedBox(height: 20),
+            Column(children: [
+              Row(
+                children: [
+                  Column(
+                    children: [
+                      const Text("Spotify:"),
+                      Container(
+                        margin: const EdgeInsets.all(3),
+                        height: MediaQuery.of(context).size.height * 0.15,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await FirebaseAnalytics.instance
+                                .logEvent(name: 'spotify_opened');
+
+                            if (pofel.spotifyLink != "") {
+                              launch(pofel.spotifyLink);
+                            } else {
+                              Alert(
+                                context: context,
+                                type: AlertType.info,
+                                title: "Spotify link",
+                                desc:
+                                    "Spotify link ještě není nastaven! Řekni adminovi, aby přidal oficiální playlist pofelu, nebo aby vytvořil sdílený playlist na Spotify a každý může přidat své oblíbené tunes 🎶🎶 ",
+                                image: Image.network(
+                                    "https://samsungmagazine.eu/wp-content/uploads/2017/01/spotify-logo.png"),
+                                content: Column(),
+                                buttons: [
+                                  DialogButton(
+                                    child: const Text(
+                                      "Zavřít",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 20),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    width: 120,
+                                  )
+                                ],
+                              ).show();
+                            }
+                            // }
+                          },
+                          child: Row(
+                            children: [
+                              Image.network(
+                                "https://samsungmagazine.eu/wp-content/uploads/2017/01/spotify-logo.png",
+                                height: 45,
+                                width: 45,
+                              ),
+                              const Text("Spotify playlist"),
+                            ],
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: const Color(0xFF23CF5F),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      const Text("Lokace:"),
+                      Container(
+                          margin: const EdgeInsets.all(3),
+                          height: MediaQuery.of(context).size.height * 0.15,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await FirebaseAnalytics.instance
+                                  .logEvent(name: 'map_oppened');
+
+                              if (pofel.pofelLocation.latitude != 0) {
+                                MapsLauncher.launchCoordinates(
+                                    pofel.pofelLocation.latitude,
+                                    pofel.pofelLocation.longitude);
+                              } else {
+                                Alert(
+                                  context: context,
+                                  type: AlertType.info,
+                                  title: "Lokace",
+                                  desc:
+                                      "Lokace ještě není nastavena. Řekni adminovi, aby ji přidal! ",
+                                  image: Image.network(
+                                      "https://cdn.freelogovectors.net/wp-content/uploads/2020/03/google-maps-logo.png"),
+                                  content: Column(),
+                                  buttons: [
+                                    DialogButton(
+                                      child: const Text(
+                                        "Zavřít",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 20),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      width: 120,
+                                    )
+                                  ],
+                                ).show();
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                Image.network(
+                                  "https://cdn.freelogovectors.net/wp-content/uploads/2020/03/google-maps-logo.png",
+                                  height: 45,
+                                  width: 45,
+                                ),
+                                const Text("Lokace pofelu"),
+                              ],
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xFF23CF5F),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                          )),
+                    ],
+                  )
+                ],
+              ),
+            ]),
+            const SizedBox(height: 20),
             Column(
               children: [
                 const Text("Chat:"),
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF73BCFC),
-                        borderRadius: BorderRadius.circular(10),
+                    height: MediaQuery.of(context).size.height * 0.10,
+                    margin: const EdgeInsets.all(3),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        BlocProvider.of<PofelDetailNavigationBloc>(context)
+                            .add(const LoadChatPage());
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(2),
+                        child: Center(
+                          child: Text("Přejít do čedu",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold)),
+                        ),
                       ),
-                      child: GestureDetector(
-                        onTap: () {
-                          BlocProvider.of<PofelDetailNavigationBloc>(context)
-                              .add(const LoadChatPage());
-                        },
-                        child: FirestoreListView(
-                            query: chatsQuery,
-                            shrinkWrap: true,
-                            reverse: true,
-                            itemBuilder: (context, snapshot) {
-                              MessageModel message =
-                                  MessageModel.fromMap(snapshot);
-                              if (message.sentByUid == currentUserUid) {
-                                return myChat(context, message);
-                              } else {
-                                return otherChat(context, message);
-                              }
-                            },
-                            loadingBuilder: (context) => Column(
-                                  children: const [
-                                    Text("Discord 2.0 Loading..."),
-                                    CircularProgressIndicator()
-                                  ],
-                                )),
-                      )),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: const Color(0xFF73BCFC),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                      ),
+                    ),
+                  ),
                 )
               ],
             )
