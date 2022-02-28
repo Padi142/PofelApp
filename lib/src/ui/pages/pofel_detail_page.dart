@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_items_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/pofel_todos_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_user_settings_page.dart';
 
 class PofelDetailPage extends StatefulWidget {
@@ -62,23 +64,32 @@ class _DashboardPageState extends State<PofelDetailPage> {
                       padding: const EdgeInsets.all(4),
                       child: Row(
                         children: [
-                          Text(pofelState.choosenPofel.name,
-                              style: const TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(
-                            width: 5,
+                          Expanded(
+                            flex: 6,
+                            child: AutoSizeText(pofelState.choosenPofel.name,
+                                maxLines: 3,
+                                style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold)),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              BlocProvider.of<PofelDetailNavigationBloc>(
-                                      context)
-                                  .add(PofelSettingsEvent(
-                                      adminUid:
-                                          pofelState.choosenPofel.adminUid));
-                            },
-                            child: const Icon(Icons.settings),
+                          Expanded(
+                            flex: 2,
+                            child: GestureDetector(
+                              onTap: () {
+                                BlocProvider.of<PofelDetailNavigationBloc>(
+                                        context)
+                                    .add(PofelSettingsEvent(
+                                        adminUid:
+                                            pofelState.choosenPofel.adminUid));
+                              },
+                              child: Column(
+                                children: const [
+                                  AutoSizeText("nastaveni"),
+                                  Icon(Icons.settings),
+                                ],
+                              ),
+                            ),
                           )
                         ],
                       ),
@@ -142,6 +153,9 @@ class _DashboardPageState extends State<PofelDetailPage> {
                                 } else if (state is LoadChatPageState) {
                                   return PofelChatPage(context,
                                       pofelState.choosenPofel, state.uid);
+                                } else if (state is LoadTodosPageState) {
+                                  return PofelTodosPage(
+                                      context, pofelState.choosenPofel);
                                 } else if (state is PofelSettingsPageState) {
                                   if (state.canAcces) {
                                     return PofelSettignsPage(

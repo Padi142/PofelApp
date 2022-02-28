@@ -12,6 +12,7 @@ import 'package:pofel_app/src/core/models/item_model.dart';
 import 'package:pofel_app/src/core/models/message_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:intl/intl.dart';
+import 'package:pofel_app/src/core/models/to_do_model.dart';
 import 'package:pofel_app/src/ui/components/chat_bubbles.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter/services.dart';
@@ -34,6 +35,12 @@ Widget PofelInfo(
       .collection("chat")
       .orderBy("sentOn", descending: false)
       .limit(7);
+  final todoQuery = FirebaseFirestore.instance
+      .collection("active_pofels")
+      .doc(pofel.pofelId)
+      .collection("todo")
+      .where("isDone", isEqualTo: false)
+      .limit(5);
   ScrollController _scrollControler = ScrollController();
   return Padding(
     padding: const EdgeInsets.all(8.0),
@@ -348,6 +355,91 @@ Widget PofelInfo(
                           .add(const PofelItemsEvent());
                     },
                     child: const Text("Přidat item"),
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 20),
+            Column(
+              children: [
+                const Text("Poslední questy:"),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: FirestoreListView(
+                      pageSize: 5,
+                      shrinkWrap: true,
+                      query: todoQuery,
+                      itemBuilder: (context, snapshot) {
+                        TodoModel todo = TodoModel.fromObject(snapshot);
+                        return GestureDetector(
+                          onTap: () {
+                            BlocProvider.of<PofelDetailNavigationBloc>(context)
+                                .add(const PofelItemsEvent());
+                          },
+                          child: Container(
+                            margin: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF73BCFC),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child: AutoSizeText(todo.todoTitle,
+                                              maxLines: 3,
+                                              style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold)),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: AutoSizeText(
+                                              todo.assignedToName,
+                                              maxLines: 3,
+                                              style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(2),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: Image.network(
+                                          todo.assignedToProfilePic,
+                                          height: 50,
+                                          width: 50),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      BlocProvider.of<PofelDetailNavigationBloc>(context)
+                          .add(const LoadTodosPage());
+                    },
+                    child: const Text("Přidat quest"),
                   ),
                 )
               ],

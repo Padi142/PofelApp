@@ -157,7 +157,8 @@ Alert alert(BuildContext context, PofelModel pofel, ItemModel item,
             itemBloc.add(DeleteItem(
                 uid: item.addedByUid,
                 addedOn: item.addedOn,
-                pofelId: pofel.pofelId));
+                pofelId: pofel.pofelId,
+                adminUid: pofel.adminUid));
             Navigator.pop(context);
           },
           child: const Text("Smazat"),

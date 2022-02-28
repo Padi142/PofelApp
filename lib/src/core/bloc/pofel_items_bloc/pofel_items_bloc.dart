@@ -51,7 +51,7 @@ class PofelItemsBloc extends Bloc<PofelItemsEvent, PofelItemsState> {
   _onDeleteItem(DeleteItem event, Emitter<PofelItemsState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
-    if (uid == event.uid) {
+    if (uid == event.uid || uid == event.adminUid) {
       itemsApiProvider.removeItem(event.pofelId, event.addedOn);
 
       emit((state as PofelItemsWithData)

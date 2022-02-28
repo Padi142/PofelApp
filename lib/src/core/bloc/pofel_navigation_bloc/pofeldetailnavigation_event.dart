@@ -42,3 +42,10 @@ class LoadChatPage extends PofelNavigationEvent {
   @override
   List<Object> get props => [];
 }
+
+class LoadTodosPage extends PofelNavigationEvent {
+  const LoadTodosPage();
+
+  @override
+  List<Object> get props => [];
+}

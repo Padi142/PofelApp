@@ -74,6 +74,30 @@ export const onItemAdded = functions.firestore
             "addedBy": userData!.data()!.name,
         });
     });
+export const onTodoAssigned = functions.firestore
+    .document("active_pofels/{pofelId}/todo/{todoId}")
+    .onCreate(async (snapshot, context) => {
+        const pofelId = context.params.pofelId;
+        functions.logger.info("New Todo Assigned - PofelId: ",
+            pofelId);
+        const db = admin.firestore();
+        const todo = await snapshot.ref.get();
+        const userData = await db.collection("users")
+            .doc(todo.data()!.assignedByUid).get();
+        await snapshot.ref.update({
+            "assignedByProfilePic": userData!.data()!.profile_pic,
+            "assignedByName": userData!.data()!.name,
+        });
+        const topic = todo.data()!.assignedToUid;
+        const payload = {
+            notification: {
+                title: "Někdo ti právě přiřadil quest!",
+                body: + userData.data()!.name +" ti právě dal quest: " +
+                todo.data()!.todoTitle,
+            },
+        };
+        return admin.messaging().sendToTopic(topic, payload);
+    });
 
 export const notifyPofelUsers = functions.https.onCall(async (data, _) => {
     try {

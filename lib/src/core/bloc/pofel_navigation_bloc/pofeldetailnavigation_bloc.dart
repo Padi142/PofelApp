@@ -13,6 +13,7 @@ class PofelDetailNavigationBloc
     on<PofelSettingsEvent>(_onPofelSettingsEvent);
     on<PofelItemsEvent>(_onShowItems);
     on<LoadChatPage>(_onLoadChatPage);
+    on<LoadTodosPage>(_onLoadTodosPage);
   }
   _onLoadDashboard(
       PofelInfoEvent event, Emitter<PofelNavigationState> emit) async {
@@ -40,6 +41,11 @@ class PofelDetailNavigationBloc
   _onShowItems(
       PofelItemsEvent event, Emitter<PofelNavigationState> emit) async {
     emit(const PofelItemsPageState());
+  }
+
+  _onLoadTodosPage(
+      LoadTodosPage event, Emitter<PofelNavigationState> emit) async {
+    emit(const LoadTodosPageState());
   }
 
   _onLoadChatPage(

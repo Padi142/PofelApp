@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
@@ -36,6 +37,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           uid: (auth.currentUser!.uid), name: auth.currentUser!.displayName);
       prefs.setString("uid", auth.currentUser!.uid);
       await FirebaseAnalytics.instance.setUserId(id: auth.currentUser!.uid);
+      FirebaseMessaging.instance.subscribeToTopic(logedInUser.uid);
 
       final PendingDynamicLinkData? initialLink =
           await FirebaseDynamicLinks.instance.getInitialLink();
@@ -77,6 +79,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           uid: userCredential.user!.uid,
           name: userCredential.user!.displayName);
       prefs.setString("uid", userCredential.user!.uid);
+      await FirebaseMessaging.instance.subscribeToTopic(logedInUser.uid);
+
       emit((state as LoginStateWithData).copyWith(
           user: logedInUser, loginStateEnum: LoginStateEnum.LOGGED_IN));
     } catch (e) {
@@ -110,6 +114,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         name: user.displayName,
       );
       prefs.setString("uid", user.uid);
+      await FirebaseMessaging.instance.subscribeToTopic(user.uid);
+
       emit((state as LoginStateWithData).copyWith(
           user: logedInUser, loginStateEnum: LoginStateEnum.LOGGED_IN));
     } catch (_) {
@@ -120,6 +126,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   _onLogOut(LogOut event, Emitter<LoginState> emit) async {
     await FirebaseAuth.instance.signOut();
+    final prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString("uid");
+    await FirebaseMessaging.instance.unsubscribeFromTopic(uid!);
 
     emit((state as LoginStateWithData)
         .copyWith(loginStateEnum: LoginStateEnum.LOG_IN_FAILED));

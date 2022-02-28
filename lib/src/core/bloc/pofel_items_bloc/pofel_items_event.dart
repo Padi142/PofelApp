@@ -41,9 +41,13 @@ class DeleteItem extends PofelItemsEvent {
   final DateTime addedOn;
   final String pofelId;
   final String uid;
+  final String adminUid;
 
   const DeleteItem(
-      {required this.pofelId, required this.addedOn, required this.uid});
+      {required this.pofelId,
+      required this.addedOn,
+      required this.uid,
+      required this.adminUid});
 
   @override
   List<Object> get props => [pofelId, addedOn, uid];
