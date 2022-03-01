@@ -374,7 +374,7 @@ Widget PofelInfo(
                         return GestureDetector(
                           onTap: () {
                             BlocProvider.of<PofelDetailNavigationBloc>(context)
-                                .add(const PofelItemsEvent());
+                                .add(const LoadTodosPage());
                           },
                           child: Container(
                             margin: EdgeInsets.all(2),

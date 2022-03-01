@@ -92,8 +92,8 @@ export const onTodoAssigned = functions.firestore
         const payload = {
             notification: {
                 title: "Někdo ti právě přiřadil quest!",
-                body: + userData.data()!.name +" ti právě dal quest: " +
-                todo.data()!.todoTitle,
+                body: + userData.data()!.name + " ti právě dal quest: " +
+                    todo.data()!.todoTitle,
             },
         };
         return admin.messaging().sendToTopic(topic, payload);
@@ -115,6 +115,108 @@ export const notifyPofelUsers = functions.https.onCall(async (data, _) => {
         return false;
     }
 });
+export const onUserSettingsChanged = functions.firestore
+    .document("users/{userId}")
+    .onUpdate(async (change, context) => {
+        const userId = context.params.userId;
+        const newUsername = change.after.data().name;
+        const previousUsername = change.before.data().name;
+
+        const newProfilePic = change.after.data().profile_pic;
+        const previousProfilePic = change.before.data().profile_pic;
+
+        if (newUsername.localeCompare(previousUsername) !== 0) {
+            functions.logger.info("User name changed, updating pofels" +
+                ". User id: ",
+                userId);
+            const db = admin.firestore();
+
+            const pofelsRef = db.collection("active_pofels")
+            .where("signedUsers", "array-contains", userId);
+
+            return pofelsRef.get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        return null;
+                    } else {
+                        const promises: any[] = [];
+                        querySnapshot.forEach((doc) => {
+                            promises.push(doc.ref.collection("signedUsers")
+                            .doc(userId).update({
+                                "name": newUsername,
+                            }));
+                            doc.ref.collection("items")
+                            .where("addedByUid", "==", userId)
+                            .get().then((itemSnapshot) => {
+                                itemSnapshot.forEach((item) => {
+                                    promises.push(doc.ref.update({
+                                        "addedBy": newUsername,
+                                    }));
+                                });
+                            });
+
+                            doc.ref.collection("todo")
+                            .where("assignedToUid", "==", userId)
+                            .get().then((todoSnapshot) => {
+                                todoSnapshot.forEach((todo) => {
+                                    promises.push(doc.ref.update({
+                                        "assignedToName": newUsername,
+                                    }));
+                                });
+                            });
+                        });
+
+                        return Promise.all(promises);
+                    }
+                });
+        } else if (newProfilePic.localeCompare(previousProfilePic) !== 0) {
+            functions.logger.info("Profile pic changed, updating pofels" +
+            ". User id: ",
+            userId);
+        const db = admin.firestore();
+
+        const pofelsRef = db.collection("active_pofels")
+        .where("signedUsers", "array-contains", userId);
+
+        return pofelsRef.get()
+            .then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    return null;
+                } else {
+                    const promises: any[] = [];
+                    querySnapshot.forEach((doc) => {
+                        promises.push(doc.ref.collection("signedUsers")
+                        .doc(userId).update({
+                            "profile_pic": newProfilePic,
+                        }));
+                        doc.ref.collection("items")
+                        .where("addedByUid", "==", userId)
+                        .get().then((itemSnapshot) => {
+                            itemSnapshot.forEach((item) => {
+                                promises.push(doc.ref.update({
+                                    "addedByProfilePic": newProfilePic,
+                                }));
+                            });
+                        });
+
+                        doc.ref.collection("todo")
+                        .where("assignedToUid", "==", userId)
+                        .get().then((todoSnapshot) => {
+                            todoSnapshot.forEach((todo) => {
+                                promises.push(doc.ref.update({
+                                    "assignedToProfilePic": newProfilePic,
+                                }));
+                            });
+                        });
+                    });
+
+                    return Promise.all(promises);
+                }
+            });
+        } else {
+            return null;
+        }
+    });
 /**
 * Creates uid.
 */
