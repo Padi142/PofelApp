@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
@@ -28,6 +29,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<UpdatePofel>(_onUpdatePofel);
     on<UpdateWillArrive>(_onUpdateWillArive);
     on<LoadPofelByJoinId>(_onLoadPofelByJoinId);
+    on<ChatNotification>(_onChangeChatNotPref);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -157,5 +159,20 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
         event.pofelId, uid, event.newDate);
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.WILL_ARIVE_UPDATED));
+  }
+
+  _onChangeChatNotPref(ChatNotification event, Emitter<PofelState> emit) async {
+    if (event.user.chatNotification) {
+      await FirebaseMessaging.instance
+          .unsubscribeFromTopic(event.pofelId + "chat");
+      emit((state as PofelStateWithData)
+          .copyWith(pofelStateEnum: PofelStateEnum.NOT_TURNED_OFF));
+    } else {
+      await FirebaseMessaging.instance.subscribeToTopic(event.pofelId + "chat");
+      emit((state as PofelStateWithData)
+          .copyWith(pofelStateEnum: PofelStateEnum.NOT_TURNED_ON));
+    }
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.POFEL_LOADED));
   }
 }

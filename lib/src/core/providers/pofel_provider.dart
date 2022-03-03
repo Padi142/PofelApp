@@ -129,6 +129,8 @@ class PofelProvider {
 
     // subscribe to topic on each app start-up
     await FirebaseMessaging.instance.subscribeToTopic(docRef.id);
+    await FirebaseMessaging.instance.subscribeToTopic(docRef.id + "chat");
+
     var joinedUsers = pofelDoc["signedUsers"];
     bool canJoin = !joinedUsers.contains(uid);
     if (canJoin) {
@@ -163,6 +165,7 @@ class PofelProvider {
     String documentId = getRandomString(18);
     // subscribe to topic on each app start-up
     await FirebaseMessaging.instance.subscribeToTopic(documentId);
+    await FirebaseMessaging.instance.subscribeToTopic(documentId + "chat");
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection("active_pofels").doc(documentId).set({

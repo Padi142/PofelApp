@@ -72,6 +72,7 @@ class _DashboardPageState extends State<UserDetailPage> {
                           ],
                         ))),
                 Expanded(
+                  flex: 2,
                   child: Column(
                     children: [
                       ElevatedButton(

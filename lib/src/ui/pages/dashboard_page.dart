@@ -40,11 +40,23 @@ class _DashboardPageState extends State<DashboardPage> {
             case PofelStateEnum.POFEL_JOINED:
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBarAlert(context, 'Úspěšně připojeno k pofelu'));
+              Future.delayed(const Duration(seconds: 2)).then((value) =>
+                  BlocProvider.of<LoadpofelsBloc>(context)
+                      .add(const LoadMyPofels()));
               break;
             case PofelStateEnum.ERROR_JOINING:
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBarError(context, state.errorMessage!));
               break;
+            case PofelStateEnum.NOT_TURNED_ON:
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBarAlert(context, "Notifikace zapnuty"));
+              break;
+            case PofelStateEnum.NOT_TURNED_OFF:
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBarAlert(context, "Notifikace vypnuty"));
+              break;
+
             default:
               break;
           }

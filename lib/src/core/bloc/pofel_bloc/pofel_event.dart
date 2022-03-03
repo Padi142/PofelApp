@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/models/pofel_user.dart';
 
 abstract class PofelEvent extends Equatable {
   const PofelEvent();
@@ -82,4 +83,13 @@ class UpdateWillArrive extends PofelEvent {
 
   @override
   List<Object> get props => [pofelId, newDate];
+}
+
+class ChatNotification extends PofelEvent {
+  final String pofelId;
+  final PofelUserModel user;
+  const ChatNotification({required this.pofelId, required this.user});
+
+  @override
+  List<Object> get props => [pofelId, user];
 }

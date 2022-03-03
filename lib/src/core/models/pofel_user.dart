@@ -8,6 +8,7 @@ class PofelUserModel extends Equatable {
     required this.photo,
     required this.acceptedInvitation,
     required this.joinedOn,
+    required this.chatNotification,
   });
 
   final String uid;
@@ -16,6 +17,7 @@ class PofelUserModel extends Equatable {
   final bool acceptedInvitation;
   final DateTime joinedOn;
   final DateTime willArrive;
+  final bool chatNotification;
 
   factory PofelUserModel.fromMap(
     Map<String, dynamic> map,
@@ -27,6 +29,7 @@ class PofelUserModel extends Equatable {
       acceptedInvitation: map["acceptedInvitation"],
       joinedOn: map["signedOn"].toDate(),
       willArrive: map["willArrive"].toDate(),
+      chatNotification: map["chatNotification"] ?? true,
     );
   }
 

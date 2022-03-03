@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
+import 'package:pofel_app/src/core/models/pofel_user.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/bloc/pofel_bloc/pofel_event.dart';
 
@@ -239,6 +241,18 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     showDrugs: pofel.showDrugItems));
               },
               child: const Text("Zapnout/vypnout substance itemy"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                String? uid = prefs.getString("uid");
+
+                PofelUserModel user =
+                    pofel.signedUsers.firstWhere((user) => user.uid == uid);
+                BlocProvider.of<PofelBloc>(context)
+                    .add(ChatNotification(pofelId: pofel.pofelId, user: user));
+              },
+              child: const Text("Zapnout/vypnout chat notifikace"),
             ),
             ElevatedButton(
               onPressed: () {
