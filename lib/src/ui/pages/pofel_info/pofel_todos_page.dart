@@ -52,16 +52,18 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text("Probíhající questy"),
-                          ListView.builder(
-                              itemCount: state.notDoneTodos.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return TodoNotDoneContainer(
-                                    context,
-                                    state.notDoneTodos[index],
-                                    pofel,
-                                    _todoBloc);
-                              })
+                          Expanded(
+                            child: ListView.builder(
+                                itemCount: state.notDoneTodos.length,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  return TodoNotDoneContainer(
+                                      context,
+                                      state.notDoneTodos[index],
+                                      pofel,
+                                      _todoBloc);
+                                }),
+                          )
                         ],
                       );
                     } else {
@@ -85,13 +87,15 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text("Hotové questy"),
-                          ListView.builder(
-                              itemCount: state.doneTodos.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return TodoDoneContainer(context,
-                                    state.doneTodos[index], pofel, _todoBloc);
-                              })
+                          Expanded(
+                            child: ListView.builder(
+                                itemCount: state.doneTodos.length,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  return TodoDoneContainer(context,
+                                      state.doneTodos[index], pofel, _todoBloc);
+                                }),
+                          )
                         ],
                       );
                     } else {

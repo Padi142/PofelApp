@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.padisoft.pofelApp">
    <application
-        android:label="pofel_app"
+        android:label="Pofel app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>

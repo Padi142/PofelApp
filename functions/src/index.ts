@@ -92,7 +92,7 @@ export const onTodoAssigned = functions.firestore
         const payload = {
             notification: {
                 title: "Někdo ti právě přiřadil quest!",
-                body: + userData.data()!.name + " ti právě dal quest: " +
+                body: userData.data()!.name + " ti právě dal quest: " +
                     todo.data()!.todoTitle,
             },
         };

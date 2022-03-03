@@ -48,7 +48,6 @@ Widget PofelInfo(
       controller: _scrollControler,
       child: Scrollbar(
         controller: _scrollControler,
-        thumbVisibility: true,
         child: Column(
           children: [
             SizedBox(
@@ -154,12 +153,55 @@ Widget PofelInfo(
                     ),
                   ]),
             ),
+            Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.04,
+                    margin: const EdgeInsets.all(3),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        BlocProvider.of<PofelDetailNavigationBloc>(context)
+                            .add(const LoadChatPage());
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(2),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.chat_outlined,
+                                color: Colors.black,
+                              ),
+                              AutoSizeText("Přejít do čedu",
+                                  maxLines: 2,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: const Color(0xFF73BCFC),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
             const SizedBox(height: 5),
             Column(
               children: [
                 const Text("Popis:"),
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(22),
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF73BCFC),
@@ -191,7 +233,7 @@ Widget PofelInfo(
               children: [
                 const Text("Uživatelé:"),
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(22),
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF73BCFC),
@@ -287,24 +329,24 @@ Widget PofelInfo(
               children: [
                 const Text("Poslední itemy:"),
                 Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF73BCFC),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  padding: const EdgeInsets.all(22),
+                  child: GestureDetector(
+                    onTap: () {
+                      BlocProvider.of<PofelDetailNavigationBloc>(context)
+                          .add(const PofelItemsEvent());
+                    },
                     child: FirestoreListView(
                         pageSize: 5,
                         shrinkWrap: true,
                         query: itemsQuery,
                         itemBuilder: (context, snapshot) {
                           ItemModel item = ItemModel.fromObject(snapshot);
-                          return GestureDetector(
-                            onTap: () {
-                              BlocProvider.of<PofelDetailNavigationBloc>(
-                                      context)
-                                  .add(const PofelItemsEvent());
-                            },
+                          return Container(
+                            margin: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF73BCFC),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -569,40 +611,6 @@ Widget PofelInfo(
                 ],
               ),
             ]),
-            const SizedBox(height: 20),
-            Column(
-              children: [
-                const Text("Chat:"),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    height: MediaQuery.of(context).size.height * 0.10,
-                    margin: const EdgeInsets.all(3),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        BlocProvider.of<PofelDetailNavigationBloc>(context)
-                            .add(const LoadChatPage());
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.all(2),
-                        child: Center(
-                          child: Text("Přejít do čedu",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFF73BCFC),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            )
           ],
         ),
       ),
