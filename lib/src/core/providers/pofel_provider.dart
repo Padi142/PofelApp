@@ -10,9 +10,47 @@ class PofelProvider {
   Future<List<PofelModel>> fetchPofels(String userUid) async {
     List<PofelModel> pofels = [];
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DateTime sortDate = DateTime.now();
+    sortDate = sortDate.subtract(const Duration(days: 4));
     await firestore
         .collection("active_pofels")
         .where("signedUsers", arrayContains: userUid)
+        .where("dateFrom", isGreaterThan: sortDate)
+        .get()
+        .then((querySnapshot) => {
+              // ignore: avoid_function_literals_in_foreach_calls
+              querySnapshot.docs.forEach((doc) {
+                PofelModel model = PofelModel(
+                  name: doc["name"],
+                  description: doc["description"],
+                  adminUid: doc["adminUid"],
+                  dateFrom: doc["dateFrom"].toDate(),
+                  dateTo: doc["dateTo"].toDate(),
+                  joinCode: doc["joinId"],
+                  spotifyLink: doc["spotifyLink"],
+                  pofelId: doc["pofelId"],
+                  signedUsers: [],
+                  createdAt: doc["createdAt"].toDate(),
+                  pofelLocation: doc["pofelLocation"],
+                  showDrugItems: doc["showDrugItems"] ?? false,
+                );
+
+                pofels.add(model);
+              })
+            });
+
+    return pofels;
+  }
+
+  Future<List<PofelModel>> fetchPastPofels(String userUid) async {
+    List<PofelModel> pofels = [];
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DateTime sortDate = DateTime.now();
+    sortDate = sortDate.subtract(const Duration(days: 4));
+    await firestore
+        .collection("active_pofels")
+        .where("signedUsers", arrayContains: userUid)
+        .where("dateFrom", isLessThan: sortDate)
         .get()
         .then((querySnapshot) => {
               // ignore: avoid_function_literals_in_foreach_calls
@@ -142,6 +180,7 @@ class PofelProvider {
         "name": userDoc["name"],
         "uid": userDoc["uid"],
         "profile_pic": userDoc["profile_pic"],
+        "isPremium": userDoc["isPremium"],
         "acceptedInvitation": true,
         "signedOn": DateTime.now(),
         "willArrive": DateTime.utc(1989, 11, 9)
@@ -262,5 +301,30 @@ class PofelProvider {
         .update({
       "showDrugItems": !showDrugs,
     }).then((value) => print("drugs toggled"));
+  }
+
+  Future<void> changeAdmin(String pofelId, String uid) async {
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .update({
+      "adminUid": uid,
+    }).then((value) => print("admin changed"));
+  }
+
+  Future<void> leavePofel(String pofelId, uid) async {
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .update({
+      "signedUsers": FieldValue.arrayRemove([uid]),
+    }).then((value) => print("person removed"));
+
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("signedUsers")
+        .doc(uid)
+        .delete();
   }
 }

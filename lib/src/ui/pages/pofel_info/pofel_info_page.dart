@@ -256,10 +256,15 @@ Widget PofelInfo(
                                 },
                                 child: Container(
                                   height: 60,
-                                  decoration: const BoxDecoration(
-                                      color: Color(0xFF9BCFFD),
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5))),
+                                  decoration: BoxDecoration(
+                                      color: pofel.signedUsers[index]
+                                                  .isPremium ==
+                                              true
+                                          ? const Color.fromARGB(
+                                              255, 247, 190, 67)
+                                          : const Color(0xFF9BCFFD),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(5))),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -268,12 +273,32 @@ Widget PofelInfo(
                                         flex: 3,
                                         child: Padding(
                                           padding: const EdgeInsets.all(5),
-                                          child: AutoSizeText(
-                                              pofel.signedUsers[index].name,
-                                              style: const TextStyle(
-                                                  color: Colors.black87,
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.bold)),
+                                          child: Row(
+                                            children: [
+                                              if (pofel
+                                                      .signedUsers[index].uid ==
+                                                  pofel.adminUid)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: SizedBox(
+                                                      height: 30,
+                                                      width: 30,
+                                                      child: Image.asset(
+                                                          "assets/images/crown.png")),
+                                                ),
+                                              Expanded(
+                                                child: AutoSizeText(
+                                                    pofel.signedUsers[index]
+                                                        .name,
+                                                    style: const TextStyle(
+                                                        color: Colors.black87,
+                                                        fontSize: 22,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                       Expanded(

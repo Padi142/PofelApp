@@ -8,7 +8,7 @@ import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
-import 'package:pofel_app/src/ui/pages/user_detail_page.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/user_detail_page.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);

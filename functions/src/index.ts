@@ -10,6 +10,7 @@ export const onNewRegistration = functions.auth.user().onCreate((user) => {
     return db.collection("users").doc(user.uid).set({
         "uid": user.uid,
         "name": user.displayName ?? "none",
+        "isPremium": false,
         "profile_pic": "https://i.ibb.co/qyMYhDQ/opice-hned.png",
         "my_pofels": [],
     });
@@ -32,6 +33,7 @@ export const onPofelCreated = functions.firestore
         await signedUsers.update({
             "profile_pic": userData!.data()!.profile_pic,
             "name": userData!.data()!.name,
+            "isPremium": userData!.data()!.isPremium,
             "willArrive": admin.firestore.Timestamp
                 .fromDate(new Date("1989-11-9")),
         });
@@ -94,6 +96,7 @@ export const onTodoAssigned = functions.firestore
                 title: "Někdo ti právě přiřadil quest!",
                 body: userData.data()!.name + " ti právě dal quest: " +
                     todo.data()!.todoTitle,
+
             },
         };
         return admin.messaging().sendToTopic(topic, payload);
@@ -115,12 +118,86 @@ export const notifyPofelUsers = functions.https.onCall(async (data, _) => {
         return false;
     }
 });
+
+export const chatAnnouncement = functions.https.onCall(async (data, _) => {
+    try {
+        const db = admin.firestore();
+        const pofelsRef = db.collection("active_pofels");
+
+        const promises: any[] = [];
+        pofelsRef.get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    promises.push(doc.ref.collection("chat").add({
+                        "message": data.messageBody,
+                        "sentByName": "SYSTEM MESSAGE",
+                        "sentByUid": "SYSTEM",
+                        "sentByProfilePic": "https://firebasestorage.googleapis.com/v0/b/pofelapp-420.appspot.com/o/logos%2Fic_launcher.png?alt=media&token=53d62cb7-8072-4e4c-94a8-d75c3b171898",
+                        "sentOn": admin.firestore.Timestamp.now(),
+                    }));
+                });
+            });
+        Promise.all(promises);
+
+        return true;
+    } catch (ex) {
+        return false;
+    }
+});
+export const updateUsers = functions.https.onRequest((request, response) => {
+    try {
+        const db = admin.firestore();
+        const pofelsRef = db.collection("active_pofels");
+        const promises: any[] = [];
+        pofelsRef.get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    doc.ref.collection("chat").get().then((chatCol) => {
+                        chatCol.forEach((chat) => {
+                            if (chat.data()!.sentByUid == "SYSTEM") {
+                                promises.push(chat.ref.delete());
+                            }
+                        });
+                    });
+                    functions.logger.info("Smazano");
+                });
+            });
+        Promise.all(promises);
+
+        response.send("<p>Updatováno</p>");
+    } catch (ex) {
+        response.send("<p>error</p>");
+    }
+});
+export const onChatMessageCreated = functions.firestore
+    .document("active_pofels/{pofelId}/chat/{messageId}")
+    .onCreate(async (snapshot, context) => {
+        const pofelId = context.params.pofelId;
+        functions.logger.info("New Message Sent - PofelId: ",
+            pofelId);
+        const db = admin.firestore();
+        const message = await snapshot.ref.get();
+        const pofel = await db.collection("active_pofels")
+            .doc(pofelId).get();
+        const topic = pofelId;
+        const payload = {
+            notification: {
+                title: message.data()!.sentByName +
+                    " posílá zprávu v pofelu " + pofel.data()!.name,
+                body: message.data()!.message,
+            },
+        };
+        return admin.messaging().sendToTopic(topic, payload);
+    });
 export const onUserSettingsChanged = functions.firestore
     .document("users/{userId}")
     .onUpdate(async (change, context) => {
         const userId = context.params.userId;
         const newUsername = change.after.data().name;
         const previousUsername = change.before.data().name;
+
+        const previousIsPremium = change.before.data().isPremium;
+        const newIsPremium = change.after.data().isPremium;
 
         const newProfilePic = change.after.data().profile_pic;
         const previousProfilePic = change.before.data().profile_pic;
@@ -132,7 +209,7 @@ export const onUserSettingsChanged = functions.firestore
             const db = admin.firestore();
 
             const pofelsRef = db.collection("active_pofels")
-            .where("signedUsers", "array-contains", userId);
+                .where("signedUsers", "array-contains", userId);
 
             return pofelsRef.get()
                 .then((querySnapshot) => {
@@ -142,28 +219,28 @@ export const onUserSettingsChanged = functions.firestore
                         const promises: any[] = [];
                         querySnapshot.forEach((doc) => {
                             promises.push(doc.ref.collection("signedUsers")
-                            .doc(userId).update({
-                                "name": newUsername,
-                            }));
+                                .doc(userId).update({
+                                    "name": newUsername,
+                                }));
                             doc.ref.collection("items")
-                            .where("addedByUid", "==", userId)
-                            .get().then((itemSnapshot) => {
-                                itemSnapshot.forEach((item) => {
-                                    promises.push(doc.ref.update({
-                                        "addedBy": newUsername,
-                                    }));
+                                .where("addedByUid", "==", userId)
+                                .get().then((itemSnapshot) => {
+                                    itemSnapshot.forEach((item) => {
+                                        promises.push(doc.ref.update({
+                                            "addedBy": newUsername,
+                                        }));
+                                    });
                                 });
-                            });
 
                             doc.ref.collection("todo")
-                            .where("assignedToUid", "==", userId)
-                            .get().then((todoSnapshot) => {
-                                todoSnapshot.forEach((todo) => {
-                                    promises.push(doc.ref.update({
-                                        "assignedToName": newUsername,
-                                    }));
+                                .where("assignedToUid", "==", userId)
+                                .get().then((todoSnapshot) => {
+                                    todoSnapshot.forEach((todo) => {
+                                        promises.push(doc.ref.update({
+                                            "assignedToName": newUsername,
+                                        }));
+                                    });
                                 });
-                            });
                         });
 
                         return Promise.all(promises);
@@ -171,48 +248,74 @@ export const onUserSettingsChanged = functions.firestore
                 });
         } else if (newProfilePic.localeCompare(previousProfilePic) !== 0) {
             functions.logger.info("Profile pic changed, updating pofels" +
-            ". User id: ",
-            userId);
-        const db = admin.firestore();
+                ". User id: ",
+                userId);
+            const db = admin.firestore();
 
-        const pofelsRef = db.collection("active_pofels")
-        .where("signedUsers", "array-contains", userId);
+            const pofelsRef = db.collection("active_pofels")
+                .where("signedUsers", "array-contains", userId);
 
-        return pofelsRef.get()
-            .then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                    return null;
-                } else {
-                    const promises: any[] = [];
-                    querySnapshot.forEach((doc) => {
-                        promises.push(doc.ref.collection("signedUsers")
-                        .doc(userId).update({
-                            "profile_pic": newProfilePic,
-                        }));
-                        doc.ref.collection("items")
-                        .where("addedByUid", "==", userId)
-                        .get().then((itemSnapshot) => {
-                            itemSnapshot.forEach((item) => {
-                                promises.push(doc.ref.update({
-                                    "addedByProfilePic": newProfilePic,
+            return pofelsRef.get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        return null;
+                    } else {
+                        const promises: any[] = [];
+                        querySnapshot.forEach((doc) => {
+                            promises.push(doc.ref.collection("signedUsers")
+                                .doc(userId).update({
+                                    "profile_pic": newProfilePic,
                                 }));
-                            });
+                            doc.ref.collection("items")
+                                .where("addedByUid", "==", userId)
+                                .get().then((itemSnapshot) => {
+                                    itemSnapshot.forEach((item) => {
+                                        promises.push(doc.ref.update({
+                                            "addedByProfilePic": newProfilePic,
+                                        }));
+                                    });
+                                });
+
+                            doc.ref.collection("todo")
+                                .where("assignedToUid", "==", userId)
+                                .get().then((todoSnapshot) => {
+                                    todoSnapshot.forEach((todo) => {
+                                        promises.push(doc.ref.update({
+                                            "assignedToProfilePic":
+                                                newProfilePic,
+                                        }));
+                                    });
+                                });
                         });
 
-                        doc.ref.collection("todo")
-                        .where("assignedToUid", "==", userId)
-                        .get().then((todoSnapshot) => {
-                            todoSnapshot.forEach((todo) => {
-                                promises.push(doc.ref.update({
-                                    "assignedToProfilePic": newProfilePic,
-                                }));
-                            });
-                        });
-                    });
+                        return Promise.all(promises);
+                    }
+                });
+        } else if (newIsPremium != previousIsPremium) {
+            functions.logger.info(" Premium status changed, updating pofels" +
+                ". User id: ",
+                userId);
+            const db = admin.firestore();
 
-                    return Promise.all(promises);
-                }
-            });
+            const pofelsRef = db.collection("active_pofels")
+                .where("signedUsers", "array-contains", userId);
+
+            return pofelsRef.get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        return null;
+                    } else {
+                        const promises: any[] = [];
+                        querySnapshot.forEach((doc) => {
+                            promises.push(doc.ref.collection("signedUsers")
+                                .doc(userId).update({
+                                    "isPremium": newIsPremium,
+                                }));
+                        });
+
+                        return Promise.all(promises);
+                    }
+                });
         } else {
             return null;
         }

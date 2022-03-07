@@ -30,6 +30,8 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<UpdateWillArrive>(_onUpdateWillArive);
     on<LoadPofelByJoinId>(_onLoadPofelByJoinId);
     on<ChatNotification>(_onChangeChatNotPref);
+    on<RemovePerson>(_onRemovePerson);
+    on<ChangeAdmin>(_onChangeAdmin);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -159,6 +161,18 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
         event.pofelId, uid, event.newDate);
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.WILL_ARIVE_UPDATED));
+  }
+
+  _onRemovePerson(RemovePerson event, Emitter<PofelState> emit) async {
+    await pofelApiProvider.leavePofel(event.pofelId, event.uid);
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.PERSON_LEFT));
+  }
+
+  _onChangeAdmin(ChangeAdmin event, Emitter<PofelState> emit) async {
+    await pofelApiProvider.changeAdmin(event.pofelId, event.uid);
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPDATED));
   }
 
   _onChangeChatNotPref(ChatNotification event, Emitter<PofelState> emit) async {

@@ -11,6 +11,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/bloc/pofel_bloc/pofel_event.dart';
 
@@ -60,6 +61,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               child: const Text("Upravit jméno"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.cyanAccent),
               onPressed: () {
                 Alert(
                   context: context,
@@ -98,6 +100,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               child: const Text("Upravit popis"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.deepOrangeAccent),
               onPressed: () {
                 Alert(
                   context: context,
@@ -139,6 +142,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               child: const Text("Upravit datum"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.lightGreenAccent),
               onPressed: () {
                 Alert(
                   context: context,
@@ -179,9 +183,11 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                   ],
                 ).show();
               },
-              child: const Text("Upravit spotify playlist"),
+              child: const Text("Upravit spotify playlist",
+                  style: TextStyle(color: Colors.black)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
               onPressed: () {
                 Alert(
                   context: context,
@@ -234,6 +240,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               child: const Text("Upravit lokaci pofelu"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.pinkAccent),
               onPressed: () {
                 BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
                     updatePofelEnum: UpdatePofelEnum.UPDATE_SHOW_DRUGS,
@@ -243,6 +250,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               child: const Text("Zapnout/vypnout substance itemy"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.amberAccent),
               onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
                 String? uid = prefs.getString("uid");
@@ -252,9 +260,63 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 BlocProvider.of<PofelBloc>(context)
                     .add(ChatNotification(pofelId: pofel.pofelId, user: user));
               },
-              child: const Text("Zapnout/vypnout chat notifikace"),
+              child: const Text("Zapnout/vypnout chat notifikace",
+                  style: TextStyle(color: Colors.black)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+              onPressed: () {
+                Alert(
+                  context: context,
+                  type: AlertType.none,
+                  title: "Předat admina",
+                  content: Column(
+                    children: [
+                      ReactiveForm(
+                        formGroup: form,
+                        child: Column(
+                          children: <Widget>[
+                            ReactiveDropdownField(
+                                formControlName: 'clovek',
+                                decoration: const InputDecoration(
+                                  labelText: 'Vyber ',
+                                ),
+                                items: getDropdownItems(pofel.signedUsers)),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  buttons: [
+                    DialogButton(
+                      child: const Text(
+                        "Předat",
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        String? uid = prefs.getString("uid");
+                        if (form.control("clovek").value != "") {
+                          PofelUserModel assignedUser = pofel.signedUsers
+                              .firstWhere((user) =>
+                                  user.uid == form.control("clovek").value);
+                          BlocProvider.of<PofelBloc>(context).add(ChangeAdmin(
+                              pofelId: pofel.pofelId,
+                              uid: form.control("clovek").value));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBarAlert(context, 'Admin předán'));
+                          Navigator.pop(context);
+                        }
+                      },
+                      width: 120,
+                    )
+                  ],
+                ).show();
+              },
+              child: const Text("Předat admina"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.deepPurpleAccent),
               onPressed: () {
                 Alert(
                   context: context,
@@ -298,4 +360,21 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
           ],
         ),
       ));
+}
+
+final form = fb.group({
+  'name': ['', Validators.required],
+  'clovek': ["", Validators.required],
+});
+List<DropdownMenuItem<String>> getDropdownItems(List<PofelUserModel> users) {
+  List<DropdownMenuItem<String>> items = [];
+  for (PofelUserModel user in users) {
+    items.add(
+      DropdownMenuItem(
+        child: Text(user.name),
+        value: user.uid,
+      ),
+    );
+  }
+  return items;
 }

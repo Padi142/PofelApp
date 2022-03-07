@@ -118,7 +118,7 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                       Alert(
                         context: context,
                         type: AlertType.none,
-                        title: "Items",
+                        title: "Questy",
                         content: Column(
                           children: [
                             ReactiveForm(
@@ -186,7 +186,7 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                         ],
                       ).show();
                     },
-                    child: const Text("Přidat item"),
+                    child: const Text("Přidat quest"),
                   ),
                 )
               ],

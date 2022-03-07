@@ -57,4 +57,14 @@ class UserProvider {
 
     docRef.update({"profile_pic": imageUrl});
   }
+
+  Future<void> buyPremium(
+    String userUid,
+  ) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore
+        .collection("users")
+        .doc(userUid)
+        .update({"isPremium": true, "premiumLevel": FieldValue.increment(1)});
+  }
 }

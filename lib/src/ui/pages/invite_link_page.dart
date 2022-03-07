@@ -94,72 +94,77 @@ class _DashboardPageState extends State<InviteLinkPage> {
                                       style: TextStyle(
                                           color: Colors.white, fontSize: 24),
                                     ),
-                                    ListView.builder(
-                                      itemCount: pofelState
-                                          .choosenPofel.signedUsers.length,
-                                      shrinkWrap: true,
-                                      itemBuilder: (context, index) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(2),
-                                          child: Container(
-                                            margin: const EdgeInsets.all(2),
-                                            height: 60,
-                                            decoration: const BoxDecoration(
-                                                color: Color(0xFFa757b5),
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(10))),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                Expanded(
-                                                  flex: 3,
-                                                  child: FittedBox(
-                                                    fit: BoxFit.fitHeight,
+                                    Expanded(
+                                      child: ListView.builder(
+                                        itemCount: pofelState
+                                            .choosenPofel.signedUsers.length,
+                                        shrinkWrap: true,
+                                        itemBuilder: (context, index) {
+                                          return Padding(
+                                            padding: const EdgeInsets.all(2),
+                                            child: Container(
+                                              margin: const EdgeInsets.all(2),
+                                              height: 60,
+                                              decoration: const BoxDecoration(
+                                                  color: Color(0xFFa757b5),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(10))),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                children: [
+                                                  Expanded(
+                                                    flex: 3,
+                                                    child: FittedBox(
+                                                      fit: BoxFit.fitHeight,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(2),
+                                                        child: Text(
+                                                            pofelState
+                                                                .choosenPofel
+                                                                .signedUsers[
+                                                                    index]
+                                                                .name,
+                                                            style: const TextStyle(
+                                                                color: Colors
+                                                                    .black87,
+                                                                fontSize: 22,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
                                                     child: Padding(
                                                       padding:
                                                           const EdgeInsets.all(
                                                               2),
-                                                      child: Text(
-                                                          pofelState
-                                                              .choosenPofel
-                                                              .signedUsers[
-                                                                  index]
-                                                              .name,
-                                                          style: const TextStyle(
-                                                              color: Colors
-                                                                  .black87,
-                                                              fontSize: 22,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(50),
+                                                        child: Image.network(
+                                                            pofelState
+                                                                .choosenPofel
+                                                                .signedUsers[
+                                                                    index]
+                                                                .photo,
+                                                            height: 50,
+                                                            width: 50),
+                                                      ),
                                                     ),
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(2),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                      child: Image.network(
-                                                          pofelState
-                                                              .choosenPofel
-                                                              .signedUsers[
-                                                                  index]
-                                                              .photo,
-                                                          height: 50,
-                                                          width: 50),
-                                                    ),
-                                                  ),
-                                                )
-                                              ],
+                                                  )
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ],
                                 ),

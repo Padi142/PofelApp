@@ -6,12 +6,14 @@ class UserModel extends Equatable {
     this.email,
     this.name,
     this.photo,
+    this.isPremium,
   });
 
   final String? email;
   final String uid;
   final String? name;
   final String? photo;
+  final bool? isPremium;
 
   static const empty = UserModel(uid: '');
 
@@ -25,7 +27,11 @@ class UserModel extends Equatable {
     Map<String, dynamic> map,
   ) {
     return UserModel(
-        uid: map["uid"], name: map["name"], photo: map["profile_pic"]);
+      uid: map["uid"],
+      name: map["name"],
+      photo: map["profile_pic"],
+      isPremium: map["isPremium"],
+    );
   }
 
   @override

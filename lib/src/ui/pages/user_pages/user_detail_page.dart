@@ -15,6 +15,8 @@ import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/past_pofels_list_page.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/user_premium_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class UserDetailPage extends StatefulWidget {
@@ -42,7 +44,9 @@ class _DashboardPageState extends State<UserDetailPage> {
                 Expanded(
                     flex: 2,
                     child: Container(
-                        color: Colors.grey,
+                        color: userState.currentUser.isPremium == true
+                            ? const Color.fromARGB(255, 247, 190, 67)
+                            : Colors.grey,
                         child: Row(
                           children: [
                             Expanded(
@@ -121,6 +125,16 @@ class _DashboardPageState extends State<UserDetailPage> {
                         },
                         child: const AutoSizeText("Upravit profilovku"),
                       ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PastPofelsPage()),
+                          );
+                        },
+                        child: const Text("Proběhlé pofely"),
+                      ),
                     ],
                   ),
                 ),
@@ -130,7 +144,38 @@ class _DashboardPageState extends State<UserDetailPage> {
                   },
                   child: const Text("Odhlásit se"),
                 ),
-                Expanded(flex: 3, child: Container())
+                Expanded(flex: 2, child: Container()),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    height: double.maxFinite,
+                    margin: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color.fromARGB(255, 247, 190, 67),
+                            Color.fromARGB(255, 245, 245, 39)
+                          ],
+                        )),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const UserPremiumPage()),
+                        );
+                      },
+                      child: const Center(
+                        child: Text(
+                          "Premium page",
+                          style: TextStyle(color: Colors.white, fontSize: 25),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
               ],
             );
           } else {

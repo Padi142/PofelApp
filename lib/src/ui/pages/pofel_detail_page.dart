@@ -45,6 +45,10 @@ class _DashboardPageState extends State<PofelDetailPage> {
                 BlocProvider.of<PofelBloc>(context)
                     .add(LoadPofel(pofelId: widget.pofelId));
                 break;
+              case PofelStateEnum.PERSON_LEFT:
+                BlocProvider.of<PofelBloc>(context)
+                    .add(LoadPofel(pofelId: widget.pofelId));
+                break;
               default:
                 break;
             }

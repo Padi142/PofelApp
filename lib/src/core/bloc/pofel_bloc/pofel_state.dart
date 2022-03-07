@@ -37,4 +37,5 @@ enum PofelStateEnum {
   WILL_ARIVE_UPDATED,
   NOT_TURNED_ON,
   NOT_TURNED_OFF,
+  PERSON_LEFT,
 }

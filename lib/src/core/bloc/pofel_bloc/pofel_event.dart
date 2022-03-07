@@ -44,6 +44,24 @@ class CreatePofel extends PofelEvent {
   List<Object> get props => [pofelName, date, pofelDesc];
 }
 
+class RemovePerson extends PofelEvent {
+  final String pofelId;
+  final String uid;
+  const RemovePerson({required this.pofelId, required this.uid});
+
+  @override
+  List<Object> get props => [uid, pofelId];
+}
+
+class ChangeAdmin extends PofelEvent {
+  final String pofelId;
+  final String uid;
+  const ChangeAdmin({required this.pofelId, required this.uid});
+
+  @override
+  List<Object> get props => [uid, pofelId];
+}
+
 class UpdatePofel extends PofelEvent {
   final UpdatePofelEnum updatePofelEnum;
   final String pofelId;
