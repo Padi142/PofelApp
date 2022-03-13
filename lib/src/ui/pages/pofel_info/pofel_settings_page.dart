@@ -316,6 +316,21 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               child: const Text("Předat admina"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                String? uid = prefs.getString("uid");
+
+                PofelUserModel user =
+                    pofel.signedUsers.firstWhere((user) => user.uid == uid);
+
+                BlocProvider.of<PofelBloc>(context)
+                    .add(UpgradePofel(pofelId: pofel.pofelId, user: user));
+              },
+              child: const Text("✨ Upgradovat pofel ✨",
+                  style: TextStyle(color: Colors.black)),
+            ),
+            ElevatedButton(
               style: ElevatedButton.styleFrom(primary: Colors.deepPurpleAccent),
               onPressed: () {
                 Alert(

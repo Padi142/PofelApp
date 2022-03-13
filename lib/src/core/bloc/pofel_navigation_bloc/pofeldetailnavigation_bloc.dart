@@ -14,6 +14,7 @@ class PofelDetailNavigationBloc
     on<PofelItemsEvent>(_onShowItems);
     on<LoadChatPage>(_onLoadChatPage);
     on<LoadTodosPage>(_onLoadTodosPage);
+    on<LoadImageGaleryPage>(_onLoadImageGalery);
   }
   _onLoadDashboard(
       PofelInfoEvent event, Emitter<PofelNavigationState> emit) async {
@@ -53,5 +54,10 @@ class PofelDetailNavigationBloc
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
     emit(LoadChatPageState(uid: uid!));
+  }
+
+  _onLoadImageGalery(
+      LoadImageGaleryPage event, Emitter<PofelNavigationState> emit) async {
+    emit(const LoadPofelGaleryState());
   }
 }

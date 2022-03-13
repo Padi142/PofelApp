@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pofel_app/src/core/models/pofel_image_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 
@@ -33,6 +37,8 @@ class PofelProvider {
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
+                  isPremium: doc["isPremium"] ?? false,
+                  photos: [],
                 );
 
                 pofels.add(model);
@@ -68,6 +74,8 @@ class PofelProvider {
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
+                  isPremium: doc["isPremium"] ?? false,
+                  photos: [],
                 );
 
                 pofels.add(model);
@@ -100,6 +108,8 @@ class PofelProvider {
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
+                  isPremium: doc["isPremium"] ?? false,
+                  photos: [],
                 );
                 pofels.add(model);
               })
@@ -110,6 +120,7 @@ class PofelProvider {
         .collection("signedUsers")
         .get();
     pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
+
     return pofels[0];
   }
 
@@ -136,6 +147,8 @@ class PofelProvider {
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
+                  isPremium: doc["isPremium"] ?? false,
+                  photos: [],
                 );
                 pofels.add(model);
               })
@@ -145,7 +158,10 @@ class PofelProvider {
         .doc(pofels[0].pofelId)
         .collection("signedUsers")
         .get();
-    pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
+    if (snapshot.docs.isNotEmpty) {
+      pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
+    }
+
     return pofels[0];
   }
 
@@ -218,6 +234,7 @@ class PofelProvider {
       "spotifyLink": "",
       "adminUid": adminUid,
       "signedUsers": [adminUid],
+      "isPremiun": false,
       "showDrugItems": false
     }).then((value) => print("pofel created"));
     firestore
@@ -309,6 +326,15 @@ class PofelProvider {
         .doc(pofelId)
         .update({
       "adminUid": uid,
+    }).then((value) => print("admin changed"));
+  }
+
+  Future<void> upgradePofel(String pofelId) async {
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .update({
+      "isPremium": true,
     }).then((value) => print("admin changed"));
   }
 

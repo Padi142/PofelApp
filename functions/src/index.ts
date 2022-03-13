@@ -152,14 +152,10 @@ export const updateUsers = functions.https.onRequest((request, response) => {
         pofelsRef.get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
-                    doc.ref.collection("chat").get().then((chatCol) => {
-                        chatCol.forEach((chat) => {
-                            if (chat.data()!.sentByUid == "SYSTEM") {
-                                promises.push(chat.ref.delete());
-                            }
-                        });
-                    });
-                    functions.logger.info("Smazano");
+                    promises.push(doc.ref
+                        .update({ "isPremium": false, "photos": [] }));
+
+                    functions.logger.info("pridano");
                 });
             });
         Promise.all(promises);
@@ -299,6 +295,14 @@ export const onUserSettingsChanged = functions.firestore
 
             const pofelsRef = db.collection("active_pofels")
                 .where("signedUsers", "array-contains", userId);
+            const topic = userId;
+            const payload = {
+                notification: {
+                    title: "Byl ti aktivován premium účet! ✨",
+                    body: "Mňau Mňau 🐱🐱",
+                },
+            };
+            admin.messaging().sendToTopic(topic, payload);
 
             return pofelsRef.get()
                 .then((querySnapshot) => {
@@ -324,7 +328,7 @@ export const onUserSettingsChanged = functions.firestore
 * Creates uid.
 */
 function newGuid() {
-    return "xxxxx".replace(/[xy]/g, function(c) {
+    return "xxxxx".replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c == "x" ? r : (r & 0x3 | 0x8);
         return v.toString(16);

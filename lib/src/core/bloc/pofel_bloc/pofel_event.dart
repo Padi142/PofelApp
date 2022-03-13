@@ -111,3 +111,12 @@ class ChatNotification extends PofelEvent {
   @override
   List<Object> get props => [pofelId, user];
 }
+
+class UpgradePofel extends PofelEvent {
+  final String pofelId;
+  final PofelUserModel user;
+  const UpgradePofel({required this.pofelId, required this.user});
+
+  @override
+  List<Object> get props => [pofelId];
+}

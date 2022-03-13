@@ -102,6 +102,21 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
             child: const Text("Zapnout/vypnout chat notifikace"),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              String? uid = prefs.getString("uid");
+
+              PofelUserModel user =
+                  pofel.signedUsers.firstWhere((user) => user.uid == uid);
+
+              BlocProvider.of<PofelBloc>(context)
+                  .add(UpgradePofel(pofelId: pofel.pofelId, user: user));
+            },
+            child: const Text("✨ Upgradovat pofel ✨",
+                style: TextStyle(color: Colors.black)),
+          ),
+          ElevatedButton(
             style: ElevatedButton.styleFrom(primary: Colors.redAccent),
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
@@ -111,24 +126,6 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
                   .add(RemovePerson(pofelId: pofel.pofelId, uid: uid!));
             },
             child: const Text("Opustit pofel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(primary: Colors.redAccent),
-            onPressed: () async {
-              FirebaseFirestore.instance
-                  .collection('active_pofels')
-                  .get()
-                  .then((snapShot) => snapShot.docs.forEach((pofel) {
-                        pofel.reference.collection("chat").get().then(
-                            (snapshot2) => snapshot2.docs.forEach((message) {
-                                  if (message.data()["sentByUid"] == "SYSTEM") {
-                                    message.reference.delete();
-                                    print("deleted");
-                                  }
-                                }));
-                      }));
-            },
-            child: const Text("smazat"),
           ),
         ],
       ));

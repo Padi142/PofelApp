@@ -7,6 +7,7 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_chat_page.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/pofel_images_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_items_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
@@ -159,6 +160,9 @@ class _DashboardPageState extends State<PofelDetailPage> {
                                       pofelState.choosenPofel, state.uid);
                                 } else if (state is LoadTodosPageState) {
                                   return PofelTodosPage(
+                                      context, pofelState.choosenPofel);
+                                } else if (state is LoadPofelGaleryState) {
+                                  return PofelImageGalery(
                                       context, pofelState.choosenPofel);
                                 } else if (state is PofelSettingsPageState) {
                                   if (state.canAcces) {

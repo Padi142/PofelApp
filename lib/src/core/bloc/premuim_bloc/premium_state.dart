@@ -17,4 +17,4 @@ class PremiumStateData extends PremiumState {
   List<Object> get props => [premiumEnum];
 }
 
-enum PremiumEnum { NONE, PREMIUM_BOUGHT }
+enum PremiumEnum { NONE, PREMIUM_BOUGHT, ERROR }

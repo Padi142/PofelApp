@@ -31,6 +31,14 @@ class _DashboardPageState extends State<PastPofelsPage> {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Zpět")),
+              ),
               const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Align(

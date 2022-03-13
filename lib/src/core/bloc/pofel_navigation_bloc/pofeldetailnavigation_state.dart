@@ -47,3 +47,9 @@ class LoadTodosPageState extends PofelNavigationState {
   @override
   List<Object> get props => [];
 }
+
+class LoadPofelGaleryState extends PofelNavigationState {
+  const LoadPofelGaleryState();
+  @override
+  List<Object> get props => [];
+}

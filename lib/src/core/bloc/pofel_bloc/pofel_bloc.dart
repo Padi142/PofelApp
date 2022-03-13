@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
@@ -21,7 +22,9 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
                 pofelId: '',
                 signedUsers: const [],
                 showDrugItems: false,
-                pofelLocation: const GeoPoint(0, 0)),
+                pofelLocation: const GeoPoint(0, 0),
+                isPremium: false,
+                photos: const []),
             pofelStateEnum: PofelStateEnum.INITIAL)) {
     on<CreatePofel>(_onCreatePofel);
     on<JoinPofel>(_onJoinPofel);
@@ -32,6 +35,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<ChatNotification>(_onChangeChatNotPref);
     on<RemovePerson>(_onRemovePerson);
     on<ChangeAdmin>(_onChangeAdmin);
+    on<UpgradePofel>(_onUpgradePofel);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -188,5 +192,14 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     }
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.POFEL_LOADED));
+  }
+
+  _onUpgradePofel(UpgradePofel event, Emitter<PofelState> emit) async {
+    if (event.user.isPremium) {
+      await pofelApiProvider.upgradePofel(event.pofelId);
+
+      emit((state as PofelStateWithData)
+          .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPGRADED));
+    }
   }
 }

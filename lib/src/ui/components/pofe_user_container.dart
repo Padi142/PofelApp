@@ -71,10 +71,10 @@ Widget PofelUserContainer(
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(2),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Image.network(user.photo, height: 50, width: 50),
+                padding: const EdgeInsets.all(4),
+                child: CircleAvatar(
+                  radius: 30,
+                  foregroundImage: NetworkImage(user.photo),
                 ),
               ),
             )

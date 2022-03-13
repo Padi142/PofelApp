@@ -27,28 +27,25 @@ class _MainPageState extends State<MainPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Flexible(child: TopAppBar("Pofel app")),
-            Expanded(
-                flex: 8,
-                child: BlocBuilder<NavigationBloc, NavigationState>(
-                  builder: (context, state) {
-                    if (state is ShowDashboardState) {
-                      return DashboardPage();
-                    } else if (state is ShowPofelDetailState) {
-                      return PofelDetailPage(
-                        pofelId: state.pofelId,
-                      );
-                    } else if (state is ShowMyPofelsState) {
-                      return PofelListPage();
-                    } else if (state is ShowUserDetailState) {
-                      return const UserDetailPage();
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
-                ))
+            Expanded(child: BlocBuilder<NavigationBloc, NavigationState>(
+              builder: (context, state) {
+                if (state is ShowDashboardState) {
+                  return DashboardPage();
+                } else if (state is ShowPofelDetailState) {
+                  return PofelDetailPage(
+                    pofelId: state.pofelId,
+                  );
+                } else if (state is ShowMyPofelsState) {
+                  return PofelListPage();
+                } else if (state is ShowUserDetailState) {
+                  return const UserDetailPage();
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
+            ))
           ],
         ),
       ),

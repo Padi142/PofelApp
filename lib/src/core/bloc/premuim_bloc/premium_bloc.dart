@@ -1,5 +1,13 @@
 import 'dart:async';
 
+import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter/models/adapty_error.dart';
+import 'package:adapty_flutter/models/adapty_error.dart';
+import 'package:adapty_flutter/models/adapty_paywall.dart';
+import 'package:adapty_flutter/models/adapty_product.dart';
+import 'package:adapty_flutter/results/get_paywalls_result.dart';
+import 'package:adapty_flutter/results/make_purchase_result.dart';
+import 'package:adapty_flutter/results/restore_purchases_result.dart';
 import 'package:bloc/bloc.dart';
 import 'package:pofel_app/src/core/bloc/premuim_bloc/premium_event.dart';
 import 'package:pofel_app/src/core/bloc/premuim_bloc/premium_state.dart';
@@ -18,23 +26,28 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   _onBuyPremium(BuyPremium event, Emitter<PremiumState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
-    final bool available = await InAppPurchase.instance.isAvailable();
-    if (available) {
-      await userProvider.buyPremium(uid!);
+    AdaptyPaywall? myPaywall;
 
-      emit(PremiumStateData(premiumEnum: PremiumEnum.PREMIUM_BOUGHT));
+    try {
+      final GetPaywallsResult getPaywallsResult =
+          await Adapty.getPaywalls(forceUpdate: false);
+      List<AdaptyPaywall>? paywalls = getPaywallsResult.paywalls;
 
-      const Set<String> _kIds = <String>{'pofelapp_premium'};
-      final ProductDetailsResponse response =
-          await InAppPurchase.instance.queryProductDetails(_kIds);
-      if (response.notFoundIDs.isNotEmpty) {
-        // Handle the error.
+      myPaywall = paywalls!
+          .firstWhere((paywall) => paywall.developerId == "PofelAppPremium");
+      final AdaptyProduct? product = myPaywall.products!.first;
+
+      final MakePurchaseResult makePurchaseResult =
+          await Adapty.makePurchase(product!);
+      // "premium" is an identifier of default access level
+      if (makePurchaseResult.purchaserInfo?.accessLevels['premium']!.isActive ??
+          false) {
+        await userProvider.buyPremium(uid!);
+        emit(PremiumStateData(premiumEnum: PremiumEnum.PREMIUM_BOUGHT));
       }
-      List<ProductDetails> products = response.productDetails;
-      final PurchaseParam purchaseParam =
-          PurchaseParam(productDetails: products[0]);
-
-      InAppPurchase.instance.buyNonConsumable(purchaseParam: purchaseParam);
+    } on AdaptyError catch (adaptyError) {
+      print(adaptyError);
+      emit(PremiumStateData(premiumEnum: PremiumEnum.ERROR));
     }
   }
 
@@ -48,6 +61,22 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
 
   _onRestorePurchases(
       RestorePurchases event, Emitter<PremiumState> emit) async {
-    await InAppPurchase.instance.restorePurchases();
+    final prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString("uid");
+    try {
+      final RestorePurchasesResult restorePurchasesResult =
+          await Adapty.restorePurchases();
+
+      // "premium" is an identifier of default access level
+      if (restorePurchasesResult
+              .purchaserInfo?.accessLevels['premium']!.isActive ??
+          false) {
+        await userProvider.buyPremium(uid!);
+        emit(PremiumStateData(premiumEnum: PremiumEnum.PREMIUM_BOUGHT));
+      }
+    } on AdaptyError catch (adaptyError) {
+      print(adaptyError);
+      emit(PremiumStateData(premiumEnum: PremiumEnum.ERROR));
+    }
   }
 }

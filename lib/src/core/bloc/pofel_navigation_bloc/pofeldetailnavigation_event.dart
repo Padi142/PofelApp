@@ -49,3 +49,10 @@ class LoadTodosPage extends PofelNavigationEvent {
   @override
   List<Object> get props => [];
 }
+
+class LoadImageGaleryPage extends PofelNavigationEvent {
+  const LoadImageGaleryPage();
+
+  @override
+  List<Object> get props => [];
+}
