@@ -5,7 +5,7 @@ description: Epicka pofel apka.
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.6+12
+version: 1.0.7+13
 
 environment:
   sdk: ">=2.16.0-51.0.dev <3.0.0"
@@ -55,6 +55,7 @@ dependencies:
   permission_handler: ^9.2.0
   qonversion_flutter: ^4.3.0
   cached_network_image: ^3.2.0
+  the_apple_sign_in: ^1.1.1
 
 dev_dependencies:
   flutter_test:

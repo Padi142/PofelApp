@@ -14,8 +14,10 @@ import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/models/to_do_model.dart';
 import 'package:pofel_app/src/ui/components/chat_bubbles.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/invite_people_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/bloc/pofel_bloc/pofel_bloc.dart';
@@ -331,17 +333,15 @@ Widget PofelInfo(
                   alignment: Alignment.bottomRight,
                   child: ElevatedButton(
                     onPressed: () async {
-                      await FirebaseAnalytics.instance
-                          .logEvent(name: 'pofel_link_shared');
-
-                      String link =
-                          "https://pofel.me/?invite=" + pofel.joinCode;
-                      await FlutterShare.share(
-                        title: pofel.name,
-                        chooserTitle: pofel.name,
-                        text: 'Právě jsi byl pozván na epesní pofel: ' +
-                            pofel.name,
-                        linkUrl: link,
+                      final prefs = await SharedPreferences.getInstance();
+                      String? uid = prefs.getString("uid");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => InvitePeoplePage(
+                                  uid: uid!,
+                                  pofel: pofel,
+                                )),
                       );
                     },
                     child: const Text("Pozvat lidi"),

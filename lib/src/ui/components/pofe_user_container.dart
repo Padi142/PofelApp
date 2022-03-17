@@ -100,7 +100,10 @@ Alert alert(
           : Colors.white,
       child: Column(
         children: [
-          Image.network(user.photo),
+          Image.network(
+            user.photo,
+            height: MediaQuery.of(context).size.height * 0.5,
+          ),
           Row(
             children: const [],
           ),

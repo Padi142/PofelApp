@@ -1,8 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/models/profile_model.dart';
 
 class UserModel extends Equatable {
   const UserModel({
     required this.uid,
+    this.following,
+    this.followers,
     this.email,
     this.name,
     this.photo,
@@ -11,6 +14,8 @@ class UserModel extends Equatable {
 
   final String? email;
   final String uid;
+  final List<ProfileModel>? followers;
+  final List<ProfileModel>? following;
   final String? name;
   final String? photo;
   final bool? isPremium;

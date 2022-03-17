@@ -234,7 +234,7 @@ class PofelProvider {
       "spotifyLink": "",
       "adminUid": adminUid,
       "signedUsers": [adminUid],
-      "isPremiun": false,
+      "isPremium": false,
       "showDrugItems": false
     }).then((value) => print("pofel created"));
     firestore

@@ -33,7 +33,7 @@ export const onPofelCreated = functions.firestore
         await signedUsers.update({
             "profile_pic": userData!.data()!.profile_pic,
             "name": userData!.data()!.name,
-            "isPremium": userData!.data()!.isPremium,
+            "isPremium": false,
             "willArrive": admin.firestore.Timestamp
                 .fromDate(new Date("1989-11-9")),
         });
@@ -147,16 +147,32 @@ export const chatAnnouncement = functions.https.onCall(async (data, _) => {
 export const updateUsers = functions.https.onRequest((request, response) => {
     try {
         const db = admin.firestore();
-        const pofelsRef = db.collection("active_pofels");
+        const pofelsRef = db.collection("users");
         const promises: any[] = [];
         pofelsRef.get()
             .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    promises.push(doc.ref
-                        .update({ "isPremium": false, "photos": [] }));
-
-                    functions.logger.info("pridano");
-                });
+                try {
+                    querySnapshot.forEach((doc) => {
+                        doc.ref.collection("followers")
+                        .get().then((followers) => {
+                            followers.forEach((follower) => {
+                                promises.push(follower.ref
+                                    .delete());
+                                functions.logger.info("smazano");
+                            });
+                        });
+                        doc.ref.collection("following")
+                        .get().then((followers) => {
+                            followers.forEach((follower) => {
+                                promises.push(follower.ref
+                                    .delete());
+                                functions.logger.info("smazano");
+                            });
+                        });
+                    });
+                } catch (e) {
+                    functions.logger.info("nesmazano");
+                }
             });
         Promise.all(promises);
 
@@ -185,6 +201,113 @@ export const onChatMessageCreated = functions.firestore
         };
         return admin.messaging().sendToTopic(topic, payload);
     });
+export const onFollowed = functions.firestore
+    .document("users/{userId}/followers/{followerId}")
+    .onCreate(async (snapshot, context) => {
+        const userId = context.params.userId;
+        const followerId = context.params.followerId;
+        functions.logger.info("New follower - UserId: ",
+            userId);
+        const db = admin.firestore();
+        const followerSnapshot = await snapshot.ref.get();
+        const follower = await db.collection("users")
+            .doc(followerId).get();
+        const topic = userId;
+        const payload = {
+            notification: {
+                title: "Nový follow!",
+                body: follower.data()!.name +
+                    " ti právě dal follow",
+            },
+        };
+        admin.messaging().sendToTopic(topic, payload);
+        try {
+            followerSnapshot.ref.update({
+                "name": follower.data()!.name,
+                "profile_pic": follower.data()!.profile_pic,
+                "isPremium": follower.data()!.isPremium,
+            });
+        } catch (e) {
+            followerSnapshot.ref.update({
+                "name": follower.data()!.name,
+                "profile_pic": follower.data()!.profile_pic,
+                "isPremium": false,
+            });
+        }
+        const notId = newGuid();
+        db.collection("users").doc(userId)
+            .collection("notifications").add({
+                "message": follower.data()!.name + " ti dal follow!",
+                "sentByName": follower.data()!.name,
+                "sentByProfilePic": follower.data()!.profile_pic,
+                "type": "FOLLOW",
+                "id": notId,
+                "shown": false,
+                "sentOn": admin.firestore.Timestamp.now(),
+                "pofelId": "",
+                "userId": follower.data()!.uid,
+            });
+    });
+export const onFollow = functions.firestore
+    .document("users/{userId}/following/{followingId}")
+    .onCreate(async (snapshot, context) => {
+        functions.logger.info("New following");
+        const followingId = context.params.followingId;
+        const db = admin.firestore();
+        const followerSnapshot = await snapshot.ref.get();
+        const follower = await db.collection("users")
+            .doc(followingId).get();
+        try {
+            followerSnapshot.ref.update({
+                "name": follower.data()!.name,
+                "profile_pic": follower.data()!.profile_pic,
+                "isPremium": follower.data()!.isPremium,
+            });
+        } catch (e) {
+            followerSnapshot.ref.update({
+                "name": follower.data()!.name,
+                "profile_pic": follower.data()!.profile_pic,
+                "isPremium": false,
+            });
+        }
+    });
+
+export const inviteUserToPofel = functions.https.onCall(async (data, _) => {
+    try {
+        const db = admin.firestore();
+        const topic = data.userId;
+
+        const inviter = await db.collection("users")
+            .doc(data.sentByUid).get();
+        const notId = newGuid();
+
+        await admin.messaging().sendToTopic(topic, {
+            notification: {
+                title: "Byl jsi pozván na pofel!",
+                body: inviter.data()!.name +
+                    " tě pozval na pofel " + data.pofelname,
+            },
+        });
+
+        db.collection("users").doc(data.userId)
+            .collection("notifications").add({
+                "message": "Byl jsi pozván na pofel " + data.pofelname,
+                "sentByName": inviter.data()!.name,
+                "sentByProfilePic": inviter.data()!.profile_pic,
+                "type": "INVITE",
+                "id": notId,
+                "shown": false,
+                "sentOn": admin.firestore.Timestamp.now(),
+                "pofelId": data.pofelId,
+                "userId": inviter.data()!.uid,
+            });
+        functions.logger.info("User invited: ",
+            data.userId);
+        return true;
+    } catch (ex) {
+        return false;
+    }
+});
 export const onUserSettingsChanged = functions.firestore
     .document("users/{userId}")
     .onUpdate(async (change, context) => {
@@ -328,7 +451,7 @@ export const onUserSettingsChanged = functions.firestore
 * Creates uid.
 */
 function newGuid() {
-    return "xxxxx".replace(/[xy]/g, function (c) {
+    return "xxxxx".replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0;
         const v = c == "x" ? r : (r & 0x3 | 0x8);
         return v.toString(16);

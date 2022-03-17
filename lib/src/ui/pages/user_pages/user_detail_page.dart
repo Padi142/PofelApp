@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +13,13 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
+import 'package:pofel_app/src/core/models/profile_model.dart';
+import 'package:pofel_app/src/ui/components/follower_container.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/past_pofels_list_page.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/user_followers_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_premium_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
@@ -69,10 +73,113 @@ class _DashboardPageState extends State<UserDetailPage> {
                                       style: const TextStyle(
                                           color: Colors.black87,
                                           fontSize: 18,
-                                          fontWeight: FontWeight.bold))
+                                          fontWeight: FontWeight.bold)),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Column(
+                                        children: [
+                                          const Text("Sledující:"),
+                                          Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.08,
+                                            margin: const EdgeInsets.all(3),
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UserFollowersPage(
+                                                            profiles: userState
+                                                                .currentUser
+                                                                .followers!,
+                                                          )),
+                                                );
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(2),
+                                                child: Center(
+                                                  child: Text(
+                                                      userState.currentUser
+                                                          .followers!.length
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 26,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color(0xFF73BCFC),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          const Text("Sleduji:"),
+                                          Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.08,
+                                            margin: const EdgeInsets.all(3),
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UserFollowersPage(
+                                                            profiles: userState
+                                                                .currentUser
+                                                                .following!,
+                                                          )),
+                                                );
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(2),
+                                                child: Center(
+                                                  child: Text(
+                                                      userState.currentUser
+                                                          .following!.length
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 26,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color(0xFF73BCFC),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
                                 ],
                               ),
-                            )
+                            ),
                           ],
                         ))),
                 Expanded(
@@ -143,6 +250,37 @@ class _DashboardPageState extends State<UserDetailPage> {
                     BlocProvider.of<LoginBloc>(context).add(LogOut());
                   },
                   child: const Text("Odhlásit se"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    FirebaseFirestore firestore = FirebaseFirestore.instance;
+                    firestore
+                        .collection("users")
+                        .get()
+                        .then((usersQuery) => usersQuery.docs.forEach((user) {
+                              try {
+                                user.reference
+                                    .collection("followers")
+                                    .get()
+                                    .then((followersQuery) =>
+                                        followersQuery.docs.forEach((follower) {
+                                          follower.reference.delete();
+                                          print("smazano");
+                                        }));
+                                user.reference
+                                    .collection("following")
+                                    .get()
+                                    .then((followersQuery) =>
+                                        followersQuery.docs.forEach((follower) {
+                                          follower.reference.delete();
+                                          print("smazano");
+                                        }));
+                              } catch (e) {
+                                print(e);
+                              }
+                            }));
+                  },
+                  child: const Text("smazat"),
                 ),
                 Expanded(flex: 2, child: Container()),
                 Expanded(

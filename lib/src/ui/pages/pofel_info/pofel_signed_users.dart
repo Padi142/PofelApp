@@ -9,7 +9,9 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:intl/intl.dart';
 import 'package:pofel_app/src/ui/components/pofe_user_container.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/invite_people_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
   final chatsQuery = FirebaseFirestore.instance
@@ -50,15 +52,15 @@ Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  await FirebaseAnalytics.instance
-                      .logEvent(name: 'pofel_link_shared');
-
-                  String link = "https://pofel.me/?invite=" + pofel.joinCode;
-                  await FlutterShare.share(
-                    title: pofel.name,
-                    chooserTitle: pofel.name,
-                    text: 'Právě jsi byl pozván na epesní pofel: ' + pofel.name,
-                    linkUrl: link,
+                  final prefs = await SharedPreferences.getInstance();
+                  String? uid = prefs.getString("uid");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => InvitePeoplePage(
+                              uid: uid!,
+                              pofel: pofel,
+                            )),
                   );
                 },
                 child: const Text("Pozvat lidi"),

@@ -42,3 +42,17 @@ class LoadCurrentUserPage extends NavigationEvent {
   @override
   List<Object> get props => [];
 }
+
+class LoadNotificationsPage extends NavigationEvent {
+  const LoadNotificationsPage();
+
+  @override
+  List<Object> get props => [];
+}
+
+class LoadSearchProfiles extends NavigationEvent {
+  const LoadSearchProfiles();
+
+  @override
+  List<Object> get props => [];
+}

@@ -8,7 +8,9 @@ import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/notification_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_detail_page.dart';
+import 'package:pofel_app/src/ui/pages/user_search_page.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);
@@ -23,6 +25,22 @@ class _MainPageState extends State<MainPage> {
     BlocProvider.of<NavigationBloc>(context).add(const DashboardEvent());
     int _selectedIndex = 0;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Pofel app"),
+        backgroundColor: const Color(0xFF8F3BB7),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(const LoadNotificationsPage());
+              },
+              child: const Icon(Icons.notifications),
+            ),
+          )
+        ],
+      ),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -37,6 +55,12 @@ class _MainPageState extends State<MainPage> {
                   );
                 } else if (state is ShowMyPofelsState) {
                   return PofelListPage();
+                } else if (state is ShowSearchProfilesState) {
+                  return UserSearchPage();
+                } else if (state is ShowNotificationPageState) {
+                  return NotificationsPage(
+                    currentUid: state.uid,
+                  );
                 } else if (state is ShowUserDetailState) {
                   return const UserDetailPage();
                 } else {
@@ -82,6 +106,10 @@ class _MainPageState extends State<MainPage> {
                   text: 'Moje pofely',
                 ),
                 GButton(
+                  icon: Icons.search_outlined,
+                  text: "Hledat",
+                ),
+                GButton(
                   icon: Icons.verified_user,
                   text: 'Profil',
                 ),
@@ -98,6 +126,10 @@ class _MainPageState extends State<MainPage> {
                         .add(const LoadMyPofelsEvent());
                     break;
                   case 2:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(const LoadSearchProfiles());
+                    break;
+                  case 3:
                     BlocProvider.of<NavigationBloc>(context)
                         .add(const LoadCurrentUserPage());
                     break;
