@@ -29,7 +29,7 @@ Widget PofelChatPage(
       padding: const EdgeInsets.all(15),
       child: Column(children: [
         Expanded(
-            flex: 8,
+            flex: 7,
             child: FirestoreListView(
                 pageSize: 50,
                 query: chatsQuery,

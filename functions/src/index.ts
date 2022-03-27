@@ -154,21 +154,21 @@ export const updateUsers = functions.https.onRequest((request, response) => {
                 try {
                     querySnapshot.forEach((doc) => {
                         doc.ref.collection("followers")
-                        .get().then((followers) => {
-                            followers.forEach((follower) => {
-                                promises.push(follower.ref
-                                    .delete());
-                                functions.logger.info("smazano");
+                            .get().then((followers) => {
+                                followers.forEach((follower) => {
+                                    promises.push(follower.ref
+                                        .delete());
+                                    functions.logger.info("smazano");
+                                });
                             });
-                        });
                         doc.ref.collection("following")
-                        .get().then((followers) => {
-                            followers.forEach((follower) => {
-                                promises.push(follower.ref
-                                    .delete());
-                                functions.logger.info("smazano");
+                            .get().then((followers) => {
+                                followers.forEach((follower) => {
+                                    promises.push(follower.ref
+                                        .delete());
+                                    functions.logger.info("smazano");
+                                });
                             });
-                        });
                     });
                 } catch (e) {
                     functions.logger.info("nesmazano");
@@ -329,7 +329,13 @@ export const onUserSettingsChanged = functions.firestore
 
             const pofelsRef = db.collection("active_pofels")
                 .where("signedUsers", "array-contains", userId);
-
+            if (newUsername == "" || newUsername == " ") {
+                db.collection("users").doc(userId)
+                    .update({
+                        "name": "Susák",
+                        "profile_pic": "https://i1.sndcdn.com/artworks-m0zymGtm6ir6HnUZ-b50tOA-t500x500.jpg",
+                    });
+            }
             return pofelsRef.get()
                 .then((querySnapshot) => {
                     if (querySnapshot.empty) {

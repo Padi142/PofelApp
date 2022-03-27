@@ -9,6 +9,8 @@ part of 'chat_state.dart';
 abstract class _$ChatsLoadedCWProxy {
   ChatsLoaded chatStateEnum(ChatStateEnum chatStateEnum);
 
+  ChatsLoaded errorMessage(String errorMessage);
+
   ChatsLoaded messages(List<MessageModel> messages);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `ChatsLoaded(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
@@ -19,6 +21,7 @@ abstract class _$ChatsLoadedCWProxy {
   /// ````
   ChatsLoaded call({
     ChatStateEnum? chatStateEnum,
+    String? errorMessage,
     List<MessageModel>? messages,
   });
 }
@@ -34,6 +37,10 @@ class _$ChatsLoadedCWProxyImpl implements _$ChatsLoadedCWProxy {
       this(chatStateEnum: chatStateEnum);
 
   @override
+  ChatsLoaded errorMessage(String errorMessage) =>
+      this(errorMessage: errorMessage);
+
+  @override
   ChatsLoaded messages(List<MessageModel> messages) => this(messages: messages);
 
   @override
@@ -46,6 +53,7 @@ class _$ChatsLoadedCWProxyImpl implements _$ChatsLoadedCWProxy {
   /// ````
   ChatsLoaded call({
     Object? chatStateEnum = const $CopyWithPlaceholder(),
+    Object? errorMessage = const $CopyWithPlaceholder(),
     Object? messages = const $CopyWithPlaceholder(),
   }) {
     return ChatsLoaded(
@@ -54,6 +62,11 @@ class _$ChatsLoadedCWProxyImpl implements _$ChatsLoadedCWProxy {
               ? _value.chatStateEnum
               // ignore: cast_nullable_to_non_nullable
               : chatStateEnum as ChatStateEnum,
+      errorMessage:
+          errorMessage == const $CopyWithPlaceholder() || errorMessage == null
+              ? _value.errorMessage
+              // ignore: cast_nullable_to_non_nullable
+              : errorMessage as String,
       messages: messages == const $CopyWithPlaceholder() || messages == null
           ? _value.messages
           // ignore: cast_nullable_to_non_nullable

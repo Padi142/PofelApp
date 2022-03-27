@@ -13,7 +13,7 @@ SnackBar SnackBarError(BuildContext context, String message) {
         Expanded(
           child: AutoSizeText(
             message,
-            maxLines: 2,
+            maxLines: 30,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,

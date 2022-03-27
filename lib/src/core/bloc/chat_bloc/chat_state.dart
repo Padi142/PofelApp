@@ -16,11 +16,15 @@ abstract class ChatState extends Equatable {
 class ChatsLoaded extends ChatState {
   final List<MessageModel> messages;
   final ChatStateEnum chatStateEnum;
+  final String errorMessage;
 
-  const ChatsLoaded({required this.messages, required this.chatStateEnum});
+  const ChatsLoaded(
+      {required this.messages,
+      required this.errorMessage,
+      required this.chatStateEnum});
 
   @override
-  List<Object> get props => [messages];
+  List<Object> get props => [messages, errorMessage, chatStateEnum];
 }
 
 enum ChatStateEnum {

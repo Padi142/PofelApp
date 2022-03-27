@@ -12,7 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc()
       : super(const ChatsLoaded(
-            chatStateEnum: ChatStateEnum.INITIAL, messages: [])) {
+            chatStateEnum: ChatStateEnum.INITIAL,
+            messages: [],
+            errorMessage: "")) {
     on<LoadFirstChats>(_onChatsLoaded);
     on<SendMessage>(_onSendMessage);
   }
@@ -39,16 +41,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   _onSendMessage(SendMessage event, Emitter<ChatState> emit) async {
-    final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString("uid");
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? uid = prefs.getString("uid");
 
-    UserModel user = await _userProvider.fetchUserData(uid!);
-    MessageModel message = MessageModel(
-        message: event.message,
-        sentOn: DateTime.now(),
-        sentByUid: uid,
-        sentByProfilePic: user.photo!,
-        sentByName: user.name!);
-    _chatProvider.sendMessage(message, event.pofelId);
+      UserModel user = await _userProvider.fetchUserData(uid!);
+      MessageModel message = MessageModel(
+          message: event.message,
+          sentOn: DateTime.now(),
+          sentByUid: uid,
+          sentByProfilePic: user.photo!,
+          sentByName: user.name!);
+      _chatProvider.sendMessage(message, event.pofelId);
+    } catch (e) {
+      emit((state as ChatsLoaded).copyWith(errorMessage: e.toString()));
+    }
   }
 }

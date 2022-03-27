@@ -131,35 +131,7 @@ class _DashboardPageState extends State<UserDetailPage> {
                   },
                   child: const Text("Odhlásit se"),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    FirebaseFirestore firestore = FirebaseFirestore.instance;
-                    firestore
-                        .collection("users")
-                        .get()
-                        .then((usersQuery) => usersQuery.docs.forEach((user) {
-                              try {
-                                user.reference
-                                    .collection("followers")
-                                    .get()
-                                    .then((followersQuery) =>
-                                        followersQuery.docs.forEach((follower) {
-                                          follower.reference.delete();
-                                        }));
-                                user.reference
-                                    .collection("following")
-                                    .get()
-                                    .then((followersQuery) =>
-                                        followersQuery.docs.forEach((follower) {
-                                          follower.reference.delete();
-                                        }));
-                              } catch (e) {
-                                print(e);
-                              }
-                            }));
-                  },
-                  child: const Text("smazat"),
-                ),
+                
                 Expanded(flex: 1, child: Container())
               ],
             );

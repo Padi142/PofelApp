@@ -45,11 +45,17 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     await FirebaseAnalytics.instance.logEvent(
       name: 'pofel_created',
     );
-    if (uid != null) {
-      pofelApiProvider.createPofel(
-          event.pofelName, event.pofelDesc, uid, event.date, DateTime.now());
-      emit((state as PofelStateWithData)
-          .copyWith(pofelStateEnum: PofelStateEnum.POFEL_CREATED));
+    try {
+      if (uid != null) {
+        pofelApiProvider.createPofel(
+            event.pofelName, event.pofelDesc, uid, event.date, DateTime.now());
+        emit((state as PofelStateWithData)
+            .copyWith(pofelStateEnum: PofelStateEnum.POFEL_CREATED));
+      }
+    } catch (e) {
+      emit((state as PofelStateWithData).copyWith(
+          pofelStateEnum: PofelStateEnum.ERROR_JOINING,
+          errorMessage: e.toString()));
     }
   }
 

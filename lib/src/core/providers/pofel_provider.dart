@@ -180,11 +180,13 @@ class PofelProvider {
     QueryDocumentSnapshot pofelDoc = pofelQuery.docs[0];
     QueryDocumentSnapshot userDoc = userQuery.docs[0];
     DocumentReference docRef = pofelDoc.reference;
-
-    // subscribe to topic on each app start-up
-    await FirebaseMessaging.instance.subscribeToTopic(docRef.id);
-    await FirebaseMessaging.instance.subscribeToTopic(docRef.id + "chat");
-
+    try {
+      // subscribe to topic on each app start-up
+      await FirebaseMessaging.instance.subscribeToTopic(docRef.id);
+      await FirebaseMessaging.instance.subscribeToTopic(docRef.id + "chat");
+    } catch (e) {
+      print(e);
+    }
     var joinedUsers = pofelDoc["signedUsers"];
     bool canJoin = !joinedUsers.contains(uid);
     if (canJoin) {
@@ -218,9 +220,13 @@ class PofelProvider {
             length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 
     String documentId = getRandomString(18);
-    // subscribe to topic on each app start-up
-    await FirebaseMessaging.instance.subscribeToTopic(documentId);
-    await FirebaseMessaging.instance.subscribeToTopic(documentId + "chat");
+    try {
+      // subscribe to topic on each app start-up
+      await FirebaseMessaging.instance.subscribeToTopic(documentId);
+      await FirebaseMessaging.instance.subscribeToTopic(documentId + "chat");
+    } catch (e) {
+      print(e);
+    }
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection("active_pofels").doc(documentId).set({
