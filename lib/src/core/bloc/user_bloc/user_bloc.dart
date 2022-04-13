@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pofel_app/src/core/models/login_models/user.dart';
 import 'package:pofel_app/src/core/providers/user_provider.dart';
@@ -44,5 +45,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
     emit(UserLoadedState(
         userStateEnum: UserStateEnum.PHOTO_UPDATED, currentUser: user));
+
+    await FirebaseAnalytics.instance.logEvent(name: 'profile_pic_updated');
   }
 }

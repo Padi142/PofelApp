@@ -15,9 +15,12 @@ abstract class PofelState extends Equatable {
 class PofelStateWithData extends PofelState {
   final PofelModel choosenPofel;
   final PofelStateEnum pofelStateEnum;
+  final String? errorMessage;
 
-  const PofelStateWithData(
-      {required this.choosenPofel, required this.pofelStateEnum});
+  PofelStateWithData(
+      {required this.choosenPofel,
+      required this.pofelStateEnum,
+      this.errorMessage});
 
   @override
   List<Object> get props => [choosenPofel, pofelStateEnum];
@@ -26,8 +29,15 @@ class PofelStateWithData extends PofelState {
 enum PofelStateEnum {
   INITIAL,
   POFEL_LOADED,
+  ERROR_LOADING,
   POFEL_JOINED,
+  ERROR_JOINING,
   POFEL_CREATED,
   POFEL_UPDATED,
-  WILL_ARIVE_UPDATED
+  WILL_ARIVE_UPDATED,
+  NOT_TURNED_ON,
+  NOT_TURNED_OFF,
+  PERSON_LEFT,
+  IMAGES_UPLOADED,
+  POFEL_UPGRADED,
 }

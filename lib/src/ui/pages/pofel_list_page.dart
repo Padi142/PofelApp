@@ -55,7 +55,7 @@ class _DashboardPageState extends State<PofelListPage> {
                                 onTap: () {
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(PofelDetailPageEvent(
-                                    state.myPofels[index].pofelId,
+                                    pofelId: state.myPofels[index].pofelId,
                                   ));
                                 },
                                 child: Container(

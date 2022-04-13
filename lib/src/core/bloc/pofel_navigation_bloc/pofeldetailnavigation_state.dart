@@ -10,7 +10,8 @@ abstract class PofelNavigationState extends Equatable {
 class PofeldetailnavigationInitial extends PofelNavigationState {}
 
 class ShowPofelInfoState extends PofelNavigationState {
-  const ShowPofelInfoState();
+  final String uid;
+  const ShowPofelInfoState({required this.uid});
   @override
   List<Object> get props => [];
 }
@@ -30,6 +31,25 @@ class PofelSettingsPageState extends PofelNavigationState {
 
 class PofelItemsPageState extends PofelNavigationState {
   const PofelItemsPageState();
+  @override
+  List<Object> get props => [];
+}
+
+class LoadChatPageState extends PofelNavigationState {
+  final String uid;
+  const LoadChatPageState({required this.uid});
+  @override
+  List<Object> get props => [];
+}
+
+class LoadTodosPageState extends PofelNavigationState {
+  const LoadTodosPageState();
+  @override
+  List<Object> get props => [];
+}
+
+class LoadPofelGaleryState extends PofelNavigationState {
+  const LoadPofelGaleryState();
   @override
   List<Object> get props => [];
 }

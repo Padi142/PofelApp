@@ -8,7 +8,10 @@ import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
-import 'package:pofel_app/src/ui/pages/user_detail_page.dart';
+import 'package:pofel_app/src/ui/pages/public_pofels_page.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/notification_page.dart';
+import 'package:pofel_app/src/ui/pages/user_pages/user_detail_page.dart';
+import 'package:pofel_app/src/ui/pages/user_search_page.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);
@@ -23,32 +26,53 @@ class _MainPageState extends State<MainPage> {
     BlocProvider.of<NavigationBloc>(context).add(const DashboardEvent());
     int _selectedIndex = 0;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Pofel app"),
+        backgroundColor: const Color(0xFF8F3BB7),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(const LoadNotificationsPage());
+              },
+              child: const Icon(Icons.notifications),
+            ),
+          )
+        ],
+      ),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Flexible(child: TopAppBar("Pofel app")),
-            Expanded(
-                flex: 8,
-                child: BlocBuilder<NavigationBloc, NavigationState>(
-                  builder: (context, state) {
-                    if (state is ShowDashboardState) {
-                      return DashboardPage();
-                    } else if (state is ShowPofelDetailState) {
-                      return PofelDetailPage(
-                        pofelId: state.pofelId,
-                      );
-                    } else if (state is ShowMyPofelsState) {
-                      return PofelListPage();
-                    } else if (state is ShowUserDetailState) {
-                      return const UserDetailPage();
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
-                ))
+            Expanded(child: BlocBuilder<NavigationBloc, NavigationState>(
+              builder: (context, state) {
+                if (state is ShowDashboardState) {
+                  return DashboardPage();
+                } else if (state is ShowPofelDetailState) {
+                  return PofelDetailPage(
+                    pofelId: state.pofelId,
+                  );
+                } else if (state is ShowMyPofelsState) {
+                  return PofelListPage();
+                } else if (state is ShowSearchProfilesState) {
+                  return UserSearchPage();
+                } else if (state is ShowNotificationPageState) {
+                  return NotificationsPage(
+                    currentUid: state.uid,
+                  );
+                } else if (state is ShowUserDetailState) {
+                  return const UserDetailPage();
+                } else if (state is ShowPublicPofelsState) {
+                  return PublicPofelsPage();
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
+            ))
           ],
         ),
       ),
@@ -64,14 +88,14 @@ class _MainPageState extends State<MainPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
             child: GNav(
               rippleColor: const Color(0xFFFFC8DD),
               hoverColor: Colors.grey[100]!,
-              gap: 8,
+              gap: 4,
               activeColor: Colors.black,
               iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               duration: const Duration(milliseconds: 400),
               tabBackgroundColor: primaryColor,
               color: Colors.black,
@@ -83,6 +107,14 @@ class _MainPageState extends State<MainPage> {
                 GButton(
                   icon: Icons.list_rounded,
                   text: 'Moje pofely',
+                ),
+                GButton(
+                  icon: Icons.map_rounded,
+                  text: "Mapa",
+                ),
+                GButton(
+                  icon: Icons.search_outlined,
+                  text: "Hledat",
                 ),
                 GButton(
                   icon: Icons.verified_user,
@@ -101,6 +133,14 @@ class _MainPageState extends State<MainPage> {
                         .add(const LoadMyPofelsEvent());
                     break;
                   case 2:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(const LoadPublicPofelPage());
+                    break;
+                  case 3:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(const LoadSearchProfiles());
+                    break;
+                  case 4:
                     BlocProvider.of<NavigationBloc>(context)
                         .add(const LoadCurrentUserPage());
                     break;

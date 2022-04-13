@@ -1,6 +1,12 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
+import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
@@ -67,6 +73,7 @@ class _DashboardPageState extends State<UserDetailPage> {
                           ],
                         ))),
                 Expanded(
+                  flex: 2,
                   child: Column(
                     children: [
                       ElevatedButton(
@@ -113,12 +120,19 @@ class _DashboardPageState extends State<UserDetailPage> {
                                 .add(UpdateUserProfilePic(newPic: image));
                           }
                         },
-                        child: const Text("Upravit profilovku"),
+                        child: const AutoSizeText("Upravit profilovku"),
                       ),
                     ],
                   ),
                 ),
-                Expanded(flex: 3, child: Container())
+                ElevatedButton(
+                  onPressed: () async {
+                    BlocProvider.of<LoginBloc>(context).add(LogOut());
+                  },
+                  child: const Text("Odhlásit se"),
+                ),
+                
+                Expanded(flex: 1, child: Container())
               ],
             );
           } else {

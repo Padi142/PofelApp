@@ -1,17 +1,24 @@
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/models/profile_model.dart';
 
 class UserModel extends Equatable {
   const UserModel({
     required this.uid,
+    this.following,
+    this.followers,
     this.email,
     this.name,
     this.photo,
+    this.isPremium,
   });
 
   final String? email;
   final String uid;
+  final List<ProfileModel>? followers;
+  final List<ProfileModel>? following;
   final String? name;
   final String? photo;
+  final bool? isPremium;
 
   static const empty = UserModel(uid: '');
 
@@ -25,7 +32,11 @@ class UserModel extends Equatable {
     Map<String, dynamic> map,
   ) {
     return UserModel(
-        uid: map["uid"], name: map["name"], photo: map["profile_pic"]);
+      uid: map["uid"],
+      name: map["name"],
+      photo: map["profile_pic"],
+      isPremium: map["isPremium"],
+    );
   }
 
   @override

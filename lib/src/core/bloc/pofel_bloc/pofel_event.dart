@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/models/pofel_user.dart';
 
 abstract class PofelEvent extends Equatable {
   const PofelEvent();
@@ -14,6 +15,14 @@ class LoadPofel extends PofelEvent {
 
   @override
   List<Object> get props => [pofelId];
+}
+
+class LoadPofelByJoinId extends PofelEvent {
+  final String joinId;
+  const LoadPofelByJoinId({required this.joinId});
+
+  @override
+  List<Object> get props => [joinId];
 }
 
 class JoinPofel extends PofelEvent {
@@ -35,6 +44,24 @@ class CreatePofel extends PofelEvent {
   List<Object> get props => [pofelName, date, pofelDesc];
 }
 
+class RemovePerson extends PofelEvent {
+  final String pofelId;
+  final String uid;
+  const RemovePerson({required this.pofelId, required this.uid});
+
+  @override
+  List<Object> get props => [uid, pofelId];
+}
+
+class ChangeAdmin extends PofelEvent {
+  final String pofelId;
+  final String uid;
+  const ChangeAdmin({required this.pofelId, required this.uid});
+
+  @override
+  List<Object> get props => [uid, pofelId];
+}
+
 class UpdatePofel extends PofelEvent {
   final UpdatePofelEnum updatePofelEnum;
   final String pofelId;
@@ -43,6 +70,7 @@ class UpdatePofel extends PofelEvent {
   final String? newSpotifyLink;
   final GeoPoint? newLocation;
   final DateTime? newDate;
+  final bool? showDrugs;
   const UpdatePofel(
       {required this.updatePofelEnum,
       required this.pofelId,
@@ -50,6 +78,7 @@ class UpdatePofel extends PofelEvent {
       this.newSpotifyLink,
       this.newLocation,
       this.newDesc,
+      this.showDrugs,
       this.newDate});
 
   @override
@@ -61,7 +90,8 @@ enum UpdatePofelEnum {
   UPDATE_DESC,
   UPDATE_DATE,
   UPDATE_SPOTIFY,
-  UPDATE_LOCATION
+  UPDATE_LOCATION,
+  UPDATE_SHOW_DRUGS
 }
 
 class UpdateWillArrive extends PofelEvent {
@@ -71,4 +101,30 @@ class UpdateWillArrive extends PofelEvent {
 
   @override
   List<Object> get props => [pofelId, newDate];
+}
+
+class ChatNotification extends PofelEvent {
+  final String pofelId;
+  final PofelUserModel user;
+  const ChatNotification({required this.pofelId, required this.user});
+
+  @override
+  List<Object> get props => [pofelId, user];
+}
+
+class UpgradePofel extends PofelEvent {
+  final String pofelId;
+  final PofelUserModel user;
+  const UpgradePofel({required this.pofelId, required this.user});
+
+  @override
+  List<Object> get props => [pofelId];
+}
+
+class DeletePofel extends PofelEvent {
+  final String pofelId;
+  const DeletePofel({required this.pofelId});
+
+  @override
+  List<Object> get props => [pofelId];
 }
