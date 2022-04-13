@@ -23,8 +23,10 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
   }
 
   _onSearchUsers(SearchUsers event, Emitter<SocialState> emit) async {
-    List<ProfileModel> profiles = await socialProvider.search(event.query);
-
+    List<ProfileModel> profiles = [];
+    if (event.query != "" && event.query != " ") {
+      profiles = await socialProvider.search(event.query);
+    }
     emit(SearchProfiles(profiles: profiles));
   }
 

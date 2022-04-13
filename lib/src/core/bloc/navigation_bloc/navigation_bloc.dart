@@ -13,6 +13,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     on<LoadCurrentUserPage>(_onLoadUser);
     on<LoadSearchProfiles>(_onSearchUsers);
     on<LoadNotificationsPage>(_onLoadNotification);
+    on<LoadPublicPofelPage>(_onLoadPublicPofels);
   }
   _onLoadDashboard(DashboardEvent event, Emitter<NavigationState> emit) async {
     emit(const ShowDashboardState());
@@ -26,6 +27,11 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   _onLoadMyPofels(
       LoadMyPofelsEvent event, Emitter<NavigationState> emit) async {
     emit(const ShowMyPofelsState());
+  }
+
+  _onLoadPublicPofels(
+      LoadPublicPofelPage event, Emitter<NavigationState> emit) async {
+    emit(const ShowPublicPofelsState());
   }
 
   _onLoadUser(LoadCurrentUserPage event, Emitter<NavigationState> emit) async {

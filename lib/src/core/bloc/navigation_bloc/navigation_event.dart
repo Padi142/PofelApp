@@ -43,6 +43,13 @@ class LoadCurrentUserPage extends NavigationEvent {
   List<Object> get props => [];
 }
 
+class LoadPublicPofelPage extends NavigationEvent {
+  const LoadPublicPofelPage();
+
+  @override
+  List<Object> get props => [];
+}
+
 class LoadNotificationsPage extends NavigationEvent {
   const LoadNotificationsPage();
 

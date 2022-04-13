@@ -120,3 +120,11 @@ class UpgradePofel extends PofelEvent {
   @override
   List<Object> get props => [pofelId];
 }
+
+class DeletePofel extends PofelEvent {
+  final String pofelId;
+  const DeletePofel({required this.pofelId});
+
+  @override
+  List<Object> get props => [pofelId];
+}

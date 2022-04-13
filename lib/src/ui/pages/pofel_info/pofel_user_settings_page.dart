@@ -13,7 +13,8 @@ import '../../../core/bloc/pofel_bloc/pofel_event.dart';
 Widget UserSettingPage(BuildContext context, PofelModel pofel) {
   final myController = TextEditingController();
   DateTime pickedDate = DateTime.utc(1989, 11, 9);
-  return Padding(
+  return SingleChildScrollView(
+    child: Padding(
       padding: const EdgeInsets.all(15),
       child: Column(
         children: [
@@ -128,5 +129,7 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
             child: const Text("Opustit pofel"),
           ),
         ],
-      ));
+      ),
+    ),
+  );
 }

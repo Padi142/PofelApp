@@ -48,6 +48,43 @@ class PofelProvider {
     return pofels;
   }
 
+  Future<List<PofelModel>> fetchPublicPofels(String userUid) async {
+    List<PofelModel> pofels = [];
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DateTime sortDate = DateTime.now();
+    sortDate = sortDate.subtract(const Duration(days: 4));
+    await firestore
+        .collection("active_pofels")
+        .where("isPublic", isEqualTo: true)
+        .where("dateFrom", isGreaterThan: sortDate)
+        .get()
+        .then((querySnapshot) => {
+              // ignore: avoid_function_literals_in_foreach_calls
+              querySnapshot.docs.forEach((doc) {
+                PofelModel model = PofelModel(
+                  name: doc["name"],
+                  description: doc["description"],
+                  adminUid: doc["adminUid"],
+                  dateFrom: doc["dateFrom"].toDate(),
+                  dateTo: doc["dateTo"].toDate(),
+                  joinCode: doc["joinId"],
+                  spotifyLink: doc["spotifyLink"],
+                  pofelId: doc["pofelId"],
+                  signedUsers: [],
+                  createdAt: doc["createdAt"].toDate(),
+                  pofelLocation: doc["pofelLocation"],
+                  showDrugItems: doc["showDrugItems"] ?? false,
+                  isPremium: doc["isPremium"] ?? false,
+                  photos: [],
+                );
+
+                pofels.add(model);
+              })
+            });
+
+    return pofels;
+  }
+
   Future<List<PofelModel>> fetchPastPofels(String userUid) async {
     List<PofelModel> pofels = [];
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -358,5 +395,74 @@ class PofelProvider {
         .collection("signedUsers")
         .doc(uid)
         .delete();
+  }
+
+  //Deleting whole pofel
+  Future<void> deletePofel(String pofelId) async {
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("signedUsers")
+        .get()
+        .then((users) => {
+              users.docs.forEach((user) {
+                user.reference.delete();
+              })
+            });
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("chat")
+        .get()
+        .then((chats) => {
+              chats.docs.forEach((chat) {
+                chat.reference.delete();
+              })
+            });
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("items")
+        .get()
+        .then((items) => {
+              items.docs.forEach((item) {
+                item.reference.delete();
+              })
+            });
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("photos")
+        .get()
+        .then((photos) => {
+              photos.docs.forEach((photo) {
+                photo.reference.delete();
+              })
+            });
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("todo")
+        .get()
+        .then((todo) => {
+              todo.docs.forEach((chat) {
+                chat.reference.delete();
+              })
+            });
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .collection("chat")
+        .get()
+        .then((chats) => {
+              chats.docs.forEach((chat) {
+                chat.reference.delete();
+              })
+            });
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .delete()
+        .then((value) => {print("Bye bye pofel :/ :-(")});
   }
 }

@@ -1,26 +1,20 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expandable/expandable.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_share/flutter_share.dart';
 import 'package:flutterfire_ui/firestore.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:pofel_app/src/core/models/item_model.dart';
-import 'package:pofel_app/src/core/models/message_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/models/to_do_model.dart';
-import 'package:pofel_app/src/ui/components/chat_bubbles.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/invite_people_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/bloc/pofel_bloc/pofel_bloc.dart';
 import '../../../core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 
 Widget PofelInfo(
@@ -629,7 +623,7 @@ Widget PofelInfo(
                                     desc:
                                         "Lokace ještě není nastavena. Řekni adminovi, aby ji přidal! ",
                                     image: Image.network(
-                                        "https://cdn.freelogovectors.net/wp-content/uploads/2020/03/google-maps-logo.png"),
+                                        "https://cdn.vox-cdn.com/thumbor/Og-YmzOdoKKta2Nhy1eSK-Kma_s=/0x0:1280x800/920x613/filters:focal(538x298:742x502):format(webp)/cdn.vox-cdn.com/uploads/chorus_image/image/67300861/googlemaps.0.png"),
                                     content: Column(),
                                     buttons: [
                                       DialogButton(
@@ -651,9 +645,12 @@ Widget PofelInfo(
                               child: Row(
                                 children: [
                                   Image.network(
-                                    "https://cdn.freelogovectors.net/wp-content/uploads/2020/03/google-maps-logo.png",
+                                    "https://cdn.vox-cdn.com/thumbor/Og-YmzOdoKKta2Nhy1eSK-Kma_s=/0x0:1280x800/920x613/filters:focal(538x298:742x502):format(webp)/cdn.vox-cdn.com/uploads/chorus_image/image/67300861/googlemaps.0.png",
                                     height: 45,
                                     width: 45,
+                                  ),
+                                  SizedBox(
+                                    width: 3,
                                   ),
                                   const Text("Lokace pofelu"),
                                 ],

@@ -9,6 +9,7 @@ import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
+import 'package:pofel_app/src/core/bloc/public_pofel_bloc/public_pofel_bloc.dart';
 import 'package:pofel_app/src/ui/pages/invite_link_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/main_page.dart';
@@ -28,6 +29,7 @@ class PofelApp extends StatelessWidget {
         BlocProvider<PofelBloc>(create: (ctx) => PofelBloc()),
         BlocProvider<LoadpofelsBloc>(create: (ctx) => LoadpofelsBloc()),
         BlocProvider<ChatBloc>(create: (ctx) => ChatBloc()),
+        BlocProvider<PublicPofelBloc>(create: (ctx) => PublicPofelBloc()),
       ],
       child: MaterialApp(
           theme: ThemeData(

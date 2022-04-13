@@ -8,6 +8,7 @@ import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
+import 'package:pofel_app/src/ui/pages/public_pofels_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/notification_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/user_search_page.dart';
@@ -63,6 +64,8 @@ class _MainPageState extends State<MainPage> {
                   );
                 } else if (state is ShowUserDetailState) {
                   return const UserDetailPage();
+                } else if (state is ShowPublicPofelsState) {
+                  return PublicPofelsPage();
                 } else {
                   return const Center(
                     child: CircularProgressIndicator(),
@@ -85,14 +88,14 @@ class _MainPageState extends State<MainPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
             child: GNav(
               rippleColor: const Color(0xFFFFC8DD),
               hoverColor: Colors.grey[100]!,
-              gap: 8,
+              gap: 4,
               activeColor: Colors.black,
               iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               duration: const Duration(milliseconds: 400),
               tabBackgroundColor: primaryColor,
               color: Colors.black,
@@ -104,6 +107,10 @@ class _MainPageState extends State<MainPage> {
                 GButton(
                   icon: Icons.list_rounded,
                   text: 'Moje pofely',
+                ),
+                GButton(
+                  icon: Icons.map_rounded,
+                  text: "Mapa",
                 ),
                 GButton(
                   icon: Icons.search_outlined,
@@ -127,9 +134,13 @@ class _MainPageState extends State<MainPage> {
                     break;
                   case 2:
                     BlocProvider.of<NavigationBloc>(context)
-                        .add(const LoadSearchProfiles());
+                        .add(const LoadPublicPofelPage());
                     break;
                   case 3:
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(const LoadSearchProfiles());
+                    break;
+                  case 4:
                     BlocProvider.of<NavigationBloc>(context)
                         .add(const LoadCurrentUserPage());
                     break;

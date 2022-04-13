@@ -184,65 +184,67 @@ class _DashboardPageState extends State<UserDetailPage> {
                         ))),
                 Expanded(
                   flex: 2,
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Alert(
-                            context: context,
-                            type: AlertType.none,
-                            desc: "Zadejte nové jméno",
-                            content: Column(
-                              children: [
-                                TextField(
-                                  controller: myController,
-                                  decoration: const InputDecoration(),
-                                ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Alert(
+                              context: context,
+                              type: AlertType.none,
+                              desc: "Zadejte nové jméno",
+                              content: Column(
+                                children: [
+                                  TextField(
+                                    controller: myController,
+                                    decoration: const InputDecoration(),
+                                  ),
+                                ],
+                              ),
+                              buttons: [
+                                DialogButton(
+                                  child: const Text(
+                                    "Přejmenovat",
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 20),
+                                  ),
+                                  onPressed: () {
+                                    BlocProvider.of<UserBloc>(context).add(
+                                        UpdateUserName(
+                                            newName: myController.text));
+                                    Navigator.pop(context);
+                                  },
+                                  width: 120,
+                                )
                               ],
-                            ),
-                            buttons: [
-                              DialogButton(
-                                child: const Text(
-                                  "Přejmenovat",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20),
-                                ),
-                                onPressed: () {
-                                  BlocProvider.of<UserBloc>(context).add(
-                                      UpdateUserName(
-                                          newName: myController.text));
-                                  Navigator.pop(context);
-                                },
-                                width: 120,
-                              )
-                            ],
-                          ).show();
-                        },
-                        child: const Text("Upravit jméno"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final ImagePicker _picker = ImagePicker();
-                          final XFile? image = await _picker.pickImage(
-                              source: ImageSource.gallery);
-                          if (image != null) {
-                            BlocProvider.of<UserBloc>(context)
-                                .add(UpdateUserProfilePic(newPic: image));
-                          }
-                        },
-                        child: const AutoSizeText("Upravit profilovku"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PastPofelsPage()),
-                          );
-                        },
-                        child: const Text("Proběhlé pofely"),
-                      ),
-                    ],
+                            ).show();
+                          },
+                          child: const Text("Upravit jméno"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final ImagePicker _picker = ImagePicker();
+                            final XFile? image = await _picker.pickImage(
+                                source: ImageSource.gallery);
+                            if (image != null) {
+                              BlocProvider.of<UserBloc>(context)
+                                  .add(UpdateUserProfilePic(newPic: image));
+                            }
+                          },
+                          child: const AutoSizeText("Upravit profilovku"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PastPofelsPage()),
+                            );
+                          },
+                          child: const Text("Proběhlé pofely"),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 ElevatedButton(
@@ -251,7 +253,7 @@ class _DashboardPageState extends State<UserDetailPage> {
                   },
                   child: const Text("Odhlásit se"),
                 ),
-                Expanded(flex: 2, child: Container()),
+                Expanded(child: Container()),
                 Expanded(
                   child: Container(
                     width: double.infinity,

@@ -36,6 +36,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<RemovePerson>(_onRemovePerson);
     on<ChangeAdmin>(_onChangeAdmin);
     on<UpgradePofel>(_onUpgradePofel);
+    on<DeletePofel>(_onDeletePofel);
   }
   PofelProvider pofelApiProvider = PofelProvider();
 
@@ -177,6 +178,12 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     await pofelApiProvider.leavePofel(event.pofelId, event.uid);
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.PERSON_LEFT));
+  }
+
+  _onDeletePofel(DeletePofel event, Emitter<PofelState> emit) async {
+    await pofelApiProvider.deletePofel(event.pofelId);
+    emit((state as PofelStateWithData)
+        .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPDATED));
   }
 
   _onChangeAdmin(ChangeAdmin event, Emitter<PofelState> emit) async {
