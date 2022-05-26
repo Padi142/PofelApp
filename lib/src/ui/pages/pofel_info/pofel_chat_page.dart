@@ -10,6 +10,7 @@ import 'package:pofel_app/src/core/models/message_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:flutterfire_ui/database.dart';
 
+import '../../../core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import '../../components/chat_bubbles.dart';
 
 Widget PofelChatPage(
@@ -28,6 +29,16 @@ Widget PofelChatPage(
   return Padding(
       padding: const EdgeInsets.all(15),
       child: Column(children: [
+        Align(
+          alignment: Alignment.topLeft,
+          child: ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.redAccent),
+              child: const Text("Zpět"),
+              onPressed: () {
+                BlocProvider.of<PofelDetailNavigationBloc>(context)
+                    .add(const PofelInfoEvent());
+              }),
+        ),
         Expanded(
             flex: 4,
             child: FirestoreListView(

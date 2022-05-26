@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
-import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
+import 'package:the_apple_sign_in/the_apple_sign_in.dart' as appleLogin;
 import 'package:pofel_app/src/core/models/login_models/user.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +27,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LogInInitial>(_onInitial);
     on<ReturnFromInvite>(_onReturnFromInivte);
     on<GoogleSupportLogIn>(_onGoogleSupportLogin);
+    on<AppleLoginEvent>(_onAppleLogin);
   }
   _onInitial(LogInInitial event, Emitter<LoginState> emit) async {
     final prefs = await SharedPreferences.getInstance();
@@ -85,6 +86,51 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           user: logedInUser, loginStateEnum: LoginStateEnum.LOGGED_IN));
     } catch (e) {
       print(e);
+      emit((state as LoginStateWithData)
+          .copyWith(loginStateEnum: LoginStateEnum.LOG_IN_FAILED));
+    }
+  }
+
+  _onAppleLogin(AppleLoginEvent event, Emitter<LoginState> emit) async {
+    final prefs = await SharedPreferences.getInstance();
+    // Trigger the sign-in flow
+    try {
+      final result = await appleLogin.TheAppleSignIn.performRequests([
+        const appleLogin.AppleIdRequest(requestedScopes: [
+          appleLogin.Scope.email,
+          appleLogin.Scope.fullName
+        ])
+      ]);
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+      final appleIdCredential = result.credential!;
+      final oAuthProvider = OAuthProvider('apple.com');
+      final credential = oAuthProvider.credential(
+        idToken: String.fromCharCodes(appleIdCredential.identityToken!),
+        accessToken: String.fromCharCodes(appleIdCredential.authorizationCode!),
+      );
+      final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user!;
+
+      final fullName = appleIdCredential.fullName;
+      if (fullName != null &&
+          fullName.givenName != null &&
+          fullName.familyName != null) {
+        final displayName = '${fullName.givenName} ${fullName.familyName}';
+        await firebaseUser.updateDisplayName(displayName);
+      }
+
+      User? user = FirebaseAuth.instance.currentUser;
+
+      UserModel logedInUser = UserModel(
+        uid: user!.uid,
+        name: user.displayName,
+      );
+      prefs.setString("uid", user.uid);
+      await FirebaseMessaging.instance.subscribeToTopic(user.uid);
+
+      emit((state as LoginStateWithData).copyWith(
+          user: logedInUser, loginStateEnum: LoginStateEnum.LOGGED_IN));
+    } catch (_) {
       emit((state as LoginStateWithData)
           .copyWith(loginStateEnum: LoginStateEnum.LOG_IN_FAILED));
     }

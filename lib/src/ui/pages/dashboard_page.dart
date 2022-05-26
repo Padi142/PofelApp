@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -64,12 +65,22 @@ class _DashboardPageState extends State<DashboardPage> {
             Expanded(
                 flex: 6,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                      top: 8, bottom: 8, left: 30, right: 30),
+                  padding:
+                      const EdgeInsets.only(bottom: 8, left: 30, right: 30),
                   child: Container(
-                      decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                          gradient: LinearGradient(
+                      decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 3,
+                              blurRadius: 4,
+                              offset: const Offset(
+                                  0, 3), // changes position of shadow
+                            ),
+                          ],
+                          gradient: const LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
@@ -81,7 +92,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            "Moje pofely",
+                            "Moje pofely:",
                             style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,
@@ -115,12 +126,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                                   decoration:
                                                       const BoxDecoration(
                                                           color:
-                                                              Color(0xFF73BCFC),
+                                                              Color(0xFFFFFFFF),
                                                           borderRadius:
                                                               BorderRadius.all(
                                                                   Radius
                                                                       .circular(
-                                                                          5))),
+                                                                          25))),
                                                   child: Padding(
                                                     padding:
                                                         const EdgeInsets.all(
@@ -131,10 +142,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                                             MainAxisAlignment
                                                                 .spaceBetween,
                                                         children: [
-                                                          Text(
+                                                          AutoSizeText(
                                                             state
                                                                 .myPofels[index]
                                                                 .name,
+                                                            maxLines: 3,
                                                             style: const TextStyle(
                                                                 fontSize: 22,
                                                                 fontWeight:

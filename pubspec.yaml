@@ -5,7 +5,7 @@ description: Epicka pofel apka.
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.1.0+18
+version: 1.1.0+19
 
 environment:
   sdk: ">=2.16.0-51.0.dev <3.0.0"
@@ -62,6 +62,8 @@ dependencies:
   smooth_star_rating_nsafe: ^1.0.0+1
   flutter_rating_stars: ^1.0.3+4
   flutter_focus_watcher: ^2.0.0
+  flutter_svg: ^1.1.0
+  outline_gradient_button: ^2.0.0+1
   
 
 dev_dependencies:

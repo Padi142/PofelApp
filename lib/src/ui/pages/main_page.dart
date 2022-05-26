@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_focus_watcher/flutter_focus_watcher.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:pofel_app/constants.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
-import 'package:pofel_app/src/ui/components/top_bar.dart';
 import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/kyblspot_pages/kyblspots_page.dart';
-import 'package:pofel_app/src/ui/pages/log_in_page.dart';
-import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
 import 'package:pofel_app/src/ui/pages/public_pofels_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/notification_page.dart';
@@ -29,8 +28,14 @@ class _MainPageState extends State<MainPage> {
     int _selectedIndex = 0;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pofel app"),
-        backgroundColor: const Color(0xFF8F3BB7),
+        elevation: 0,
+        title: SizedBox(
+          width: MediaQuery.of(context).size.width / 4,
+          child: SvgPicture.asset(
+            "assets/images/POFEL.svg",
+          ),
+        ),
+        backgroundColor: const Color(0xFFFFFFFF),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
@@ -39,7 +44,8 @@ class _MainPageState extends State<MainPage> {
                 BlocProvider.of<NavigationBloc>(context)
                     .add(const LoadNotificationsPage());
               },
-              child: const Icon(Icons.notifications),
+              child: const Icon(Icons.notifications,
+                  color: Color(0xFF8F3BB7), size: 35),
             ),
           )
         ],
@@ -121,7 +127,7 @@ class _MainPageState extends State<MainPage> {
                   text: "Hledat",
                 ),
                 GButton(
-                  icon: Icons.verified_user,
+                  icon: Icons.account_circle,
                   text: 'Profil',
                 ),
               ],
