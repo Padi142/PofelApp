@@ -1,23 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
-import 'package:intl/intl.dart';
-import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
-import 'package:pofel_app/src/core/models/profile_model.dart';
-import 'package:pofel_app/src/ui/components/follower_container.dart';
-import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
-import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
-import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/past_pofels_list_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_followers_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_premium_page.dart';
@@ -47,244 +34,331 @@ class _DashboardPageState extends State<UserDetailPage> {
               children: [
                 Expanded(
                     flex: 2,
-                    child: Container(
-                        color: userState.currentUser.isPremium == true
-                            ? const Color.fromARGB(255, 247, 190, 67)
-                            : Colors.grey,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: Image.network(
-                                    userState.currentUser.photo!,
-                                    height: 100,
-                                    width: 100),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text("Jméno: "),
-                                  Text(userState.currentUser.name!,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold)),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          const Text("Sledující:"),
-                                          Container(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.08,
-                                            margin: const EdgeInsets.all(3),
-                                            child: ElevatedButton(
-                                              onPressed: () async {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          UserFollowersPage(
-                                                            profiles: userState
-                                                                .currentUser
-                                                                .followers!,
-                                                          )),
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(2),
-                                                child: Center(
-                                                  child: Text(
-                                                      userState.currentUser
-                                                          .followers!.length
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 26,
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                backgroundColor:
-                                                    const Color(0xFF73BCFC),
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20)),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          const Text("Sleduji:"),
-                                          Container(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.08,
-                                            margin: const EdgeInsets.all(3),
-                                            child: ElevatedButton(
-                                              onPressed: () async {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          UserFollowersPage(
-                                                            profiles: userState
-                                                                .currentUser
-                                                                .following!,
-                                                          )),
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(2),
-                                                child: Center(
-                                                  child: Text(
-                                                      userState.currentUser
-                                                          .following!.length
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 26,
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                backgroundColor:
-                                                    const Color(0xFF73BCFC),
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20)),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  )
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          top: 8, bottom: 8, left: 30, right: 30),
+                      child: Container(
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20)),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Color(0xFF0066C3),
+                                  Color(0xFF7D00A9),
                                 ],
+                              )),
+                          child: Column(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  "Můj profil",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
-                            ),
-                          ],
-                        ))),
-                Expanded(
-                  flex: 2,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Alert(
-                              context: context,
-                              type: AlertType.none,
-                              desc: "Zadejte nové jméno",
-                              content: Column(
-                                children: [
-                                  TextField(
-                                    controller: myController,
-                                    decoration: const InputDecoration(),
-                                  ),
-                                ],
-                              ),
-                              buttons: [
-                                DialogButton(
-                                  child: const Text(
-                                    "Přejmenovat",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 20),
-                                  ),
-                                  onPressed: () {
-                                    BlocProvider.of<UserBloc>(context).add(
-                                        UpdateUserName(
-                                            newName: myController.text));
-                                    Navigator.pop(context);
+                              Expanded(
+                                flex: 3,
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final ImagePicker _picker = ImagePicker();
+                                    final XFile? image = await _picker
+                                        .pickImage(source: ImageSource.gallery);
+                                    if (image != null) {
+                                      BlocProvider.of<UserBloc>(context).add(
+                                          UpdateUserProfilePic(newPic: image));
+                                    }
                                   },
-                                  width: 120,
-                                )
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color:
+                                            userState.currentUser.isPremium ==
+                                                    true
+                                                ? const Color.fromARGB(
+                                                    255, 247, 190, 67)
+                                                : Colors.grey,
+                                        shape: BoxShape.circle),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: CircleAvatar(
+                                        radius: 40,
+                                        foregroundImage: NetworkImage(
+                                          userState.currentUser.photo!,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    userState.currentUser.name!,
+                                    style: const TextStyle(
+                                        fontSize: 25,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              )
+                            ],
+                          )),
+                    )),
+                Expanded(
+                    flex: 1,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 30,
+                        ),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserFollowersPage(
+                                          profiles:
+                                              userState.currentUser.followers!,
+                                        )),
+                              );
+                            },
+                            child: Column(
+                              children: [
+                                const Text('Sledující: ',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                    userState.currentUser.followers!.length
+                                        .toString(),
+                                    style: const TextStyle(
+                                        color: Color(0xFF3F33D4),
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold)),
                               ],
-                            ).show();
-                          },
-                          child: const Text("Upravit jméno"),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              side: const BorderSide(
+                                  width: 5.0, color: Colors.black),
+                            ),
+                          ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            final ImagePicker _picker = ImagePicker();
-                            final XFile? image = await _picker.pickImage(
-                                source: ImageSource.gallery);
-                            if (image != null) {
-                              BlocProvider.of<UserBloc>(context)
-                                  .add(UpdateUserProfilePic(newPic: image));
-                            }
-                          },
-                          child: const AutoSizeText("Upravit profilovku"),
+                        const SizedBox(
+                          width: 50,
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PastPofelsPage()),
-                            );
-                          },
-                          child: const Text("Proběhlé pofely"),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserFollowersPage(
+                                          profiles:
+                                              userState.currentUser.following!,
+                                        )),
+                              );
+                            },
+                            child: Column(
+                              children: [
+                                const Text('Sleduji: ',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                    userState.currentUser.following!.length
+                                        .toString(),
+                                    style: const TextStyle(
+                                        color: Color(0xFF3F33D4),
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              side: const BorderSide(
+                                  width: 5.0, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 30,
                         ),
                       ],
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    BlocProvider.of<LoginBloc>(context).add(LogOut());
-                  },
-                  child: const Text("Odhlásit se"),
-                ),
-                Expanded(child: Container()),
+                    )),
                 Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    height: double.maxFinite,
-                    margin: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color.fromARGB(255, 247, 190, 67),
-                            Color.fromARGB(255, 245, 245, 39)
-                          ],
-                        )),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const UserPremiumPage()),
-                        );
-                      },
-                      child: const Center(
-                        child: Text(
-                          "Premium page",
-                          style: TextStyle(color: Colors.white, fontSize: 25),
-                          textAlign: TextAlign.center,
-                        ),
+                  flex: 4,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(left: 30, right: 30, top: 10),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Alert(
+                                    context: context,
+                                    type: AlertType.none,
+                                    desc: "Zadejte nové jméno",
+                                    content: Column(
+                                      children: [
+                                        TextField(
+                                          controller: myController,
+                                          decoration: const InputDecoration(),
+                                        ),
+                                      ],
+                                    ),
+                                    buttons: [
+                                      DialogButton(
+                                        child: const Text(
+                                          "Přejmenovat",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20),
+                                        ),
+                                        onPressed: () {
+                                          BlocProvider.of<UserBloc>(context)
+                                              .add(UpdateUserName(
+                                                  newName: myController.text));
+                                          Navigator.pop(context);
+                                        },
+                                        width: 120,
+                                      )
+                                    ],
+                                  ).show();
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "Upravit jméno",
+                                    style: TextStyle(
+                                        color: Color(0xFF7D00A9),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
+                                  side: const BorderSide(
+                                      width: 5.0, color: Color(0xFF7D00A9)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PastPofelsPage()),
+                                  );
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "Proběhlé pofely",
+                                    style: TextStyle(
+                                        color: Color(0xFF7D00A9),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
+                                  side: const BorderSide(
+                                      width: 5.0, color: Color(0xFF7D00A9)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  BlocProvider.of<LoginBloc>(context)
+                                      .add(LogOut());
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "Odhlásit se",
+                                    style: TextStyle(
+                                        color: Color(0xFF7D00A9),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
+                                  side: const BorderSide(
+                                      width: 5.0, color: Color(0xFF7D00A9)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => UserPremiumPage()),
+                                  );
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "Premium Page",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFEE500),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
+                                  side: const BorderSide(
+                                      width: 5.0, color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             );
           } else {

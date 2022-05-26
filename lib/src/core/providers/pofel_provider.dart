@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pofel_app/src/core/models/pofel_image_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
+import 'package:pofel_app/src/core/models/public_pofel_model.dart';
 
 class PofelProvider {
   Future<List<PofelModel>> fetchPofels(String userUid) async {
@@ -38,6 +39,7 @@ class PofelProvider {
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
                   isPremium: doc["isPremium"] ?? false,
+                  isPublic: doc["isPublic"],
                   photos: [],
                 );
 
@@ -48,8 +50,8 @@ class PofelProvider {
     return pofels;
   }
 
-  Future<List<PofelModel>> fetchPublicPofels(String userUid) async {
-    List<PofelModel> pofels = [];
+  Future<List<PublicPofelModel>> fetchPublicPofels(String userUid) async {
+    List<PublicPofelModel> pofels = [];
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     DateTime sortDate = DateTime.now();
     sortDate = sortDate.subtract(const Duration(days: 4));
@@ -61,7 +63,7 @@ class PofelProvider {
         .then((querySnapshot) => {
               // ignore: avoid_function_literals_in_foreach_calls
               querySnapshot.docs.forEach((doc) {
-                PofelModel model = PofelModel(
+                PublicPofelModel model = PublicPofelModel(
                   name: doc["name"],
                   description: doc["description"],
                   adminUid: doc["adminUid"],
@@ -70,11 +72,12 @@ class PofelProvider {
                   joinCode: doc["joinId"],
                   spotifyLink: doc["spotifyLink"],
                   pofelId: doc["pofelId"],
-                  signedUsers: [],
+                  signedUsers: doc["signedUsers"].length,
                   createdAt: doc["createdAt"].toDate(),
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
                   isPremium: doc["isPremium"] ?? false,
+                  isPublic: doc["isPublic"],
                   photos: [],
                 );
 
@@ -112,6 +115,7 @@ class PofelProvider {
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
                   isPremium: doc["isPremium"] ?? false,
+                  isPublic: doc["isPublic"],
                   photos: [],
                 );
 
@@ -146,6 +150,7 @@ class PofelProvider {
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
                   isPremium: doc["isPremium"] ?? false,
+                  isPublic: doc["isPublic"],
                   photos: [],
                 );
                 pofels.add(model);
@@ -185,6 +190,7 @@ class PofelProvider {
                   pofelLocation: doc["pofelLocation"],
                   showDrugItems: doc["showDrugItems"] ?? false,
                   isPremium: doc["isPremium"] ?? false,
+                  isPublic: doc["isPublic"],
                   photos: [],
                 );
                 pofels.add(model);
@@ -278,6 +284,7 @@ class PofelProvider {
       "adminUid": adminUid,
       "signedUsers": [adminUid],
       "isPremium": false,
+      "isPublic": false,
       "showDrugItems": false
     }).then((value) => print("pofel created"));
     firestore
@@ -361,6 +368,15 @@ class PofelProvider {
         .update({
       "showDrugItems": !showDrugs,
     }).then((value) => print("drugs toggled"));
+  }
+
+  Future<void> updateIsPublic(String pofelId, bool isPublic) async {
+    await FirebaseFirestore.instance
+        .collection('active_pofels')
+        .doc(pofelId)
+        .update({
+      "isPublic": !isPublic,
+    }).then((value) => print("isPublic toggled"));
   }
 
   Future<void> changeAdmin(String pofelId, String uid) async {

@@ -8,6 +8,7 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
+import 'package:pofel_app/src/ui/components/gradient_button.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_items_page.dart';
@@ -55,38 +56,105 @@ class _DashboardPageState extends State<InviteLinkPage> {
                         flex: 7,
                         child: Container(
                           margin: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF5FB3FC),
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20)),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Color(0xFF0066C3),
+                                  Color(0xFF7D00A9),
+                                ],
+                              )),
                           child: Column(
                             children: [
                               Expanded(
                                 child: Column(
                                   children: [
-                                    Text(
-                                      pofelState.choosenPofel.name,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold),
+                                    Text(pofelState.choosenPofel.name,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 3,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.all(8),
+                                      decoration: const BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15)),
+                                          color: Colors.white),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: Row(
+                                          children: [
+                                            const Text("Datum: ",
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            Expanded(
+                                              child: Container(),
+                                            ),
+                                            Text(
+                                                DateFormat('dd.MM. – kk:mm')
+                                                    .format(pofelState
+                                                        .choosenPofel
+                                                        .dateFrom!),
+                                                style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                     const SizedBox(
-                                      height: 3,
+                                      height: 5,
                                     ),
-                                    Text(
-                                      DateFormat('dd.MM. – kk:mm').format(
-                                          pofelState.choosenPofel.dateFrom!),
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 29,
-                                          fontWeight: FontWeight.bold),
+                                    Container(
+                                      margin: const EdgeInsets.all(8),
+                                      decoration: const BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15)),
+                                          color: Colors.white),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: Row(
+                                          children: [
+                                            const Text("Účastníků: ",
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            Expanded(
+                                              child: Container(),
+                                            ),
+                                            Text(
+                                                pofelState.choosenPofel
+                                                    .signedUsers.length
+                                                    .toString(),
+                                                style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                               Expanded(
-                                flex: 4,
+                                flex: 2,
                                 child: Column(
                                   children: [
                                     const Text(
@@ -106,7 +174,8 @@ class _DashboardPageState extends State<InviteLinkPage> {
                                               margin: const EdgeInsets.all(2),
                                               height: 60,
                                               decoration: const BoxDecoration(
-                                                  color: Color(0xFFa757b5),
+                                                  color: Color.fromARGB(
+                                                      255, 170, 57, 170),
                                                   borderRadius:
                                                       BorderRadius.all(
                                                           Radius.circular(10))),
@@ -174,43 +243,24 @@ class _DashboardPageState extends State<InviteLinkPage> {
                         ),
                       ),
                       Expanded(
-                        child: Center(
-                          child: Container(
-                            width: double.infinity,
-                            height: double.maxFinite,
-                            margin: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color.fromARGB(255, 238, 140, 255),
-                                    Color.fromARGB(255, 62, 182, 226)
-                                  ],
-                                )),
-                            child: InkWell(
-                              onTap: () {
-                                BlocProvider.of<PofelBloc>(context)
-                                    .add(JoinPofel(joinId: widget.joinId));
-                                Future.delayed(const Duration(milliseconds: 400))
-                                    .whenComplete(() =>
-                                        BlocProvider.of<LoginBloc>(context)
-                                            .add(ReturnFromInvite()))
-                                    .whenComplete(() => Future.delayed(
-                                            const Duration(milliseconds: 400))
-                                        .whenComplete(() => BlocProvider.of<
-                                                NavigationBloc>(context)
-                                            .add(PofelDetailPageEvent(pofelId: pofelState.choosenPofel.pofelId))));
-                              },
-                              child: const Center(
-                                child: Text(
-                                  "Přijmou pozvánku",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 25),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ),
+                        child: GradientButton(
+                          buttonText: "Přijmou pozvánku",
+                          onpressed: () {
+                            BlocProvider.of<PofelBloc>(context)
+                                .add(JoinPofel(joinId: widget.joinId));
+                            Future.delayed(const Duration(milliseconds: 400))
+                                .whenComplete(() => BlocProvider.of<LoginBloc>(context)
+                                    .add(ReturnFromInvite()))
+                                .whenComplete(() =>
+                                    Future.delayed(const Duration(milliseconds: 400))
+                                        .whenComplete(() =>
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(PofelDetailPageEvent(
+                                                    pofelId: pofelState
+                                                        .choosenPofel
+                                                        .pofelId))));
+                          },
+                          width: double.infinity,
                         ),
                       )
                     ]);

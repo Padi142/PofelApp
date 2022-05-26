@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_state.dart';
@@ -9,6 +10,7 @@ import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
+import '../../../core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import '../../components/item_container.dart';
 
 Widget PofelItemsPage(BuildContext context, PofelModel pofel) {
@@ -177,7 +179,17 @@ Widget PofelItemsPage(BuildContext context, PofelModel pofel) {
             ),
             Row(
               children: [
-                Expanded(flex: 2, child: Container()),
+                Expanded(
+                  child: ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(primary: Colors.redAccent),
+                      child: const Text("Zpět"),
+                      onPressed: () {
+                        BlocProvider.of<PofelDetailNavigationBloc>(context)
+                            .add(const PofelInfoEvent());
+                      }),
+                ),
+                Expanded(flex: 1, child: Container()),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {

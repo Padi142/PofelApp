@@ -2,6 +2,8 @@ import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
+import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
+import 'package:pofel_app/src/core/bloc/social_bloc/social_event.dart';
 import 'package:pofel_app/src/core/bloc/todo_bloc/todo_bloc_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
@@ -106,6 +108,18 @@ Alert alert(
           ),
           Row(
             children: const [],
+          ),
+          ElevatedButton(
+            onPressed: () {
+              BlocProvider.of<SocialBloc>(context)
+                  .add(Follow(userId: user.uid));
+              Navigator.pop(context);
+            },
+            child: const Text("Follow"),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
+import 'package:pofel_app/src/ui/components/toast_premium_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -110,9 +111,32 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
 
               PofelUserModel user =
                   pofel.signedUsers.firstWhere((user) => user.uid == uid);
-
-              BlocProvider.of<PofelBloc>(context)
-                  .add(UpgradePofel(pofelId: pofel.pofelId, user: user));
+              if (user.isPremium) {
+                BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
+                    pofelId: pofel.pofelId,
+                    updatePofelEnum: UpdatePofelEnum.UPGRADE_POFEL));
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBarPremiumAlert(context, 'Pofel upgradován!'));
+              } else {
+                Alert(
+                  context: context,
+                  type: AlertType.error,
+                  title: "Premiová feature :/",
+                  desc: "Tato funkce je dostupná pouze pro prémiové uživatele.",
+                  buttons: [
+                    DialogButton(
+                      child: const Text(
+                        "Zavřít",
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(context);
+                      },
+                      width: 120,
+                    )
+                  ],
+                ).show();
+              }
             },
             child: const Text("✨ Upgradovat pofel ✨",
                 style: TextStyle(color: Colors.black)),

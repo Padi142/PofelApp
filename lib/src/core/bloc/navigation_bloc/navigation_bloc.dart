@@ -14,6 +14,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     on<LoadSearchProfiles>(_onSearchUsers);
     on<LoadNotificationsPage>(_onLoadNotification);
     on<LoadPublicPofelPage>(_onLoadPublicPofels);
+    on<LoadKyblspotsPgae>(_onLoadKyblspots);
   }
   _onLoadDashboard(DashboardEvent event, Emitter<NavigationState> emit) async {
     emit(const ShowDashboardState());
@@ -49,5 +50,10 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   _onSearchUsers(
       LoadSearchProfiles event, Emitter<NavigationState> emit) async {
     emit(const ShowSearchProfilesState());
+  }
+
+  _onLoadKyblspots(
+      LoadKyblspotsPgae event, Emitter<NavigationState> emit) async {
+    emit(const ShowKyblspotsPage());
   }
 }

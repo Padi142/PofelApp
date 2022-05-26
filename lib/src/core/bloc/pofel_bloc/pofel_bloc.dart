@@ -24,6 +24,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
                 showDrugItems: false,
                 pofelLocation: const GeoPoint(0, 0),
                 isPremium: false,
+                isPublic: false,
                 photos: const []),
             pofelStateEnum: PofelStateEnum.INITIAL)) {
     on<CreatePofel>(_onCreatePofel);
@@ -35,7 +36,6 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<ChatNotification>(_onChangeChatNotPref);
     on<RemovePerson>(_onRemovePerson);
     on<ChangeAdmin>(_onChangeAdmin);
-    on<UpgradePofel>(_onUpgradePofel);
     on<DeletePofel>(_onDeletePofel);
   }
   PofelProvider pofelApiProvider = PofelProvider();
@@ -155,6 +155,12 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       case UpdatePofelEnum.UPDATE_SHOW_DRUGS:
         await pofelApiProvider.toggleShowDrug(event.pofelId, event.showDrugs!);
         break;
+      case UpdatePofelEnum.UPDATE_IS_PUBLIC:
+        await pofelApiProvider.updateIsPublic(event.pofelId, event.isPublic!);
+        break;
+      case UpdatePofelEnum.UPGRADE_POFEL:
+        await pofelApiProvider.upgradePofel(event.pofelId);
+        break;
     }
 
     emit((state as PofelStateWithData)
@@ -205,14 +211,5 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     }
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.POFEL_LOADED));
-  }
-
-  _onUpgradePofel(UpgradePofel event, Emitter<PofelState> emit) async {
-    if (event.user.isPremium) {
-      await pofelApiProvider.upgradePofel(event.pofelId);
-
-      emit((state as PofelStateWithData)
-          .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPGRADED));
-    }
   }
 }

@@ -9,7 +9,7 @@ part of 'public_pofel_state.dart';
 abstract class _$PublicPofelsLoadedCWProxy {
   PublicPofelsLoaded markers(List<Marker> markers);
 
-  PublicPofelsLoaded pofels(List<PofelModel> pofels);
+  PublicPofelsLoaded pofels(List<PublicPofelModel> pofels);
 
   PublicPofelsLoaded publicPofelEnum(PublicPofelEnum publicPofelEnum);
 
@@ -21,7 +21,7 @@ abstract class _$PublicPofelsLoadedCWProxy {
   /// ````
   PublicPofelsLoaded call({
     List<Marker>? markers,
-    List<PofelModel>? pofels,
+    List<PublicPofelModel>? pofels,
     PublicPofelEnum? publicPofelEnum,
   });
 }
@@ -36,7 +36,8 @@ class _$PublicPofelsLoadedCWProxyImpl implements _$PublicPofelsLoadedCWProxy {
   PublicPofelsLoaded markers(List<Marker> markers) => this(markers: markers);
 
   @override
-  PublicPofelsLoaded pofels(List<PofelModel> pofels) => this(pofels: pofels);
+  PublicPofelsLoaded pofels(List<PublicPofelModel> pofels) =>
+      this(pofels: pofels);
 
   @override
   PublicPofelsLoaded publicPofelEnum(PublicPofelEnum publicPofelEnum) =>
@@ -63,7 +64,7 @@ class _$PublicPofelsLoadedCWProxyImpl implements _$PublicPofelsLoadedCWProxy {
       pofels: pofels == const $CopyWithPlaceholder() || pofels == null
           ? _value.pofels
           // ignore: cast_nullable_to_non_nullable
-          : pofels as List<PofelModel>,
+          : pofels as List<PublicPofelModel>,
       publicPofelEnum: publicPofelEnum == const $CopyWithPlaceholder() ||
               publicPofelEnum == null
           ? _value.publicPofelEnum
@@ -74,7 +75,7 @@ class _$PublicPofelsLoadedCWProxyImpl implements _$PublicPofelsLoadedCWProxy {
 }
 
 extension $PublicPofelsLoadedCopyWith on PublicPofelsLoaded {
-  /// Returns a callable class that can be used as follows: `instanceOfclass PublicPofelsLoaded extends PublicPofelState.name.copyWith(...)` or like so:`instanceOfclass PublicPofelsLoaded extends PublicPofelState.name.copyWith.fieldName(...)`.
+  /// Returns a callable class that can be used as follows: `instanceOfPublicPofelsLoaded.copyWith(...)` or like so:`instanceOfPublicPofelsLoaded.copyWith.fieldName(...)`.
   _$PublicPofelsLoadedCWProxy get copyWith =>
       _$PublicPofelsLoadedCWProxyImpl(this);
 }

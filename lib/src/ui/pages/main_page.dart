@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_focus_watcher/flutter_focus_watcher.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:pofel_app/constants.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/ui/components/top_bar.dart';
 import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
+import 'package:pofel_app/src/ui/pages/kyblspot_pages/kyblspots_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
@@ -66,6 +68,8 @@ class _MainPageState extends State<MainPage> {
                   return const UserDetailPage();
                 } else if (state is ShowPublicPofelsState) {
                   return PublicPofelsPage();
+                } else if (state is ShowKyblspotsPage) {
+                  return KyblspotsPage();
                 } else {
                   return const Center(
                     child: CircularProgressIndicator(),
@@ -134,7 +138,7 @@ class _MainPageState extends State<MainPage> {
                     break;
                   case 2:
                     BlocProvider.of<NavigationBloc>(context)
-                        .add(const LoadPublicPofelPage());
+                        .add(const LoadKyblspotsPgae());
                     break;
                   case 3:
                     BlocProvider.of<NavigationBloc>(context)

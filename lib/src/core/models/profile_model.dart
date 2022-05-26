@@ -32,7 +32,17 @@ class ProfileModel extends Equatable {
 List<ProfileModel> profilesFromList(List<dynamic> list) {
   List<ProfileModel> users = [];
   for (var user in list) {
-    users.add(ProfileModel.fromMap(user));
+    try {
+      users.add(ProfileModel.fromMap(user));
+    } catch (e) {
+      users.add(ProfileModel(
+          uid: user["uid"],
+          name: "Jmeno neni dostupné",
+          photo:
+              "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483141.jpg",
+          //isPremium: map["isPremium"],
+          isPremium: false));
+    }
   }
   return users;
 }

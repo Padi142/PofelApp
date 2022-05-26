@@ -87,7 +87,7 @@ class _$ImageStateWithDataCWProxyImpl implements _$ImageStateWithDataCWProxy {
 }
 
 extension $ImageStateWithDataCopyWith on ImageStateWithData {
-  /// Returns a callable class that can be used as follows: `instanceOfclass ImageStateWithData extends ImageState.name.copyWith(...)` or like so:`instanceOfclass ImageStateWithData extends ImageState.name.copyWith.fieldName(...)`.
+  /// Returns a callable class that can be used as follows: `instanceOfImageStateWithData.copyWith(...)` or like so:`instanceOfImageStateWithData.copyWith.fieldName(...)`.
   _$ImageStateWithDataCWProxy get copyWith =>
       _$ImageStateWithDataCWProxyImpl(this);
 }

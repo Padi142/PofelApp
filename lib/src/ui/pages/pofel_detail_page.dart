@@ -71,12 +71,19 @@ class _DashboardPageState extends State<PofelDetailPage> {
                         children: [
                           Expanded(
                             flex: 6,
-                            child: AutoSizeText(pofelState.choosenPofel.name,
-                                maxLines: 3,
-                                style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold)),
+                            child: GestureDetector(
+                              onTap: () {
+                                BlocProvider.of<PofelDetailNavigationBloc>(
+                                        context)
+                                    .add(const PofelInfoEvent());
+                              },
+                              child: AutoSizeText(pofelState.choosenPofel.name,
+                                  maxLines: 3,
+                                  style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold)),
+                            ),
                           ),
                           Expanded(
                             flex: 2,

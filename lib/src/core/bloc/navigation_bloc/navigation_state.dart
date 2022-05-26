@@ -46,6 +46,12 @@ class ShowSearchProfilesState extends NavigationState {
   List<Object> get props => [];
 }
 
+class ShowKyblspotsPage extends NavigationState {
+  const ShowKyblspotsPage();
+  @override
+  List<Object> get props => [];
+}
+
 class ShowNotificationPageState extends NavigationState {
   final String uid;
   const ShowNotificationPageState(this.uid);

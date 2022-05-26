@@ -15,7 +15,9 @@ import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/bloc/navigation_bloc/navigation_bloc.dart';
 import '../../../core/bloc/pofel_bloc/pofel_event.dart';
+import '../../../core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 
 Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
   ImageBloc imageBloc = ImageBloc();
@@ -117,7 +119,18 @@ Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
                                 children: const [Text("Zatím žádne fotky")])),
                     Row(
                       children: [
-                        Expanded(flex: 2, child: Container()),
+                        Expanded(
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colors.redAccent),
+                              child: const Text("Zpět"),
+                              onPressed: () {
+                                BlocProvider.of<PofelDetailNavigationBloc>(
+                                        context)
+                                    .add(const PofelInfoEvent());
+                              }),
+                        ),
+                        Expanded(flex: 1, child: Container()),
                         Expanded(
                           flex: 1,
                           child: ElevatedButton(

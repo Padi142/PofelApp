@@ -76,7 +76,7 @@ class _$PofelItemsWithDataCWProxyImpl implements _$PofelItemsWithDataCWProxy {
 }
 
 extension $PofelItemsWithDataCopyWith on PofelItemsWithData {
-  /// Returns a callable class that can be used as follows: `instanceOfclass PofelItemsWithData extends PofelItemsState.name.copyWith(...)` or like so:`instanceOfclass PofelItemsWithData extends PofelItemsState.name.copyWith.fieldName(...)`.
+  /// Returns a callable class that can be used as follows: `instanceOfPofelItemsWithData.copyWith(...)` or like so:`instanceOfPofelItemsWithData.copyWith.fieldName(...)`.
   _$PofelItemsWithDataCWProxy get copyWith =>
       _$PofelItemsWithDataCWProxyImpl(this);
 }

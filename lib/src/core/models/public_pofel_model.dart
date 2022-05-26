@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/models/pofel_image_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 
-class PofelModel extends Equatable {
-  PofelModel({
+class PublicPofelModel extends Equatable {
+  PublicPofelModel({
     required this.name,
     required this.description,
     required this.adminUid,
@@ -34,7 +34,7 @@ class PofelModel extends Equatable {
   final DateTime? dateFrom;
   final DateTime? dateTo;
   final DateTime? createdAt;
-  List<PofelUserModel> signedUsers;
+  int signedUsers;
   List<PofelImage> photos;
   final bool showDrugItems;
 
