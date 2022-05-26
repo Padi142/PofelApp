@@ -112,6 +112,30 @@ class _DashboardPageState extends State<PofelListPage> {
                   }
                 },
               )),
+          Center(
+            child: OutlinedButton(
+              onPressed: () {
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(const LoadPublicPofelPage());
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  "Veřejné pofely",
+                  style: TextStyle(
+                      color: Color(0xFF7D00A9),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                side: const BorderSide(width: 5.0, color: Color(0xFF7D00A9)),
+                backgroundColor: Colors.white,
+              ),
+            ),
+          ),
         ]);
   }
 

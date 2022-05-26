@@ -50,6 +50,13 @@ class LoadPublicPofelPage extends NavigationEvent {
   List<Object> get props => [];
 }
 
+class LoadKyblspotsPgae extends NavigationEvent {
+  const LoadKyblspotsPgae();
+
+  @override
+  List<Object> get props => [];
+}
+
 class LoadNotificationsPage extends NavigationEvent {
   const LoadNotificationsPage();
 

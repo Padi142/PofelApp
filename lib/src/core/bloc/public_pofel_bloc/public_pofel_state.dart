@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:pofel_app/src/core/models/pofel_model.dart';
+import 'package:pofel_app/src/core/models/public_pofel_model.dart';
 
 part "public_pofel_state.g.dart";
 
@@ -14,7 +14,7 @@ abstract class PublicPofelState extends Equatable {
 
 @CopyWith()
 class PublicPofelsLoaded extends PublicPofelState {
-  final List<PofelModel> pofels;
+  final List<PublicPofelModel> pofels;
   final List<Marker> markers;
   final PublicPofelEnum publicPofelEnum;
 

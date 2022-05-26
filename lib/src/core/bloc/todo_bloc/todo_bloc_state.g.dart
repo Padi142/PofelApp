@@ -75,6 +75,6 @@ class _$TodosWithDataCWProxyImpl implements _$TodosWithDataCWProxy {
 }
 
 extension $TodosWithDataCopyWith on TodosWithData {
-  /// Returns a callable class that can be used as follows: `instanceOfclass TodosWithData extends TodoBlocState.name.copyWith(...)` or like so:`instanceOfclass TodosWithData extends TodoBlocState.name.copyWith.fieldName(...)`.
+  /// Returns a callable class that can be used as follows: `instanceOfTodosWithData.copyWith(...)` or like so:`instanceOfTodosWithData.copyWith.fieldName(...)`.
   _$TodosWithDataCWProxy get copyWith => _$TodosWithDataCWProxyImpl(this);
 }

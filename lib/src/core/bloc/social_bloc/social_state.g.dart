@@ -64,6 +64,6 @@ class _$MyFollowingStateCWProxyImpl implements _$MyFollowingStateCWProxy {
 }
 
 extension $MyFollowingStateCopyWith on MyFollowingState {
-  /// Returns a callable class that can be used as follows: `instanceOfclass MyFollowingState extends SocialState.name.copyWith(...)` or like so:`instanceOfclass MyFollowingState extends SocialState.name.copyWith.fieldName(...)`.
+  /// Returns a callable class that can be used as follows: `instanceOfMyFollowingState.copyWith(...)` or like so:`instanceOfMyFollowingState.copyWith.fieldName(...)`.
   _$MyFollowingStateCWProxy get copyWith => _$MyFollowingStateCWProxyImpl(this);
 }

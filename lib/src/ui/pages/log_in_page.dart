@@ -4,6 +4,8 @@ import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
+import 'package:the_apple_sign_in/apple_sign_in_button.dart' as appleUi;
+import 'package:the_apple_sign_in/the_apple_sign_in.dart' as appleLogin;
 
 class LogInPage extends StatefulWidget {
   LogInPage({Key? key}) : super(key: key);
@@ -95,22 +97,12 @@ class _DashboardPageState extends State<LogInPage> {
                         left: 25, right: 25, top: 10, bottom: 5),
                     child: SizedBox(
                         width: double.infinity,
-                        child: OutlinedButton(
+                        child: appleUi.AppleSignInButton(
+                          style: appleUi.ButtonStyle.black,
                           onPressed: () {
                             BlocProvider.of<LoginBloc>(context)
                                 .add(GoogleLogInEvent());
                           },
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Google přihlášení',
-                                style: TextStyle(color: Color(0xFF3DB4437))),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0)),
-                            side: const BorderSide(
-                                width: 1, color: Color(0xFFDB4437)),
-                          ),
                         )),
                   ),
                 ),

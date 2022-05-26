@@ -76,6 +76,6 @@ class _$ChatsLoadedCWProxyImpl implements _$ChatsLoadedCWProxy {
 }
 
 extension $ChatsLoadedCopyWith on ChatsLoaded {
-  /// Returns a callable class that can be used as follows: `instanceOfclass ChatsLoaded extends ChatState.name.copyWith(...)` or like so:`instanceOfclass ChatsLoaded extends ChatState.name.copyWith.fieldName(...)`.
+  /// Returns a callable class that can be used as follows: `instanceOfChatsLoaded.copyWith(...)` or like so:`instanceOfChatsLoaded.copyWith.fieldName(...)`.
   _$ChatsLoadedCWProxy get copyWith => _$ChatsLoadedCWProxyImpl(this);
 }

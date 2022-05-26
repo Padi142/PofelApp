@@ -114,11 +114,10 @@ class _DashboardPageState extends State<UserPremiumPage> {
                                       style: TextStyle(fontSize: 15)),
                                   SizedBox(height: 5),
                                   Text(
-                                      "Možnost Upgradování pofelu na premium pofel",
+                                      "Sdílení fotek bez ztráty kvality pro každého v premium pofelu ",
                                       style: TextStyle(fontSize: 15)),
                                   SizedBox(height: 5),
-                                  Text(
-                                      "Sdílení fotek bez ztráty kvality pro každého v premium pofelu ",
+                                  Text("Možnost vytvářet veřejné pofely!",
                                       style: TextStyle(fontSize: 15)),
                                   SizedBox(height: 5),
                                   Text(

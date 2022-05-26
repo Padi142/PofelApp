@@ -71,6 +71,7 @@ class UpdatePofel extends PofelEvent {
   final GeoPoint? newLocation;
   final DateTime? newDate;
   final bool? showDrugs;
+  final bool? isPublic;
   const UpdatePofel(
       {required this.updatePofelEnum,
       required this.pofelId,
@@ -79,6 +80,7 @@ class UpdatePofel extends PofelEvent {
       this.newLocation,
       this.newDesc,
       this.showDrugs,
+      this.isPublic,
       this.newDate});
 
   @override
@@ -91,7 +93,9 @@ enum UpdatePofelEnum {
   UPDATE_DATE,
   UPDATE_SPOTIFY,
   UPDATE_LOCATION,
-  UPDATE_SHOW_DRUGS
+  UPDATE_SHOW_DRUGS,
+  UPDATE_IS_PUBLIC,
+  UPGRADE_POFEL
 }
 
 class UpdateWillArrive extends PofelEvent {
@@ -110,15 +114,6 @@ class ChatNotification extends PofelEvent {
 
   @override
   List<Object> get props => [pofelId, user];
-}
-
-class UpgradePofel extends PofelEvent {
-  final String pofelId;
-  final PofelUserModel user;
-  const UpgradePofel({required this.pofelId, required this.user});
-
-  @override
-  List<Object> get props => [pofelId];
 }
 
 class DeletePofel extends PofelEvent {

@@ -8,6 +8,8 @@ import 'package:pofel_app/src/core/models/pofel_user.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:pofel_app/src/ui/components/toast_premium_alert.dart';
+import 'package:pofel_app/src/ui/pages/pofel_info/pofel_set_location_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -192,56 +194,13 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
                 onPressed: () {
-                  Alert(
-                    context: context,
-                    type: AlertType.none,
-                    title: "Koordináty",
-                    desc:
-                        "Jdi do google map, klikni na lokaci, kde se bude pofel odehrávat. Otevři okno s informacemi o míste. Zkopíruj koordináty ve tvaru: \"49.XXXXXXXX, 15.XXXXXXXX\" a vlož je sem. (sry, jinak to zatím nejde :/ )",
-                    content: Column(
-                      children: [
-                        TextField(
-                          controller: myController,
-                          decoration: const InputDecoration(),
-                        ),
-                      ],
-                    ),
-                    buttons: [
-                      DialogButton(
-                        child: const Text(
-                          "Upravit",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
-                        ),
-                        onPressed: () {
-                          try {
-                            String locationString =
-                                myController.text.replaceAll(" ", "");
-                            int idx = locationString.indexOf(",");
-                            List parts = [
-                              locationString.substring(0, idx).trim(),
-                              locationString.substring(idx + 1).trim()
-                            ];
-                            double lat = double.parse(parts[0]);
-                            double lng = double.parse(parts[1]);
-
-                            BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
-                                updatePofelEnum:
-                                    UpdatePofelEnum.UPDATE_LOCATION,
-                                pofelId: pofel.pofelId,
-                                newLocation: GeoPoint(lat, lng)));
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBarError(context,
-                                    'nepodařilo se zpracovat koordináty :/'));
-                          }
-                          Navigator.pop(context);
-                        },
-                        width: 120,
-                      )
-                    ],
-                  ).show();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SetLocationPage(pofel: pofel)),
+                  );
                 },
-                child: const Text("Upravit lokaci pofelu"),
+                child: const Text("📍 Upravit lokaci pofelu"),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.pinkAccent),
@@ -327,12 +286,98 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
 
                   PofelUserModel user =
                       pofel.signedUsers.firstWhere((user) => user.uid == uid);
-
-                  BlocProvider.of<PofelBloc>(context)
-                      .add(UpgradePofel(pofelId: pofel.pofelId, user: user));
+                  if (user.isPremium) {
+                    BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
+                        pofelId: pofel.pofelId,
+                        updatePofelEnum: UpdatePofelEnum.UPGRADE_POFEL));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBarPremiumAlert(context, 'Pofel upgradován!'));
+                  } else {
+                    Alert(
+                      context: context,
+                      type: AlertType.error,
+                      title: "Premiová feature :/",
+                      desc:
+                          "Tato funkce je dostupná pouze pro prémiové uživatele.",
+                      buttons: [
+                        DialogButton(
+                          child: const Text(
+                            "Zavřít",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(context);
+                          },
+                          width: 120,
+                        )
+                      ],
+                    ).show();
+                  }
                 },
                 child: const Text("✨ Upgradovat pofel ✨",
                     style: TextStyle(color: Colors.black)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(primary: Colors.tealAccent),
+                onPressed: () async {
+                  if (pofel.isPremium) {
+                    //Check jestli je nastavená lokace
+                    if (pofel.pofelLocation.latitude != 0) {
+                      BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
+                          pofelId: pofel.pofelId,
+                          updatePofelEnum: UpdatePofelEnum.UPDATE_IS_PUBLIC,
+                          isPublic: pofel.isPublic));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBarAlert(
+                          context, 'Pofel nastaven jako veřejný!'));
+                    } else {
+                      Alert(
+                        context: context,
+                        type: AlertType.error,
+                        title: "Není nastavená lokace",
+                        desc:
+                            "Nejprve nastav lokaci pofelu. Až poté ho můžeš dát jako veřejný!",
+                        buttons: [
+                          DialogButton(
+                            child: const Text(
+                              "Zavřít",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                            },
+                            width: 120,
+                          )
+                        ],
+                      ).show();
+                    }
+                  } else {
+                    Alert(
+                      context: context,
+                      type: AlertType.error,
+                      title: "Premiová feature :/",
+                      desc:
+                          "Tato funkce je dostupná pouze pro prémiové pofely. Upgraduj pofel nebo mi napiš na ig a nějak se domluvíme!",
+                      buttons: [
+                        DialogButton(
+                          child: const Text(
+                            "Zavřít",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(context);
+                          },
+                          width: 120,
+                        )
+                      ],
+                    ).show();
+                  }
+                },
+                child: pofel.isPublic
+                    ? const Text("🚫Nastavit pofel jako private",
+                        style: TextStyle(color: Colors.black))
+                    : const Text("🌄Nastavit pofel jako veřejný",
+                        style: TextStyle(color: Colors.black)),
               ),
               ElevatedButton(
                 style:
@@ -375,7 +420,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     ],
                   ).show();
                 },
-                child: const Text("Pošli oznámění účastníkům pofelu"),
+                child: const Text("📢 Pošli oznámění účastníkům pofelu"),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.red),
@@ -386,12 +431,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     title: "Faktr??",
                     desc: "Opravdu chceš smazat pofel?",
                     content: Column(
-                      children: [
-                        TextField(
-                          controller: myController,
-                          decoration: const InputDecoration(),
-                        ),
-                      ],
+                      children: const [],
                     ),
                     buttons: [
                       DialogButton(
