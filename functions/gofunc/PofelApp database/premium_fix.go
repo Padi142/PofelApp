@@ -68,7 +68,7 @@ func OnPofelCreated(ctx context.Context, e FirestoreEvent) error {
 
 	message := &messaging.Message{
 		Data: map[string]string{
-			"title": "Někdo se právě připojit k pofelu!",
+			"title": "Někdo se právě připojil k pofelu!",
 			"body":  "K pofelu " + pofelName.(string) + " se právě připojil uživatel " + userName.(string),
 		},
 		Topic: pofelId,
