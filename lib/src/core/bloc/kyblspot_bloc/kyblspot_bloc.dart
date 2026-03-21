@@ -41,11 +41,13 @@ class KyblspotBloc extends Bloc<KyblspotEvent, KyblspotState> {
         width: 20.0,
         height: 20.0,
         point: LatLng(spot.location!.latitude, spot.location!.longitude),
-        builder: (ctx) => GestureDetector(
-            onTap: () {
-              alert(ctx, spot).show();
-            },
-            child: Image.network("https://i.ibb.co/1dh7wqN/bvybv.png")),
+        child: Builder(
+          builder: (ctx) => GestureDetector(
+              onTap: () {
+                alert(ctx, spot).show();
+              },
+              child: Image.network("https://i.ibb.co/1dh7wqN/bvybv.png")),
+        ),
       );
       markers.add(marker);
     }

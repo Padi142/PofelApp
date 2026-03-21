@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/bloc/chat_bloc/chat_event.dart';
 import 'package:pofel_app/src/core/bloc/chat_bloc/chat_state.dart';
@@ -26,18 +25,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     emit((state as ChatsLoaded)
         .copyWith(messages: messages, chatStateEnum: ChatStateEnum.LOADED));
-
-    final Stream<QuerySnapshot> _chatStream = FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(event.pofelId)
-        .collection("chat")
-        .orderBy("sentOn")
-        .limit(20)
-        .snapshots();
-    _chatStream.map((event) => event.docs.forEach((message) {
-          messages.add(MessageModel.fromMap(message));
-        }));
-    emit((state as ChatsLoaded).copyWith(messages: messages));
   }
 
   _onSendMessage(SendMessage event, Emitter<ChatState> emit) async {
@@ -52,7 +39,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           sentByUid: uid,
           sentByProfilePic: user.photo!,
           sentByName: user.name!);
-      _chatProvider.sendMessage(message, event.pofelId);
+      await _chatProvider.sendMessage(message, event.pofelId);
+      final messages = await _chatProvider.fetchFirstMessages(event.pofelId);
+      emit((state as ChatsLoaded).copyWith(messages: messages));
     } catch (e) {
       emit((state as ChatsLoaded).copyWith(errorMessage: e.toString()));
     }

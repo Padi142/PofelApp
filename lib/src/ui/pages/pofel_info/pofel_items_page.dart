@@ -182,7 +182,8 @@ Widget PofelItemsPage(BuildContext context, PofelModel pofel) {
                 Expanded(
                   child: ElevatedButton(
                       style:
-                          ElevatedButton.styleFrom(primary: Colors.redAccent),
+                          ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent),
                       child: const Text("Zpět"),
                       onPressed: () {
                         BlocProvider.of<PofelDetailNavigationBloc>(context)
@@ -208,7 +209,7 @@ Widget PofelItemsPage(BuildContext context, PofelModel pofel) {
                                     decoration: const InputDecoration(
                                       labelText: 'Jméno itemu',
                                     ),
-                                    onSubmitted: () => form.focus('count'),
+                                    onSubmitted: (_) => form.focus('count'),
                                     textCapitalization:
                                         TextCapitalization.words,
                                     textAlign: TextAlign.center,
@@ -221,7 +222,7 @@ Widget PofelItemsPage(BuildContext context, PofelModel pofel) {
                                       labelText: 'Počet',
                                     ),
                                     keyboardType: TextInputType.number,
-                                    onSubmitted: () => form.focus('type'),
+                                    onSubmitted: (_) => form.focus('type'),
                                   ),
                                   ReactiveDropdownField(
                                       formControlName: 'type',

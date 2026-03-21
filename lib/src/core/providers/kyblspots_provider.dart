@@ -1,143 +1,154 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_environment.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
+import 'package:pofel_app/src/core/models/geo_point.dart';
 import 'package:pofel_app/src/core/models/kyblspot_model.dart';
 import 'package:pofel_app/src/core/models/kyblspot_review_model.dart';
 
 class KyblspotsProvider {
+  KyblspotsProvider({AppwriteRepository? repository})
+      : _repository = repository ?? AppwriteRepository();
+
+  final AppwriteRepository _repository;
+
   Future<List<KyblspotModel>> fetchKyblspots(String eventID) async {
-    List<KyblspotModel> kyblspots = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore.collection("kyblspoty").get().then((querySnapshot) => {
-          // ignore: avoid_function_literals_in_foreach_calls
-          querySnapshot.docs.forEach((doc) {
-            GeoPoint geoPoint = doc["location"];
-
-            double lat = geoPoint.latitude;
-            double lng = geoPoint.longitude;
-            GeoPoint location = GeoPoint(lat, lng);
-
-            KyblspotModel model = KyblspotModel(
-                location: location,
-                weight: doc["weight"].toInt(),
-                rating: doc["rating"].toDouble(),
-                name: doc["name"],
-                spotId: doc.id,
-                createdBy: doc["createdBy"],
-                description: doc["description"]);
-
-            kyblspots.add(model);
-          })
-        });
-
-    return kyblspots;
+    final spots = await _repository.listDocuments(
+      AppwriteEnvironment.kyblspotsCollectionId,
+    );
+    return spots
+        .map(
+          (doc) => KyblspotModel(
+            location: parseGeoPoint(doc['location']),
+            weight: parseInt(doc['weight']),
+            rating: parseDouble(doc['rating']),
+            name: doc['name'],
+            spotId: doc[r'$id'] as String,
+            createdBy: doc['createdBy'],
+            description: doc['description'],
+          ),
+        )
+        .toList();
   }
 
   Future<List<SpotReviewModel>> fetchKyblspotReviews(String spotId) async {
-    List<SpotReviewModel> reviews = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore
-        .collection("kyblspoty")
-        .doc(spotId)
-        .collection("reviews")
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                SpotReviewModel model = SpotReviewModel(
-                  review: doc["review"],
-                  reviewedByProfilePic: doc["reviewedByProfilePic"],
-                  rating: doc["rating"],
-                  reviewedByUid: doc["reviewedByUid"],
-                  reviewedByName: doc["reviewedByName"],
-                  isPremium: doc["isPremium"],
-                  reviewId: doc.id,
-                );
-
-                reviews.add(model);
-              })
-            });
-
-    return reviews;
+    final reviews = await _repository.listDocuments(
+      AppwriteEnvironment.kyblspotReviewsCollectionId,
+    );
+    return reviews
+        .where((review) => review['spotId'] == spotId)
+        .map(
+          (doc) => SpotReviewModel(
+            review: doc['review'],
+            reviewedByProfilePic: doc['reviewedByProfilePic'],
+            rating: parseDouble(doc['rating']),
+            reviewedByUid: doc['reviewedByUid'],
+            reviewedByName: doc['reviewedByName'],
+            isPremium: parseBool(doc['isPremium']),
+            reviewId: doc[r'$id'] as String,
+          ),
+        )
+        .toList();
   }
 
   Future<void> addKyblspot(KyblspotModel model) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    firestore.collection("kyblspoty").doc().set({
-      "name": model.name,
-      "location": GeoPoint(model.location!.latitude, model.location!.longitude),
-      "description": model.description,
-      "createdBy": model.createdBy,
-      "createdAt": DateTime.now(),
-      "weight": model.weight,
-      "rating": model.rating,
-    }).then((value) => print("kyblspot pridan"));
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.kyblspotsCollectionId,
+      data: {
+        'name': model.name,
+        'location': serializeGeoPoint(
+          GeoPoint(model.location!.latitude, model.location!.longitude),
+        ),
+        'description': model.description,
+        'createdBy': model.createdBy,
+        'createdAt': serializeDateTime(DateTime.now()),
+        'weight': model.weight,
+        'rating': model.rating,
+      },
+    );
   }
 
   Future<void> addReview(SpotReviewModel review, KyblspotModel kyblspot) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    firestore
-        .collection("kyblspoty")
-        .doc(kyblspot.spotId)
-        .collection("reviews")
-        .doc()
-        .set({
-      "reviewedByUid": review.reviewedByUid,
-      "reviewedByProfilePic": review.reviewedByProfilePic,
-      "reviewedByName": review.reviewedByName,
-      "isPremium": review.isPremium,
-      "review": review.review,
-      "rating": review.rating,
-    }).then((value) => print("Recenze pridana"));
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
+      data: {
+        'spotId': kyblspot.spotId,
+        'reviewedByUid': review.reviewedByUid,
+        'reviewedByProfilePic': review.reviewedByProfilePic,
+        'reviewedByName': review.reviewedByName,
+        'isPremium': review.isPremium,
+        'review': review.review,
+        'rating': review.rating,
+      },
+    );
 
-    double newRating = (kyblspot.weight * kyblspot.rating + review.rating) /
+    final newRating = (kyblspot.weight * kyblspot.rating + review.rating) /
         (kyblspot.weight + 1);
 
-    firestore.collection("kyblspoty").doc(kyblspot.spotId).update({
-      "weight": (kyblspot.weight + 1),
-      "rating": newRating,
-    }).then((value) => print("Recenze pridana"));
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.kyblspotsCollectionId,
+      documentId: kyblspot.spotId,
+      data: {
+        'name': kyblspot.name,
+        'location': serializeGeoPoint(kyblspot.location!),
+        'description': kyblspot.description,
+        'createdBy': kyblspot.createdBy,
+        'weight': kyblspot.weight + 1,
+        'rating': newRating,
+      },
+    );
   }
 
-  Future<void> updateReview(SpotReviewModel review, KyblspotModel kyblspot,
-      SpotReviewModel oldReview) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    firestore
-        .collection("kyblspoty")
-        .doc(kyblspot.spotId)
-        .collection("reviews")
-        .doc(oldReview.reviewId)
-        .update({
-      "isPremium": review.isPremium,
-      "review": review.review,
-      "rating": review.rating,
-    }).then((value) => print("Recenze pridana"));
+  Future<void> updateReview(
+    SpotReviewModel review,
+    KyblspotModel kyblspot,
+    SpotReviewModel oldReview,
+  ) async {
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
+      documentId: oldReview.reviewId,
+      data: {
+        'spotId': kyblspot.spotId,
+        'reviewedByUid': review.reviewedByUid,
+        'reviewedByProfilePic': review.reviewedByProfilePic,
+        'reviewedByName': review.reviewedByName,
+        'isPremium': review.isPremium,
+        'review': review.review,
+        'rating': review.rating,
+      },
+    );
 
-    double newRating =
+    final newRating =
         ((kyblspot.weight - 1) * kyblspot.rating + review.rating) /
-            (kyblspot.weight);
+            kyblspot.weight;
 
-    firestore.collection("kyblspoty").doc(kyblspot.spotId).update({
-      "rating": newRating,
-    }).then((value) => print("Recenze pridana"));
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.kyblspotsCollectionId,
+      documentId: kyblspot.spotId,
+      data: {
+        'name': kyblspot.name,
+        'location': serializeGeoPoint(kyblspot.location!),
+        'description': kyblspot.description,
+        'createdBy': kyblspot.createdBy,
+        'weight': kyblspot.weight,
+        'rating': newRating,
+      },
+    );
   }
 
   Future<void> removeSpot(KyblspotModel kyblspot) async {
-    await FirebaseFirestore.instance
-        .collection('kyblspoty')
-        .doc(kyblspot.spotId)
-        .collection("reviews")
-        .get()
-        .then((users) => {
-              users.docs.forEach((user) {
-                user.reference.delete();
-              })
-            });
+    final reviews = await _repository.listDocuments(
+      AppwriteEnvironment.kyblspotReviewsCollectionId,
+    );
+    for (final review in reviews.where((review) => review['spotId'] == kyblspot.spotId)) {
+      await _repository.deleteDocument(
+        collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
+        documentId: review[r'$id'] as String,
+      );
+    }
 
-    await FirebaseFirestore.instance
-        .collection('kyblspoty')
-        .doc(kyblspot.spotId)
-        .delete()
-        .then((value) => {print("Bye bye kyblspot :/ :-(")});
+    await _repository.deleteDocument(
+      collectionId: AppwriteEnvironment.kyblspotsCollectionId,
+      documentId: kyblspot.spotId,
+    );
   }
 }

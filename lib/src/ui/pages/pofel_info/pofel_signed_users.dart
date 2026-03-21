@@ -1,28 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_time_picker/date_time_picker.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_share/flutter_share.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
-import 'package:intl/intl.dart';
 import 'package:pofel_app/src/ui/components/pofe_user_container.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/invite_people_page.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../../core/bloc/navigation_bloc/navigation_bloc.dart';
 import '../../../core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 
 Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
-  final chatsQuery = FirebaseFirestore.instance
-      .collection("active_pofels")
-      .doc(pofel.pofelId)
-      .collection("chat")
-      .orderBy("sentOn", descending: true);
-
   return Padding(
       padding: const EdgeInsets.all(15),
       child: Column(children: [
@@ -53,7 +38,8 @@ Widget PofelSignedUsers(BuildContext context, PofelModel pofel) {
           children: [
             Expanded(
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(primary: Colors.redAccent),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent),
                   child: const Text("Zpět"),
                   onPressed: () {
                     BlocProvider.of<PofelDetailNavigationBloc>(context)

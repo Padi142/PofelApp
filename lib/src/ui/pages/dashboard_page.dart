@@ -1,4 +1,3 @@
-import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
@@ -10,6 +9,7 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/ui/components/gradient_button.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
+import 'package:pofel_app/src/ui/components/simple_date_time_picker.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/pages/public_pofels_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -279,15 +279,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const InputDecoration(labelText: "Jméno"),
                           ),
                           const SizedBox(height: 5),
-                          DateTimePicker(
-                              type: DateTimePickerType.dateTime,
-                              initialValue: '',
-                              firstDate: DateTime.now(),
-                              lastDate: DateTime(2100),
-                              dateLabelText: 'Datum a čas',
-                              onChanged: (val) {
-                                pickedDate = DateTime.parse(val);
-                              })
+                          SimpleDateTimePicker(
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100),
+                            labelText: 'Datum a cas',
+                            onChanged: (value) {
+                              pickedDate = value;
+                            },
+                          )
                         ],
                       ),
                       buttons: [

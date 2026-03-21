@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/models/geo_point.dart';
 import 'package:pofel_app/src/core/models/pofel_image_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 

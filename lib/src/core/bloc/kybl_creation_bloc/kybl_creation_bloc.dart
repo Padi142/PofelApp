@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:pofel_app/src/core/bloc/kybl_creation_bloc/kybl_creation_event.dart';
 import 'package:pofel_app/src/core/bloc/kybl_creation_bloc/kybl_creation_state.dart';
+import 'package:pofel_app/src/core/models/geo_point.dart';
 import 'package:pofel_app/src/core/models/kyblspot_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

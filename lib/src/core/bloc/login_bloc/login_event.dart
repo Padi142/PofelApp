@@ -8,37 +8,31 @@ abstract class LoginEvent extends Equatable {
 }
 
 class LogInInitial extends LoginEvent {
-  LogInInitial();
-  @override
-  List<Object> get props => [];
-}
-
-class FacebookLogInEvent extends LoginEvent {
-  FacebookLogInEvent();
+  const LogInInitial();
   @override
   List<Object> get props => [];
 }
 
 class GoogleLogInEvent extends LoginEvent {
-  GoogleLogInEvent();
+  const GoogleLogInEvent();
   @override
   List<Object> get props => [];
 }
 
-class GoogleSupportLogIn extends LoginEvent {
-  GoogleSupportLogIn();
+class AppleLogInEvent extends LoginEvent {
+  const AppleLogInEvent();
   @override
   List<Object> get props => [];
 }
 
 class ReturnFromInvite extends LoginEvent {
-  ReturnFromInvite();
+  const ReturnFromInvite();
   @override
   List<Object> get props => [];
 }
 
 class LogOut extends LoginEvent {
-  LogOut();
+  const LogOut();
   @override
   List<Object> get props => [];
 }

@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_focus_watcher/flutter_focus_watcher.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:pofel_app/constants.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
-import 'package:pofel_app/src/ui/components/top_bar.dart';
 import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/kyblspot_pages/kyblspots_page.dart';
-import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/pofel_list_page.dart';
 import 'package:pofel_app/src/ui/pages/public_pofels_page.dart';
@@ -16,17 +12,43 @@ import 'package:pofel_app/src/ui/pages/user_pages/user_detail_page.dart';
 import 'package:pofel_app/src/ui/pages/user_search_page.dart';
 
 class MainPage extends StatefulWidget {
-  MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<NavigationBloc>().add(const DashboardEvent());
+    });
+  }
+
+  void _syncSelectedIndex(NavigationState state) {
+    final selectedIndex = switch (state) {
+      ShowDashboardState() => 0,
+      ShowMyPofelsState() => 1,
+      ShowKyblspotsPage() => 2,
+      ShowSearchProfilesState() => 3,
+      ShowUserDetailState() => 4,
+      _ => _selectedIndex,
+    };
+
+    if (selectedIndex != _selectedIndex) {
+      setState(() {
+        _selectedIndex = selectedIndex;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<NavigationBloc>(context).add(const DashboardEvent());
-    int _selectedIndex = 0;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Pofel app"),
@@ -45,39 +67,35 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(child: BlocBuilder<NavigationBloc, NavigationState>(
-              builder: (context, state) {
-                if (state is ShowDashboardState) {
-                  return DashboardPage();
-                } else if (state is ShowPofelDetailState) {
-                  return PofelDetailPage(
-                    pofelId: state.pofelId,
-                  );
-                } else if (state is ShowMyPofelsState) {
-                  return PofelListPage();
-                } else if (state is ShowSearchProfilesState) {
-                  return UserSearchPage();
-                } else if (state is ShowNotificationPageState) {
-                  return NotificationsPage(
-                    currentUid: state.uid,
-                  );
-                } else if (state is ShowUserDetailState) {
-                  return const UserDetailPage();
-                } else if (state is ShowPublicPofelsState) {
-                  return PublicPofelsPage();
-                } else if (state is ShowKyblspotsPage) {
-                  return KyblspotsPage();
-                } else {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              },
-            ))
-          ],
+        child: BlocConsumer<NavigationBloc, NavigationState>(
+          listener: (context, state) => _syncSelectedIndex(state),
+          builder: (context, state) {
+            if (state is ShowDashboardState) {
+              return DashboardPage();
+            } else if (state is ShowPofelDetailState) {
+              return PofelDetailPage(
+                pofelId: state.pofelId,
+              );
+            } else if (state is ShowMyPofelsState) {
+              return PofelListPage();
+            } else if (state is ShowSearchProfilesState) {
+              return UserSearchPage();
+            } else if (state is ShowNotificationPageState) {
+              return NotificationsPage(
+                currentUid: state.uid,
+              );
+            } else if (state is ShowUserDetailState) {
+              return const UserDetailPage();
+            } else if (state is ShowPublicPofelsState) {
+              return PublicPofelsPage();
+            } else if (state is ShowKyblspotsPage) {
+              return KyblspotsPage();
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
         ),
       ),
       bottomNavigationBar: Container(
@@ -86,70 +104,58 @@ class _MainPageState extends State<MainPage> {
           boxShadow: [
             BoxShadow(
               blurRadius: 20,
-              color: Colors.black.withOpacity(.1),
+              color: Colors.black.withValues(alpha: 0.1),
             )
           ],
         ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8),
-            child: GNav(
-              rippleColor: const Color(0xFFFFC8DD),
-              hoverColor: Colors.grey[100]!,
-              gap: 4,
-              activeColor: Colors.black,
-              iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-              duration: const Duration(milliseconds: 400),
-              tabBackgroundColor: primaryColor,
-              color: Colors.black,
-              tabs: const [
-                GButton(
-                  icon: Icons.home_max_outlined,
-                  text: 'Home',
-                ),
-                GButton(
-                  icon: Icons.list_rounded,
-                  text: 'Moje pofely',
-                ),
-                GButton(
-                  icon: Icons.map_rounded,
-                  text: "Mapa",
-                ),
-                GButton(
-                  icon: Icons.search_outlined,
-                  text: "Hledat",
-                ),
-                GButton(
-                  icon: Icons.verified_user,
-                  text: 'Profil',
-                ),
-              ],
+            child: NavigationBar(
               selectedIndex: _selectedIndex,
-              onTabChange: (index) {
+              backgroundColor: Colors.white,
+              indicatorColor: primaryColor,
+              onDestinationSelected: (index) {
                 switch (index) {
                   case 0:
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(const DashboardEvent());
+                    context.read<NavigationBloc>().add(const DashboardEvent());
                     break;
                   case 1:
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(const LoadMyPofelsEvent());
+                    context.read<NavigationBloc>().add(const LoadMyPofelsEvent());
                     break;
                   case 2:
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(const LoadKyblspotsPgae());
+                    context.read<NavigationBloc>().add(const LoadKyblspotsPgae());
                     break;
                   case 3:
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(const LoadSearchProfiles());
+                    context.read<NavigationBloc>().add(const LoadSearchProfiles());
                     break;
                   case 4:
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(const LoadCurrentUserPage());
+                    context.read<NavigationBloc>().add(const LoadCurrentUserPage());
                     break;
                 }
               },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_max_outlined),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.list_rounded),
+                  label: 'Moje pofely',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.map_rounded),
+                  label: 'Mapa',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.search_outlined),
+                  label: 'Hledat',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.verified_user),
+                  label: 'Profil',
+                ),
+              ],
             ),
           ),
         ),

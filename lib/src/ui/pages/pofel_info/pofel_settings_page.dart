@@ -1,17 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
+import 'package:pofel_app/src/core/providers/notification_provider.dart';
+import 'package:pofel_app/src/core/providers/user_provider.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
+import 'package:pofel_app/src/ui/components/simple_date_time_picker.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:pofel_app/src/ui/components/toast_premium_alert.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_set_location_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
@@ -19,6 +18,8 @@ import '../../../core/bloc/pofel_bloc/pofel_event.dart';
 
 Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
   final myController = TextEditingController();
+  final notificationProvider = NotificationProvider();
+  final userProvider = UserProvider();
   DateTime pickedDate = DateTime.utc(1989, 11, 9);
   return Padding(
       padding: const EdgeInsets.all(15),
@@ -64,7 +65,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 child: const Text("Upravit jméno"),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.cyanAccent),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.cyanAccent),
                 onPressed: () {
                   Alert(
                     context: context,
@@ -104,7 +106,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               ),
               ElevatedButton(
                 style:
-                    ElevatedButton.styleFrom(primary: Colors.deepOrangeAccent),
+                    ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrangeAccent),
                 onPressed: () {
                   Alert(
                     context: context,
@@ -112,15 +115,14 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     title: "Zadejte nové datum",
                     content: Column(
                       children: [
-                        DateTimePicker(
-                            type: DateTimePickerType.dateTime,
-                            initialValue: '',
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(2100),
-                            dateLabelText: 'Datum a čas',
-                            onChanged: (val) {
-                              pickedDate = DateTime.parse(val);
-                            })
+                        SimpleDateTimePicker(
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                          labelText: 'Datum a cas',
+                          onChanged: (value) {
+                            pickedDate = value;
+                          },
+                        )
                       ],
                     ),
                     buttons: [
@@ -147,7 +149,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               ),
               ElevatedButton(
                 style:
-                    ElevatedButton.styleFrom(primary: Colors.lightGreenAccent),
+                    ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightGreenAccent),
                 onPressed: () {
                   Alert(
                     context: context,
@@ -192,7 +195,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     style: TextStyle(color: Colors.black)),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigoAccent),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -203,7 +207,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 child: const Text("📍 Upravit lokaci pofelu"),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.pinkAccent),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
                 onPressed: () {
                   BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
                       updatePofelEnum: UpdatePofelEnum.UPDATE_SHOW_DRUGS,
@@ -213,7 +218,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 child: const Text("Zapnout/vypnout substance itemy"),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.amberAccent),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amberAccent),
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
                   String? uid = prefs.getString("uid");
@@ -227,7 +233,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     style: TextStyle(color: Colors.black)),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigoAccent),
                 onPressed: () {
                   Alert(
                     context: context,
@@ -279,7 +286,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 child: const Text("Předat admina"),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigoAccent),
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
                   String? uid = prefs.getString("uid");
@@ -318,7 +326,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                     style: TextStyle(color: Colors.black)),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.tealAccent),
+                style:
+                    ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
                 onPressed: () async {
                   if (pofel.isPremium) {
                     //Check jestli je nastavená lokace
@@ -381,7 +390,8 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
               ),
               ElevatedButton(
                 style:
-                    ElevatedButton.styleFrom(primary: Colors.deepPurpleAccent),
+                    ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurpleAccent),
                 onPressed: () {
                   Alert(
                     context: context,
@@ -407,13 +417,19 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                               SnackBarAlert(context, 'Notifikace poslána'));
 
                           Navigator.pop(context);
-                          var func = FirebaseFunctions.instance
-                              .httpsCallable("notifyPofelUsers");
-                          await func.call(<String, dynamic>{
-                            "messageTitle": "Notifikace z polefu " + pofel.name,
-                            "messageBody": myController.text,
-                            "pofelId": pofel.pofelId
-                          });
+                          final prefs = await SharedPreferences.getInstance();
+                          final uid = prefs.getString("uid");
+                          if (uid != null) {
+                            final user = await userProvider.fetchUserData(uid);
+                            await notificationProvider.notifyPofelUsers(
+                              sentByUid: uid,
+                              sentByName: user.name ?? 'Pofel',
+                              sentByProfilePic: user.photo ??
+                                  'https://ui-avatars.com/api/?background=8F3BB7&color=ffffff&name=Pofel',
+                              pofelId: pofel.pofelId,
+                              message: myController.text,
+                            );
+                          }
                         },
                         width: 120,
                       )
@@ -423,7 +439,7 @@ Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
                 child: const Text("📢 Pošli oznámění účastníkům pofelu"),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.red),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () {
                   Alert(
                     context: context,

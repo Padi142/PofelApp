@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 
 class PofelUserModel extends Equatable {
   const PofelUserModel({
@@ -28,9 +29,9 @@ class PofelUserModel extends Equatable {
       uid: map["uid"],
       name: map["name"],
       photo: map["profile_pic"],
-      acceptedInvitation: map["acceptedInvitation"],
-      joinedOn: map["signedOn"].toDate(),
-      willArrive: map["willArrive"].toDate(),
+      acceptedInvitation: parseBool(map["acceptedInvitation"]),
+      joinedOn: parseDateTime(map["signedOn"]),
+      willArrive: parseDateTime(map["willArrive"]),
       chatNotification: map["chatNotification"] ?? true,
       isPremium: map["isPremium"] ?? false,
     );
@@ -43,7 +44,7 @@ class PofelUserModel extends Equatable {
 List<PofelUserModel> pofelUsersFromList(List<dynamic> list) {
   List<PofelUserModel> users = [];
   for (var user in list) {
-    users.add(PofelUserModel.fromMap(user.data()));
+    users.add(PofelUserModel.fromMap(Map<String, dynamic>.from(user)));
   }
   return users;
 }

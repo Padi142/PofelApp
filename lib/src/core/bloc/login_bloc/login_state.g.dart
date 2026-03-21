@@ -7,6 +7,8 @@ part of 'login_state.dart';
 // **************************************************************************
 
 abstract class _$LoginStateWithDataCWProxy {
+  LoginStateWithData errorMessage(String? errorMessage);
+
   LoginStateWithData invite(String invite);
 
   LoginStateWithData inviteId(String inviteId);
@@ -24,6 +26,7 @@ abstract class _$LoginStateWithDataCWProxy {
   /// LoginStateWithData(...).copyWith(id: 12, name: "My name")
   /// ````
   LoginStateWithData call({
+    String? errorMessage,
     String? invite,
     String? inviteId,
     bool? isLoggedIn,
@@ -37,6 +40,10 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
   final LoginStateWithData _value;
 
   const _$LoginStateWithDataCWProxyImpl(this._value);
+
+  @override
+  LoginStateWithData errorMessage(String? errorMessage) =>
+      this(errorMessage: errorMessage);
 
   @override
   LoginStateWithData invite(String invite) => this(invite: invite);
@@ -64,6 +71,7 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
   /// LoginStateWithData(...).copyWith(id: 12, name: "My name")
   /// ````
   LoginStateWithData call({
+    Object? errorMessage = const $CopyWithPlaceholder(),
     Object? invite = const $CopyWithPlaceholder(),
     Object? inviteId = const $CopyWithPlaceholder(),
     Object? isLoggedIn = const $CopyWithPlaceholder(),
@@ -71,6 +79,9 @@ class _$LoginStateWithDataCWProxyImpl implements _$LoginStateWithDataCWProxy {
     Object? user = const $CopyWithPlaceholder(),
   }) {
     return LoginStateWithData(
+      errorMessage: errorMessage == const $CopyWithPlaceholder()
+          ? _value.errorMessage
+          : errorMessage as String?,
       invite: invite == const $CopyWithPlaceholder() || invite == null
           ? _value.invite
           // ignore: cast_nullable_to_non_nullable

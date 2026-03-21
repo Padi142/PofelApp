@@ -1,10 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:pofel_app/src/core/appwrite/app_services.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_items_bloc/pofel_items_state.dart';
 import 'package:pofel_app/src/core/models/item_model.dart';
-import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/pofel_items_provider.dart';
@@ -21,6 +20,7 @@ class PofelItemsBloc extends Bloc<PofelItemsEvent, PofelItemsState> {
     on<DeleteItem>(_onDeleteItem);
   }
   ItemsProvider itemsApiProvider = ItemsProvider();
+  final AppTelemetry _telemetry = AppTelemetry();
   _onLoadPofels(LoadPofelItems event, Emitter<PofelItemsState> emit) async {
     List<ItemModel> items =
         await itemsApiProvider.fetchPofelItems(event.pofelId);
@@ -40,12 +40,15 @@ class PofelItemsBloc extends Bloc<PofelItemsEvent, PofelItemsState> {
   _onAddItem(AddPofelItem event, Emitter<PofelItemsState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
 
     itemsApiProvider.addItem(event.pofelId, uid, event.name, event.count,
         event.price, DateTime.now(), event.itemType);
     emit((state as PofelItemsWithData)
         .copyWith(pofelItemsEnum: PofelItemsEnum.ITEM_ADDED));
-    await FirebaseAnalytics.instance.logEvent(name: 'item_added');
+    await _telemetry.logEvent('item_added');
   }
 
   _onDeleteItem(DeleteItem event, Emitter<PofelItemsState> emit) async {
@@ -56,7 +59,7 @@ class PofelItemsBloc extends Bloc<PofelItemsEvent, PofelItemsState> {
 
       emit((state as PofelItemsWithData)
           .copyWith(pofelItemsEnum: PofelItemsEnum.ITEM_REMOVED));
-      await FirebaseAnalytics.instance.logEvent(name: 'item_removed');
+      await _telemetry.logEvent('item_removed');
     }
   }
 }

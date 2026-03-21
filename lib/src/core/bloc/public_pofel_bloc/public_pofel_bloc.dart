@@ -39,27 +39,29 @@ class PublicPofelBloc extends Bloc<PublicPofelEvent, PublicPofelState> {
         height: 50.0,
         point:
             LatLng(pofel.pofelLocation.latitude, pofel.pofelLocation.longitude),
-        builder: (ctx) => GestureDetector(
-          onTap: () {
-            alert(ctx, pofel).show();
-          },
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.purple,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: Padding(
-              padding: const EdgeInsets.all(2),
-              child: Column(
-                children: [
-                  Text(
-                    pofel.name,
-                    maxLines: 3,
-                    style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.white,
-                        overflow: TextOverflow.fade),
-                  )
-                ],
+        child: Builder(
+          builder: (ctx) => GestureDetector(
+            onTap: () {
+              alert(ctx, pofel).show();
+            },
+            child: Container(
+              decoration: const BoxDecoration(
+                  color: Colors.purple,
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              child: Padding(
+                padding: const EdgeInsets.all(2),
+                child: Column(
+                  children: [
+                    Text(
+                      pofel.name,
+                      maxLines: 3,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                          overflow: TextOverflow.fade),
+                    )
+                  ],
+                ),
               ),
             ),
           ),

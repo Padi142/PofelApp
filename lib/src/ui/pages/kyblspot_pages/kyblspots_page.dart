@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,7 +5,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_bloc.dart';
 import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_event.dart';
 import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_state.dart';
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/pages/kyblspot_pages/kybl_add_page.dart';
 import 'package:geolocator/geolocator.dart';
@@ -44,44 +41,17 @@ class _DashboardPageState extends State<KyblspotsPage> {
                         FlutterMap(
                           mapController: controller,
                           options: MapOptions(
-                            interactiveFlags: InteractiveFlag.pinchZoom |
-                                InteractiveFlag.drag,
-                            plugins: [
-                              MarkerClusterPlugin(),
-                            ],
-                            center: LatLng(49.826860, 15.479491),
-                            zoom: 6.8,
+                            initialCenter: LatLng(49.826860, 15.479491),
+                            initialZoom: 6.8,
                           ),
-                          layers: [
-                            TileLayerOptions(
+                          children: [
+                            TileLayer(
                               urlTemplate:
                                   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: ['a', 'b', 'c'],
-                              attributionBuilder: (_) {
-                                return const Text(
-                                    "© OpenStreetMap contributors");
-                              },
+                              subdomains: const ['a', 'b', 'c'],
+                              userAgentPackageName: 'com.padisoft.pofelApp',
                             ),
-                            MarkerClusterLayerOptions(
-                              maxClusterRadius: 120,
-                              size: const Size(40, 40),
-                              fitBoundsOptions: const FitBoundsOptions(
-                                padding: EdgeInsets.all(50),
-                              ),
-                              markers: state.markers,
-                              polygonOptions: const PolygonOptions(
-                                  borderColor: Colors.blueAccent,
-                                  color: Colors.black12,
-                                  borderStrokeWidth: 3),
-                              builder: (context, markers) {
-                                var rng = Random();
-                                return FloatingActionButton(
-                                  heroTag: rng.nextInt(10000),
-                                  child: Text(markers.length.toString()),
-                                  onPressed: null,
-                                );
-                              },
-                            ),
+                            MarkerLayer(markers: state.markers),
                           ],
                         ),
                         Align(
@@ -100,7 +70,8 @@ class _DashboardPageState extends State<KyblspotsPage> {
                                 style: ElevatedButton.styleFrom(
                                   shape: const CircleBorder(),
                                   padding: const EdgeInsets.all(20),
-                                  primary: Colors.purple, // <-- Button color
+                                  backgroundColor:
+                                      Colors.purple, // <-- Button color
                                 ),
                                 child: const Icon(Icons.add)),
                           ),
@@ -160,7 +131,8 @@ class _DashboardPageState extends State<KyblspotsPage> {
                                 style: ElevatedButton.styleFrom(
                                   shape: const CircleBorder(),
                                   padding: const EdgeInsets.all(20),
-                                  primary: Colors.purple, // <-- Button color
+                                  backgroundColor:
+                                      Colors.purple, // <-- Button color
                                 ),
                                 child: const Icon(Icons.my_location)),
                           ),

@@ -1,14 +1,13 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pofel_app/src/core/appwrite/app_services.dart';
 import 'package:pofel_app/src/core/bloc/image_bloc/image_bloc.dart';
 import 'package:pofel_app/src/core/bloc/image_bloc/image_event.dart';
 import 'package:pofel_app/src/core/bloc/image_bloc/image_state.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
-import 'package:galleryimage/galleryimage.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 import 'package:pofel_app/src/ui/components/image_detail.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
@@ -21,6 +20,8 @@ import '../../../core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart
 
 Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
   ImageBloc imageBloc = ImageBloc();
+  final telemetry = AppTelemetry();
+  imageBloc.add(LoadImages(pofelId: pofel.pofelId));
   return Padding(
       padding: const EdgeInsets.all(15),
       child: BlocProvider(
@@ -41,7 +42,6 @@ Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
             }
           },
           builder: (context, state) {
-            imageBloc.add(LoadImages(pofelId: pofel.pofelId));
             if (state is ImageStateWithData) {
               if (state.imageStateEnum == ImageStateEnum.IMAGE_UPLOADED ||
                   state.imageStateEnum == ImageStateEnum.IMAGE_UPLOADING) {
@@ -122,7 +122,7 @@ Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
                         Expanded(
                           child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  primary: Colors.redAccent),
+                                  backgroundColor: Colors.redAccent),
                               child: const Text("Zpět"),
                               onPressed: () {
                                 BlocProvider.of<PofelDetailNavigationBloc>(
@@ -135,17 +135,16 @@ Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
                           flex: 1,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                primary: Colors.greenAccent),
+                                backgroundColor: Colors.greenAccent),
                             onPressed: () async {
                               final prefs =
                                   await SharedPreferences.getInstance();
                               String? uid = prefs.getString("uid");
-                              if (pofel.photos.length <= 8) {
+                              if (state.photos.length <= 8) {
                                 PofelUserModel user = pofel.signedUsers
                                     .firstWhere((user) => user.uid == uid);
 
-                                await FirebaseAnalytics.instance
-                                    .logEvent(name: 'pofel_photo_uploaded');
+                                await telemetry.logEvent('pofel_photo_uploaded');
                                 BlocProvider.of<ImageBloc>(context).add(
                                     UploadImages(
                                         pofelId: pofel.pofelId, user: user));
@@ -153,8 +152,7 @@ Widget PofelImageGalery(BuildContext context, PofelModel pofel) {
                                 PofelUserModel user = pofel.signedUsers
                                     .firstWhere((user) => user.uid == uid);
 
-                                await FirebaseAnalytics.instance
-                                    .logEvent(name: 'pofel_photo_uploaded');
+                                await telemetry.logEvent('pofel_photo_uploaded');
                                 BlocProvider.of<ImageBloc>(context).add(
                                     UploadImages(
                                         pofelId: pofel.pofelId, user: user));

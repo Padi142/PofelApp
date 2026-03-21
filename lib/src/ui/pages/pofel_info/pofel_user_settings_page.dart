@@ -1,10 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
+import 'package:pofel_app/src/ui/components/simple_date_time_picker.dart';
 import 'package:pofel_app/src/ui/components/toast_premium_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,13 +26,12 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
                 desc: "Zadejt čas příjezdu",
                 content: Column(
                   children: [
-                    DateTimePicker(
-                        type: DateTimePickerType.dateTime,
-                        initialValue: '',
-                        dateLabelText: 'Datum a čas',
-                        onChanged: (val) {
-                          pickedDate = DateTime.parse(val);
-                        })
+                    SimpleDateTimePicker(
+                      labelText: 'Datum a cas',
+                      onChanged: (value) {
+                        pickedDate = value;
+                      },
+                    )
                   ],
                 ),
                 buttons: [
@@ -62,15 +60,14 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
                 desc: "Zadejt čas příjezdu",
                 content: Column(
                   children: [
-                    DateTimePicker(
-                        type: DateTimePickerType.dateTime,
-                        initialValue: '',
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime(2100),
-                        dateLabelText: 'Datum a čas',
-                        onChanged: (val) {
-                          pickedDate = DateTime.parse(val);
-                        })
+                    SimpleDateTimePicker(
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                      labelText: 'Datum a cas',
+                      onChanged: (value) {
+                        pickedDate = value;
+                      },
+                    )
                   ],
                 ),
                 buttons: [
@@ -104,7 +101,8 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
             child: const Text("Zapnout/vypnout chat notifikace"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(primary: Colors.indigoAccent),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigoAccent),
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
               String? uid = prefs.getString("uid");
@@ -142,7 +140,8 @@ Widget UserSettingPage(BuildContext context, PofelModel pofel) {
                 style: TextStyle(color: Colors.black)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(primary: Colors.redAccent),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent),
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
               String? uid = prefs.getString("uid");

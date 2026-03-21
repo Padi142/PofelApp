@@ -56,23 +56,17 @@ class _DashboardPageState extends State<PublicPofelsPage> {
                     return Expanded(
                       child: FlutterMap(
                         options: MapOptions(
-                          interactiveFlags:
-                              InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-                          center: LatLng(49.826860, 15.479491),
-                          zoom: 6.8,
+                          initialCenter: LatLng(49.826860, 15.479491),
+                          initialZoom: 6.8,
                         ),
-                        layers: [
-                          TileLayerOptions(
+                        children: [
+                          TileLayer(
                             urlTemplate:
                                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                            subdomains: ['a', 'b', 'c'],
-                            attributionBuilder: (_) {
-                              return Text("© OpenStreetMap contributors");
-                            },
+                            subdomains: const ['a', 'b', 'c'],
+                            userAgentPackageName: 'com.padisoft.pofelApp',
                           ),
-                          MarkerLayerOptions(
-                            markers: state.markers,
-                          ),
+                          MarkerLayer(markers: state.markers),
                         ],
                       ),
                     );

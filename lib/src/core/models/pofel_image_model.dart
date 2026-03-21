@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 
 class PofelImage extends Equatable {
   const PofelImage({
@@ -23,7 +24,7 @@ class PofelImage extends Equatable {
       uploadedByName: map["uploadedByName"],
       name: map["name"],
       photo: map["photo"],
-      uploadedAt: map["uploadedAt"].toDate(),
+      uploadedAt: parseDateTime(map["uploadedAt"]),
     );
   }
 
@@ -39,7 +40,7 @@ class PofelImage extends Equatable {
 List<PofelImage> pofelPhotosFromList(List<dynamic> list) {
   List<PofelImage> users = [];
   for (var user in list) {
-    users.add(PofelImage.fromMap(user.data()));
+    users.add(PofelImage.fromMap(Map<String, dynamic>.from(user)));
   }
   return users;
 }

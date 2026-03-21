@@ -1,8 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_share/flutter_share.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_state.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
@@ -12,6 +10,7 @@ import 'package:pofel_app/src/core/bloc/social_bloc/social_state.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
+import 'package:share_plus/share_plus.dart';
 
 class InvitePeoplePage extends StatefulWidget {
   InvitePeoplePage({Key? key, required this.uid, required this.pofel})
@@ -170,17 +169,11 @@ class _DashboardPageState extends State<InvitePeoplePage> {
                     child: Center(
                       child: OutlinedButton(
                         onPressed: () async {
-                          await FirebaseAnalytics.instance
-                              .logEvent(name: 'pofel_link_shared');
-
                           String link = "https://pofel.me/?invite=" +
                               widget.pofel.joinCode;
-                          await FlutterShare.share(
-                            title: widget.pofel.name,
-                            chooserTitle: widget.pofel.name,
-                            text: 'Právě jsi byl pozván na epesní pofel: ' +
-                                widget.pofel.name,
-                            linkUrl: link,
+                          await Share.share(
+                            'Právě jsi byl pozván na epesní pofel: ${widget.pofel.name}\n$link',
+                            subject: widget.pofel.name,
                           );
                         },
                         child: const Padding(

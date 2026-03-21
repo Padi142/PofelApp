@@ -10,7 +10,6 @@ import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
-import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/public_pofel_bloc/public_pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
 import 'package:pofel_app/src/ui/pages/invite_link_page.dart';
@@ -18,9 +17,7 @@ import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/main_page.dart';
 
 class PofelApp extends StatelessWidget {
-  const PofelApp({
-    Key? key,
-  }) : super(key: key);
+  const PofelApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -45,7 +42,7 @@ class PofelApp extends StatelessWidget {
           home: BlocBuilder<LoginBloc, LoginState>(
             builder: (context, state) {
               if (state is LoginStateWithData) {
-                if (state.loginStateEnum == LoginStateEnum.LOGGED_IN) {
+                if (state.loginStateEnum == LoginStateEnum.loggedIn) {
                   if (state.invite == "") {
                     return MainPage();
                   } else {

@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pofel_app/src/core/models/geo_point.dart';
 
 class KyblspotModel {
   final String name;

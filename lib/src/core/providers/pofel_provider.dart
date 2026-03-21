@@ -1,484 +1,472 @@
-import 'dart:async';
 import 'dart:math';
-import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_environment.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
+import 'package:pofel_app/src/core/models/geo_point.dart';
 import 'package:pofel_app/src/core/models/pofel_image_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 import 'package:pofel_app/src/core/models/public_pofel_model.dart';
 
 class PofelProvider {
+  PofelProvider({AppwriteRepository? repository})
+      : _repository = repository ?? AppwriteRepository();
+
+  final AppwriteRepository _repository;
+
   Future<List<PofelModel>> fetchPofels(String userUid) async {
-    List<PofelModel> pofels = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DateTime sortDate = DateTime.now();
-    sortDate = sortDate.subtract(const Duration(days: 4));
-    await firestore
-        .collection("active_pofels")
-        .where("signedUsers", arrayContains: userUid)
-        .where("dateFrom", isGreaterThan: sortDate)
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                PofelModel model = PofelModel(
-                  name: doc["name"],
-                  description: doc["description"],
-                  adminUid: doc["adminUid"],
-                  dateFrom: doc["dateFrom"].toDate(),
-                  dateTo: doc["dateTo"].toDate(),
-                  joinCode: doc["joinId"],
-                  spotifyLink: doc["spotifyLink"],
-                  pofelId: doc["pofelId"],
-                  signedUsers: [],
-                  createdAt: doc["createdAt"].toDate(),
-                  pofelLocation: doc["pofelLocation"],
-                  showDrugItems: doc["showDrugItems"] ?? false,
-                  isPremium: doc["isPremium"] ?? false,
-                  isPublic: doc["isPublic"],
-                  photos: [],
-                );
-
-                pofels.add(model);
-              })
-            });
-
-    return pofels;
+    final pofels = await _repository.listDocuments(
+      AppwriteEnvironment.activePofelsCollectionId,
+    );
+    final sortDate = DateTime.now().subtract(const Duration(days: 4));
+    final filtered = pofels
+        .where((doc) {
+          final signedUsers = parseStringList(doc['signedUsers']);
+          return signedUsers.contains(userUid) &&
+              parseDateTime(doc['dateFrom']).isAfter(sortDate);
+        })
+        .toList()
+      ..sort(
+        (a, b) =>
+            parseDateTime(a['dateFrom']).compareTo(parseDateTime(b['dateFrom'])),
+      );
+    return Future.wait(filtered.map(_mapPofelSummary));
   }
 
   Future<List<PublicPofelModel>> fetchPublicPofels(String userUid) async {
-    List<PublicPofelModel> pofels = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DateTime sortDate = DateTime.now();
-    sortDate = sortDate.subtract(const Duration(days: 4));
-    await firestore
-        .collection("active_pofels")
-        .where("isPublic", isEqualTo: true)
-        .where("dateFrom", isGreaterThan: sortDate)
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                PublicPofelModel model = PublicPofelModel(
-                  name: doc["name"],
-                  description: doc["description"],
-                  adminUid: doc["adminUid"],
-                  dateFrom: doc["dateFrom"].toDate(),
-                  dateTo: doc["dateTo"].toDate(),
-                  joinCode: doc["joinId"],
-                  spotifyLink: doc["spotifyLink"],
-                  pofelId: doc["pofelId"],
-                  signedUsers: doc["signedUsers"].length,
-                  createdAt: doc["createdAt"].toDate(),
-                  pofelLocation: doc["pofelLocation"],
-                  showDrugItems: doc["showDrugItems"] ?? false,
-                  isPremium: doc["isPremium"] ?? false,
-                  isPublic: doc["isPublic"],
-                  photos: [],
-                );
+    final pofels = await _repository.listDocuments(
+      AppwriteEnvironment.activePofelsCollectionId,
+    );
+    final signedUsers = await _repository.listDocuments(
+      AppwriteEnvironment.signedUsersCollectionId,
+    );
+    final sortDate = DateTime.now().subtract(const Duration(days: 4));
 
-                pofels.add(model);
-              })
-            });
-
-    return pofels;
+    return pofels
+        .where((doc) =>
+            parseBool(doc['isPublic']) &&
+            parseDateTime(doc['dateFrom']).isAfter(sortDate))
+        .map(
+          (doc) => PublicPofelModel(
+            name: doc['name'],
+            description: doc['description'],
+            adminUid: doc['adminUid'],
+            dateFrom: parseDateTime(doc['dateFrom']),
+            dateTo: parseDateTime(doc['dateTo']),
+            joinCode: doc['joinId'],
+            spotifyLink: doc['spotifyLink'] ?? '',
+            pofelId: doc['pofelId'],
+            signedUsers: signedUsers
+                .where((user) => user['pofelId'] == doc['pofelId'])
+                .length,
+            createdAt: parseDateTime(doc['createdAt']),
+            pofelLocation: parseGeoPoint(doc['pofelLocation']),
+            showDrugItems: parseBool(doc['showDrugItems']),
+            isPremium: parseBool(doc['isPremium']),
+            isPublic: parseBool(doc['isPublic']),
+            photos: const <PofelImage>[],
+          ),
+        )
+        .toList();
   }
 
   Future<List<PofelModel>> fetchPastPofels(String userUid) async {
-    List<PofelModel> pofels = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DateTime sortDate = DateTime.now();
-    sortDate = sortDate.subtract(const Duration(days: 4));
-    await firestore
-        .collection("active_pofels")
-        .where("signedUsers", arrayContains: userUid)
-        .where("dateFrom", isLessThan: sortDate)
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                PofelModel model = PofelModel(
-                  name: doc["name"],
-                  description: doc["description"],
-                  adminUid: doc["adminUid"],
-                  dateFrom: doc["dateFrom"].toDate(),
-                  dateTo: doc["dateTo"].toDate(),
-                  joinCode: doc["joinId"],
-                  spotifyLink: doc["spotifyLink"],
-                  pofelId: doc["pofelId"],
-                  signedUsers: [],
-                  createdAt: doc["createdAt"].toDate(),
-                  pofelLocation: doc["pofelLocation"],
-                  showDrugItems: doc["showDrugItems"] ?? false,
-                  isPremium: doc["isPremium"] ?? false,
-                  isPublic: doc["isPublic"],
-                  photos: [],
-                );
-
-                pofels.add(model);
-              })
-            });
-
-    return pofels;
+    final pofels = await _repository.listDocuments(
+      AppwriteEnvironment.activePofelsCollectionId,
+    );
+    final sortDate = DateTime.now().subtract(const Duration(days: 4));
+    final filtered = pofels
+        .where((doc) {
+          final signedUsers = parseStringList(doc['signedUsers']);
+          return signedUsers.contains(userUid) &&
+              parseDateTime(doc['dateFrom']).isBefore(sortDate);
+        })
+        .toList()
+      ..sort(
+        (a, b) =>
+            parseDateTime(b['dateFrom']).compareTo(parseDateTime(a['dateFrom'])),
+      );
+    return Future.wait(filtered.map(_mapPofelSummary));
   }
 
   Future<PofelModel> getPofel(String pofelId) async {
-    List<PofelModel> pofels = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore
-        .collection("active_pofels")
-        .where("pofelId", isEqualTo: pofelId)
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                PofelModel model = PofelModel(
-                  name: doc["name"],
-                  description: doc["description"],
-                  adminUid: doc["adminUid"],
-                  dateFrom: doc["dateFrom"].toDate(),
-                  dateTo: doc["dateTo"].toDate(),
-                  joinCode: doc["joinId"],
-                  pofelId: doc["pofelId"],
-                  spotifyLink: doc["spotifyLink"],
-                  signedUsers: [],
-                  createdAt: doc["createdAt"].toDate(),
-                  pofelLocation: doc["pofelLocation"],
-                  showDrugItems: doc["showDrugItems"] ?? false,
-                  isPremium: doc["isPremium"] ?? false,
-                  isPublic: doc["isPublic"],
-                  photos: [],
-                );
-                pofels.add(model);
-              })
-            });
-    var snapshot = await firestore
-        .collection("active_pofels")
-        .doc(pofelId)
-        .collection("signedUsers")
-        .get();
-    pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
-
-    return pofels[0];
+    final document = await _repository.getDocument(
+      AppwriteEnvironment.activePofelsCollectionId,
+      pofelId,
+    );
+    if (document == null) {
+      throw Exception('Pofel not found');
+    }
+    return _mapPofel(document);
   }
 
   Future<PofelModel> getPofelByJoinId(String joinId) async {
-    List<PofelModel> pofels = [];
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore
-        .collection("active_pofels")
-        .where("joinId", isEqualTo: joinId)
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                PofelModel model = PofelModel(
-                  name: doc["name"],
-                  description: doc["description"],
-                  adminUid: doc["adminUid"],
-                  dateFrom: doc["dateFrom"].toDate(),
-                  dateTo: doc["dateTo"].toDate(),
-                  joinCode: doc["joinId"],
-                  pofelId: doc["pofelId"],
-                  spotifyLink: doc["spotifyLink"],
-                  signedUsers: [],
-                  createdAt: doc["createdAt"].toDate(),
-                  pofelLocation: doc["pofelLocation"],
-                  showDrugItems: doc["showDrugItems"] ?? false,
-                  isPremium: doc["isPremium"] ?? false,
-                  isPublic: doc["isPublic"],
-                  photos: [],
-                );
-                pofels.add(model);
-              })
-            });
-    var snapshot = await firestore
-        .collection("active_pofels")
-        .doc(pofels[0].pofelId)
-        .collection("signedUsers")
-        .get();
-    if (snapshot.docs.isNotEmpty) {
-      pofels[0].signedUsers = pofelUsersFromList(snapshot.docs);
+    final pofels = await _repository.listDocuments(
+      AppwriteEnvironment.activePofelsCollectionId,
+    );
+    final document = pofels.cast<Map<String, dynamic>?>().firstWhere(
+          (doc) => doc != null && doc['joinId'] == joinId,
+          orElse: () => null,
+        );
+    if (document == null) {
+      throw Exception('Pofel not found');
     }
-
-    return pofels[0];
+    return _mapPofel(document);
   }
 
-  Future<String> joinPofel(String uid, joinId) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Future<String> joinPofel(String uid, String joinId) async {
+    final pofels = await _repository.listDocuments(
+      AppwriteEnvironment.activePofelsCollectionId,
+    );
+    final users = await _repository.listDocuments(
+      AppwriteEnvironment.usersCollectionId,
+    );
 
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .where('joinId', isEqualTo: joinId)
-        .get();
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('uid', isEqualTo: uid)
-        .get();
-
-    QueryDocumentSnapshot pofelDoc = pofelQuery.docs[0];
-    QueryDocumentSnapshot userDoc = userQuery.docs[0];
-    DocumentReference docRef = pofelDoc.reference;
-    try {
-      // subscribe to topic on each app start-up
-      await FirebaseMessaging.instance.subscribeToTopic(docRef.id);
-      await FirebaseMessaging.instance.subscribeToTopic(docRef.id + "chat");
-    } catch (e) {
-      print(e);
+    final pofelDoc = pofels.cast<Map<String, dynamic>?>().firstWhere(
+          (doc) => doc != null && doc['joinId'] == joinId,
+          orElse: () => null,
+        );
+    if (pofelDoc == null) {
+      return 'Nepodařilo se najít pofel.';
     }
-    var joinedUsers = pofelDoc["signedUsers"];
-    bool canJoin = !joinedUsers.contains(uid);
-    if (canJoin) {
-      docRef.update({
-        "signedUsers": FieldValue.arrayUnion([uid]),
-      }).then((value) => print("pofel created"));
 
-      docRef.collection("signedUsers").doc(uid).set({
-        "name": userDoc["name"],
-        "uid": userDoc["uid"],
-        "profile_pic": userDoc["profile_pic"],
-        "isPremium": userDoc["isPremium"],
-        "acceptedInvitation": true,
-        "signedOn": DateTime.now(),
-        "willArrive": DateTime.utc(1989, 11, 9)
-      }).then((value) => print("user added"));
-      return "";
-    } else {
-      return "Retarde, nemůžeš se dvakrat připojit na stejný pofel";
+    final userDoc = users.cast<Map<String, dynamic>?>().firstWhere(
+          (doc) => doc != null && doc['uid'] == uid,
+          orElse: () => null,
+        );
+    if (userDoc == null) {
+      return 'Nepodařilo se načíst uživatele.';
     }
+
+    final joinedUsers = parseStringList(pofelDoc['signedUsers']);
+    final canJoin = !joinedUsers.contains(uid);
+    if (!canJoin) {
+      return 'Retarde, nemůžeš se dvakrat připojit na stejný pofel';
+    }
+
+    joinedUsers.add(uid);
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.activePofelsCollectionId,
+      documentId: pofelDoc[r'$id'] as String,
+      data: {
+        ...sanitizeDocumentData(pofelDoc),
+        'signedUsers': joinedUsers,
+      },
+    );
+
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.signedUsersCollectionId,
+      documentId: '${pofelDoc['pofelId']}_$uid',
+      data: {
+        'pofelId': pofelDoc['pofelId'],
+        'name': userDoc['name'],
+        'uid': userDoc['uid'],
+        'profile_pic': userDoc['profile_pic'],
+        'isPremium': userDoc['isPremium'] ?? false,
+        'acceptedInvitation': true,
+        'signedOn': serializeDateTime(DateTime.now()),
+        'willArrive': serializeDateTime(DateTime.utc(1989, 11, 9)),
+        'chatNotification': true,
+      },
+    );
+
+    return '';
   }
 
   Future<void> createPofel(
-      String name, description, adminUid, DateTime dateFrom, dateTo) async {
-    const _chars =
+    String name,
+    String description,
+    String adminUid,
+    DateTime dateFrom,
+    DateTime dateTo,
+  ) async {
+    const chars =
         'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-    Random _rnd = Random();
+    final rnd = Random();
 
-    String getRandomString(int length) =>
-        String.fromCharCodes(Iterable.generate(
-            length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+    String getRandomString(int length) => String.fromCharCodes(
+          Iterable.generate(
+            length,
+            (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
+          ),
+        );
 
-    String documentId = getRandomString(18);
-    try {
-      // subscribe to topic on each app start-up
-      await FirebaseMessaging.instance.subscribeToTopic(documentId);
-      await FirebaseMessaging.instance.subscribeToTopic(documentId + "chat");
-    } catch (e) {
-      print(e);
-    }
+    final documentId = getRandomString(18);
+    final admin = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      adminUid,
+    );
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore.collection("active_pofels").doc(documentId).set({
-      "name": name,
-      "description": description,
-      "createdAt": DateTime.now(),
-      "dateFrom": dateFrom,
-      "dateTo": dateTo,
-      "pofelLocation": const GeoPoint(0, 0),
-      "pofelId": documentId,
-      "spotifyLink": "",
-      "adminUid": adminUid,
-      "signedUsers": [adminUid],
-      "isPremium": false,
-      "isPublic": false,
-      "showDrugItems": false
-    }).then((value) => print("pofel created"));
-    firestore
-        .collection("active_pofels")
-        .doc(documentId)
-        .collection("signedUsers")
-        .doc(adminUid)
-        .set({
-      "signedOn": DateTime.now(),
-      "acceptedInvitation": true,
-      "uid": adminUid,
-    }).then((value) => print("user added"));
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.activePofelsCollectionId,
+      documentId: documentId,
+      data: {
+        'name': name,
+        'description': description,
+        'createdAt': serializeDateTime(DateTime.now()),
+        'dateFrom': serializeDateTime(dateFrom),
+        'dateTo': serializeDateTime(dateTo),
+        'pofelLocation': serializeGeoPoint(const GeoPoint(0, 0)),
+        'pofelId': documentId,
+        'joinId': documentId.substring(0, 5),
+        'spotifyLink': '',
+        'adminUid': adminUid,
+        'signedUsers': [adminUid],
+        'isPremium': false,
+        'isPublic': false,
+        'showDrugItems': false,
+      },
+    );
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.signedUsersCollectionId,
+      documentId: '${documentId}_$adminUid',
+      data: {
+        'pofelId': documentId,
+        'signedOn': serializeDateTime(DateTime.now()),
+        'acceptedInvitation': true,
+        'uid': adminUid,
+        'name': admin?['name'] ?? 'Admin',
+        'profile_pic': admin?['profile_pic'] ??
+            'https://ui-avatars.com/api/?background=8F3BB7&color=ffffff&name=Admin',
+        'isPremium': admin?['isPremium'] ?? false,
+        'willArrive': serializeDateTime(DateTime.utc(1989, 11, 9)),
+        'chatNotification': true,
+      },
+    );
   }
 
-  Future<void> updateName(String name, pofelId) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "name": name,
-    }).then((value) => print("pofel created"));
+  Future<void> updateName(String name, String pofelId) async {
+    await _updatePofelFields(pofelId, {'name': name});
   }
 
-  Future<void> updateDesc(String desc, pofelId) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "description": desc,
-    }).then((value) => print("pofel created"));
+  Future<void> updateDesc(String desc, String pofelId) async {
+    await _updatePofelFields(pofelId, {'description': desc});
   }
 
   Future<void> updateDatefrom(String pofelId, DateTime newdate) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "dateFrom": newdate,
-    }).then((value) => print("pofel created"));
+    await _updatePofelFields(pofelId, {'dateFrom': serializeDateTime(newdate)});
   }
 
-  Future<void> updateSpotifyLink(String pofelId, newLink) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "spotifyLink": newLink,
-    }).then((value) => print("spotify updated"));
-    ;
+  Future<void> updateSpotifyLink(String pofelId, String newLink) async {
+    await _updatePofelFields(pofelId, {'spotifyLink': newLink});
   }
 
   Future<void> updatePofelLocation(String pofelId, GeoPoint newLocation) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "pofelLocation": newLocation,
-    }).then((value) => print("Location updated"));
+    await _updatePofelFields(
+      pofelId,
+      {'pofelLocation': serializeGeoPoint(newLocation)},
+    );
   }
 
   Future<void> updateUserArrivalDate(
-      String pofelId, uid, DateTime newdate) async {
-    QuerySnapshot pofelQuery = await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("signedUsers")
-        .where("uid", isEqualTo: uid)
-        .get();
-    QueryDocumentSnapshot doc = pofelQuery.docs[0];
-    DocumentReference docRef = doc.reference;
+    String pofelId,
+    String uid,
+    DateTime newdate,
+  ) async {
+    final documentId = '${pofelId}_$uid';
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.signedUsersCollectionId,
+      documentId,
+    );
+    if (userDoc == null) {
+      return;
+    }
 
-    docRef.update({
-      "willArrive": newdate,
-    }).then((value) => print("pofel created"));
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.signedUsersCollectionId,
+      documentId: documentId,
+      data: {
+        ...sanitizeDocumentData(userDoc),
+        'willArrive': serializeDateTime(newdate),
+      },
+    );
+  }
+
+  Future<void> updateChatNotification(
+    String pofelId,
+    String uid,
+    bool enabled,
+  ) async {
+    final documentId = '${pofelId}_$uid';
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.signedUsersCollectionId,
+      documentId,
+    );
+    if (userDoc == null) {
+      return;
+    }
+
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.signedUsersCollectionId,
+      documentId: documentId,
+      data: {
+        ...sanitizeDocumentData(userDoc),
+        'chatNotification': enabled,
+      },
+    );
   }
 
   Future<void> toggleShowDrug(String pofelId, bool showDrugs) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "showDrugItems": !showDrugs,
-    }).then((value) => print("drugs toggled"));
+    await _updatePofelFields(pofelId, {'showDrugItems': !showDrugs});
   }
 
   Future<void> updateIsPublic(String pofelId, bool isPublic) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "isPublic": !isPublic,
-    }).then((value) => print("isPublic toggled"));
+    await _updatePofelFields(pofelId, {'isPublic': !isPublic});
   }
 
   Future<void> changeAdmin(String pofelId, String uid) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "adminUid": uid,
-    }).then((value) => print("admin changed"));
+    await _updatePofelFields(pofelId, {'adminUid': uid});
   }
 
   Future<void> upgradePofel(String pofelId) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "isPremium": true,
-    }).then((value) => print("admin changed"));
+    await _updatePofelFields(pofelId, {'isPremium': true});
   }
 
-  Future<void> leavePofel(String pofelId, uid) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .update({
-      "signedUsers": FieldValue.arrayRemove([uid]),
-    }).then((value) => print("person removed"));
+  Future<void> leavePofel(String pofelId, String uid) async {
+    final pofelDoc = await _repository.getDocument(
+      AppwriteEnvironment.activePofelsCollectionId,
+      pofelId,
+    );
+    if (pofelDoc == null) {
+      return;
+    }
 
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("signedUsers")
-        .doc(uid)
-        .delete();
+    final signedUsers = parseStringList(pofelDoc['signedUsers'])
+      ..removeWhere((signedUser) => signedUser == uid);
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.activePofelsCollectionId,
+      documentId: pofelId,
+      data: {
+        ...sanitizeDocumentData(pofelDoc),
+        'signedUsers': signedUsers,
+      },
+    );
+
+    await _repository.deleteDocument(
+      collectionId: AppwriteEnvironment.signedUsersCollectionId,
+      documentId: '${pofelId}_$uid',
+    );
   }
 
-  //Deleting whole pofel
   Future<void> deletePofel(String pofelId) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("signedUsers")
-        .get()
-        .then((users) => {
-              users.docs.forEach((user) {
-                user.reference.delete();
-              })
-            });
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("chat")
-        .get()
-        .then((chats) => {
-              chats.docs.forEach((chat) {
-                chat.reference.delete();
-              })
-            });
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("items")
-        .get()
-        .then((items) => {
-              items.docs.forEach((item) {
-                item.reference.delete();
-              })
-            });
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("photos")
-        .get()
-        .then((photos) => {
-              photos.docs.forEach((photo) {
-                photo.reference.delete();
-              })
-            });
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("todo")
-        .get()
-        .then((todo) => {
-              todo.docs.forEach((chat) {
-                chat.reference.delete();
-              })
-            });
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("chat")
-        .get()
-        .then((chats) => {
-              chats.docs.forEach((chat) {
-                chat.reference.delete();
-              })
-            });
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .delete()
-        .then((value) => {print("Bye bye pofel :/ :-(")});
+    await _deleteWhere(
+      AppwriteEnvironment.signedUsersCollectionId,
+      (doc) => doc['pofelId'] == pofelId,
+    );
+    await _deleteWhere(
+      AppwriteEnvironment.pofelMessagesCollectionId,
+      (doc) => doc['pofelId'] == pofelId,
+    );
+    await _deleteWhere(
+      AppwriteEnvironment.pofelItemsCollectionId,
+      (doc) => doc['pofelId'] == pofelId,
+    );
+    await _deleteWhere(
+      AppwriteEnvironment.pofelPhotosCollectionId,
+      (doc) => doc['pofelId'] == pofelId,
+    );
+    await _deleteWhere(
+      AppwriteEnvironment.pofelTodosCollectionId,
+      (doc) => doc['pofelId'] == pofelId,
+    );
+
+    await _repository.deleteDocument(
+      collectionId: AppwriteEnvironment.activePofelsCollectionId,
+      documentId: pofelId,
+    );
+  }
+
+  Future<PofelModel> _mapPofelSummary(Map<String, dynamic> doc) async {
+    final signedUsers = await _repository.listDocuments(
+      AppwriteEnvironment.signedUsersCollectionId,
+    );
+    return PofelModel(
+      name: doc['name'],
+      description: doc['description'],
+      adminUid: doc['adminUid'],
+      dateFrom: parseDateTime(doc['dateFrom']),
+      dateTo: parseDateTime(doc['dateTo']),
+      joinCode: doc['joinId'],
+      spotifyLink: doc['spotifyLink'] ?? '',
+      pofelId: doc['pofelId'],
+      signedUsers: signedUsers
+          .where((user) => user['pofelId'] == doc['pofelId'])
+          .map(PofelUserModel.fromMap)
+          .toList(),
+      createdAt: parseDateTime(doc['createdAt']),
+      pofelLocation: parseGeoPoint(doc['pofelLocation']),
+      showDrugItems: parseBool(doc['showDrugItems']),
+      isPremium: parseBool(doc['isPremium']),
+      isPublic: parseBool(doc['isPublic']),
+      photos: const [],
+    );
+  }
+
+  Future<PofelModel> _mapPofel(Map<String, dynamic> doc) async {
+    final signedUsers = await _repository.listDocuments(
+      AppwriteEnvironment.signedUsersCollectionId,
+    );
+    final photos = await _repository.listDocuments(
+      AppwriteEnvironment.pofelPhotosCollectionId,
+    );
+
+    return PofelModel(
+      name: doc['name'],
+      description: doc['description'],
+      adminUid: doc['adminUid'],
+      dateFrom: parseDateTime(doc['dateFrom']),
+      dateTo: parseDateTime(doc['dateTo']),
+      joinCode: doc['joinId'],
+      spotifyLink: doc['spotifyLink'] ?? '',
+      pofelId: doc['pofelId'],
+      signedUsers: signedUsers
+          .where((user) => user['pofelId'] == doc['pofelId'])
+          .map(PofelUserModel.fromMap)
+          .toList(),
+      createdAt: parseDateTime(doc['createdAt']),
+      pofelLocation: parseGeoPoint(doc['pofelLocation']),
+      showDrugItems: parseBool(doc['showDrugItems']),
+      isPremium: parseBool(doc['isPremium']),
+      isPublic: parseBool(doc['isPublic']),
+      photos: photos
+          .where((photo) => photo['pofelId'] == doc['pofelId'])
+          .map(PofelImage.fromMap)
+          .toList(),
+    );
+  }
+
+  Future<void> _updatePofelFields(
+    String pofelId,
+    Map<String, dynamic> fields,
+  ) async {
+    final pofelDoc = await _repository.getDocument(
+      AppwriteEnvironment.activePofelsCollectionId,
+      pofelId,
+    );
+    if (pofelDoc == null) {
+      return;
+    }
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.activePofelsCollectionId,
+      documentId: pofelId,
+      data: {
+        ...sanitizeDocumentData(pofelDoc),
+        ...fields,
+      },
+    );
+  }
+
+  Future<void> _deleteWhere(
+    String collectionId,
+    bool Function(Map<String, dynamic>) test,
+  ) async {
+    final documents = await _repository.listDocuments(collectionId);
+    for (final document in documents.where(test)) {
+      await _repository.deleteDocument(
+        collectionId: collectionId,
+        documentId: document[r'$id'] as String,
+      );
+    }
   }
 }

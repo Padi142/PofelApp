@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 
 class TodoModel extends Equatable {
   const TodoModel({
@@ -37,30 +37,15 @@ class TodoModel extends Equatable {
     return TodoModel(
       todoTitle: map["todoTitle"],
       todoId: map["todoId"],
-      isDone: map["isDone"],
+      isDone: parseBool(map["isDone"]),
       assignedByName: map["assignedByName"],
       assignedByProfilePic: map["assignedByProfilePic"],
       assignedByUid: map["assignedByUid"],
       assignedToName: map["assignedToName"],
       assignedToProfilePic: map["assignedToProfilePic"],
       assignedToUid: map["assignedToUid"],
-      assignedOn: map["assignedOn"].toDate(),
-      doneOn: map["doneOn"].toDate(),
-    );
-  }
-  factory TodoModel.fromObject(QueryDocumentSnapshot<Object?> map) {
-    return TodoModel(
-      todoTitle: map["todoTitle"],
-      todoId: map["todoId"],
-      isDone: map["isDone"],
-      assignedByName: map["assignedByName"],
-      assignedByProfilePic: map["assignedByProfilePic"],
-      assignedByUid: map["assignedByUid"],
-      assignedToName: map["assignedToName"],
-      assignedToProfilePic: map["assignedToProfilePic"],
-      assignedToUid: map["assignedToUid"],
-      assignedOn: map["assignedOn"].toDate(),
-      doneOn: map["doneOn"].toDate(),
+      assignedOn: parseDateTime(map["assignedOn"]),
+      doneOn: parseDateTime(map["doneOn"]),
     );
   }
 }
@@ -68,7 +53,7 @@ class TodoModel extends Equatable {
 List<TodoModel> pofelTodosFromList(List<dynamic> list) {
   List<TodoModel> todos = [];
   for (var todo in list) {
-    todos.add(TodoModel.fromMap(todo.data()));
+    todos.add(TodoModel.fromMap(Map<String, dynamic>.from(todo)));
   }
   return todos;
 }

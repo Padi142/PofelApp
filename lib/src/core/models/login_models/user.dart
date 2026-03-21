@@ -33,9 +33,10 @@ class UserModel extends Equatable {
   ) {
     return UserModel(
       uid: map["uid"],
+      email: map["email"],
       name: map["name"],
       photo: map["profile_pic"],
-      isPremium: map["isPremium"],
+      isPremium: map["isPremium"] ?? false,
     );
   }
 

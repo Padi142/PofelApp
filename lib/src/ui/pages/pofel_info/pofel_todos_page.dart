@@ -116,7 +116,8 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                 Expanded(
                   child: ElevatedButton(
                       style:
-                          ElevatedButton.styleFrom(primary: Colors.redAccent),
+                          ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent),
                       child: const Text("Zpět"),
                       onPressed: () {
                         BlocProvider.of<PofelDetailNavigationBloc>(context)
@@ -142,7 +143,7 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                                     decoration: const InputDecoration(
                                       labelText: 'Jméno questu',
                                     ),
-                                    onSubmitted: () => form.focus('clovek'),
+                                    onSubmitted: (_) => form.focus('clovek'),
                                     textCapitalization:
                                         TextCapitalization.words,
                                     textAlign: TextAlign.center,

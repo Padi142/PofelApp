@@ -1,42 +1,42 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:pofel_app/src/core/models/login_models/user.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_environment.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 import 'package:pofel_app/src/core/models/message_model.dart';
 
 class ChatProvider {
+  ChatProvider({AppwriteRepository? repository})
+      : _repository = repository ?? AppwriteRepository();
+
+  final AppwriteRepository _repository;
+
   Future<List<MessageModel>> fetchFirstMessages(String pofelId) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    List<MessageModel> messages = [];
-    var query = await firestore
-        .collection("active_pofels")
-        .doc(pofelId)
-        .collection("chat")
-        .orderBy("sentOn")
-        .limit(20)
-        .get()
-        .then((querySnapshot) => {
-              // ignore: avoid_function_literals_in_foreach_calls
-              querySnapshot.docs.forEach((doc) {
-                MessageModel message = MessageModel.fromMap(doc);
-                messages.add(message);
-              })
-            });
-    return messages;
+    final documents = await _repository.listDocuments(
+      AppwriteEnvironment.pofelMessagesCollectionId,
+    );
+    final filtered = documents
+        .where((message) => message['pofelId'] == pofelId)
+        .toList()
+      ..sort(
+        (a, b) =>
+            DateTime.parse(a['sentOn'] as String).compareTo(
+              DateTime.parse(b['sentOn'] as String),
+            ),
+      );
+
+    return filtered.take(50).map(MessageModel.fromMap).toList();
   }
 
   Future<void> sendMessage(MessageModel message, String pofelId) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore
-        .collection("active_pofels")
-        .doc(pofelId)
-        .collection("chat")
-        .add({
-      "message": message.message,
-      "sentByName": message.sentByName,
-      "sentByUid": message.sentByUid,
-      "sentByProfilePic": message.sentByProfilePic,
-      "sentOn": message.sentOn,
-    });
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.pofelMessagesCollectionId,
+      data: {
+        'pofelId': pofelId,
+        'message': message.message,
+        'sentByName': message.sentByName,
+        'sentByUid': message.sentByUid,
+        'sentByProfilePic': message.sentByProfilePic,
+        'sentOn': serializeDateTime(message.sentOn),
+      },
+    );
   }
 }

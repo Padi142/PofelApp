@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_event.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_state.dart';
@@ -41,13 +40,12 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
     String? uid = prefs.getString("uid");
     bool canInvite = await socialProvider.isFollowing(uid!, event.uid);
     if (canInvite) {
-      var func = FirebaseFunctions.instance.httpsCallable("inviteUserToPofel");
-      await func.call(<String, dynamic>{
-        "userId": event.uid,
-        "sentByUid": uid,
-        "pofelname": event.pofelName,
-        "pofelId": event.pofelId,
-      });
+      await socialProvider.inviteUserToPofel(
+        currentUserId: uid!,
+        userId: event.uid,
+        pofelName: event.pofelName,
+        pofelJoinCode: event.pofelId,
+      );
 
       emit(
           (state as MyFollowingState).copyWith(inviteEnum: InviteEnum.INVITED));

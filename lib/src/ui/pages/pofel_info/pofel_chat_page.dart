@@ -1,14 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfire_ui/firestore.dart';
 import 'package:pofel_app/src/core/bloc/chat_bloc/chat_bloc.dart';
 import 'package:pofel_app/src/core/bloc/chat_bloc/chat_event.dart';
 import 'package:pofel_app/src/core/bloc/chat_bloc/chat_state.dart';
-import 'package:pofel_app/src/core/models/message_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
-import 'package:flutterfire_ui/database.dart';
 
 import '../../components/chat_bubbles.dart';
 
@@ -17,38 +13,38 @@ Widget PofelChatPage(
   BlocProvider.of<ChatBloc>(context)
       .add(LoadFirstChats(pofelId: pofel.pofelId));
   final myController = TextEditingController();
-  ScrollController _scrollController = ScrollController();
-
-  final chatsQuery = FirebaseFirestore.instance
-      .collection("active_pofels")
-      .doc(pofel.pofelId)
-      .collection("chat")
-      .orderBy("sentOn", descending: true);
 
   return Padding(
       padding: const EdgeInsets.all(15),
       child: Column(children: [
         Expanded(
-            flex: 4,
-            child: FirestoreListView(
-                pageSize: 50,
-                query: chatsQuery,
-                controller: _scrollController,
+          flex: 4,
+          child: BlocBuilder<ChatBloc, ChatState>(
+            builder: (context, state) {
+              if (state is! ChatsLoaded) {
+                return Column(
+                  children: const [
+                    Text("Discord 2.0 Loading..."),
+                    CircularProgressIndicator()
+                  ],
+                );
+              }
+
+              return ListView.builder(
                 reverse: true,
-                itemBuilder: (context, snapshot) {
-                  MessageModel message = MessageModel.fromMap(snapshot);
+                itemCount: state.messages.length,
+                itemBuilder: (context, index) {
+                  final message =
+                      state.messages[state.messages.length - 1 - index];
                   if (message.sentByUid == currentUserUid) {
                     return myChat(context, message);
-                  } else {
-                    return otherChat(context, message);
                   }
+                  return otherChat(context, message);
                 },
-                loadingBuilder: (context) => Column(
-                      children: const [
-                        Text("Discord 2.0 Loading..."),
-                        CircularProgressIndicator()
-                      ],
-                    ))),
+              );
+            },
+          ),
+        ),
         Expanded(
           child: Row(
             children: [

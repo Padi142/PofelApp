@@ -1,75 +1,99 @@
-import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:pofel_app/src/core/models/item_model.dart';
-import 'package:pofel_app/src/core/models/login_models/user.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_environment.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 import 'package:pofel_app/src/core/models/to_do_model.dart';
 
 class TodoProvider {
-  Future<List<TodoModel>> fetchTodos(String pofelId) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot itemsQuery = await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("todo")
-        .get();
+  TodoProvider({AppwriteRepository? repository})
+      : _repository = repository ?? AppwriteRepository();
 
-    List<TodoModel> items = pofelTodosFromList(itemsQuery.docs);
-    return items;
+  final AppwriteRepository _repository;
+
+  Future<List<TodoModel>> fetchTodos(String pofelId) async {
+    final todos = await _repository.listDocuments(
+      AppwriteEnvironment.pofelTodosCollectionId,
+    );
+    final filtered = todos
+        .where((todo) => todo['pofelId'] == pofelId)
+        .toList()
+      ..sort(
+        (a, b) =>
+            DateTime.parse(a['assignedOn'] as String).compareTo(
+              DateTime.parse(b['assignedOn'] as String),
+            ),
+      );
+    return filtered.map(TodoModel.fromMap).toList();
   }
 
   Future<void> addTodo(String pofelId, TodoModel todo) async {
-    await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("todo")
-        .doc(todo.todoId)
-        .set({
-      "todoTitle": todo.todoTitle,
-      "todoId": todo.todoId,
-      "isDone": todo.isDone,
-      "assignedByName": todo.assignedByName,
-      "assignedByProfilePic": todo.assignedByProfilePic,
-      "assignedByUid": todo.assignedByUid,
-      "assignedOn": todo.assignedOn,
-      "assignedToName": todo.assignedToName,
-      "assignedToProfilePic": todo.assignedToProfilePic,
-      "assignedToUid": todo.assignedToUid,
-      "doneOn": todo.doneOn,
-    });
+    final assigner = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      todo.assignedByUid,
+    );
+    await _repository.createDocument(
+      collectionId: AppwriteEnvironment.pofelTodosCollectionId,
+      documentId: todo.todoId,
+      data: {
+        'pofelId': pofelId,
+        'todoTitle': todo.todoTitle,
+        'todoId': todo.todoId,
+        'isDone': todo.isDone,
+        'assignedByName': assigner?['name'] ?? todo.assignedByName,
+        'assignedByProfilePic':
+            assigner?['profile_pic'] ?? todo.assignedByProfilePic,
+        'assignedByUid': todo.assignedByUid,
+        'assignedOn': serializeDateTime(todo.assignedOn),
+        'assignedToName': todo.assignedToName,
+        'assignedToProfilePic': todo.assignedToProfilePic,
+        'assignedToUid': todo.assignedToUid,
+        'doneOn': serializeDateTime(todo.doneOn),
+      },
+    );
   }
 
   Future<void> removeTodo(String pofelId, String todoId) async {
-    var query = await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("items")
-        .where("todoId", isEqualTo: todoId)
-        .get();
-    var doc = query.docs[0];
-    var reference = doc.reference;
-    reference.delete();
+    await _repository.deleteDocument(
+      collectionId: AppwriteEnvironment.pofelTodosCollectionId,
+      documentId: todoId,
+    );
   }
 
   Future<void> todoIsDone(String pofelId, String todoId) async {
-    var query = await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("todo")
-        .doc(todoId)
-        .update({"isDone": true});
+    final todo = await _repository.getDocument(
+      AppwriteEnvironment.pofelTodosCollectionId,
+      todoId,
+    );
+    if (todo == null || todo['pofelId'] != pofelId) {
+      return;
+    }
+
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.pofelTodosCollectionId,
+      documentId: todoId,
+      data: {
+        ...sanitizeDocumentData(todo),
+        'isDone': true,
+        'doneOn': serializeDateTime(DateTime.now()),
+      },
+    );
   }
 
   Future<void> todoIsNotDone(String pofelId, String todoId) async {
-    var query = await FirebaseFirestore.instance
-        .collection('active_pofels')
-        .doc(pofelId)
-        .collection("todo")
-        .doc(todoId)
-        .update({"isDone": false});
+    final todo = await _repository.getDocument(
+      AppwriteEnvironment.pofelTodosCollectionId,
+      todoId,
+    );
+    if (todo == null || todo['pofelId'] != pofelId) {
+      return;
+    }
+
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.pofelTodosCollectionId,
+      documentId: todoId,
+      data: {
+        ...sanitizeDocumentData(todo),
+        'isDone': false,
+      },
+    );
   }
 }

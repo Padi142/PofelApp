@@ -1,87 +1,123 @@
-import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:pofel_app/src/core/appwrite/appwrite_environment.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 import 'package:pofel_app/src/core/models/login_models/user.dart';
 import 'package:pofel_app/src/core/models/profile_model.dart';
 
 class UserProvider {
+  UserProvider({AppwriteRepository? repository})
+      : _repository = repository ?? AppwriteRepository();
+
+  final AppwriteRepository _repository;
+
   Future<UserModel> fetchUserData(String userUid) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    var query = await firestore.collection("users").doc(userUid).get();
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      userUid,
+    );
+    if (userDoc == null) {
+      return const UserModel(uid: '');
+    }
 
-    UserModel oldUser = UserModel.fromMap(query.data() as Map<String, dynamic>);
-
-    var followersQuery = await firestore
-        .collection("users")
-        .doc(userUid)
-        .collection("followers")
-        .get();
-    var followingQuery = await firestore
-        .collection("users")
-        .doc(userUid)
-        .collection("following")
-        .get();
-    UserModel user = UserModel(
-      uid: oldUser.uid,
-      name: oldUser.name,
-      photo: oldUser.photo,
-      isPremium: oldUser.isPremium,
-      followers: profilesFromList(followersQuery.docs),
-      following: profilesFromList(followingQuery.docs),
+    final follows = await _repository.listDocuments(
+      AppwriteEnvironment.followsCollectionId,
+    );
+    final users = await _repository.listDocuments(
+      AppwriteEnvironment.usersCollectionId,
     );
 
-    return user;
+    final followers = follows
+        .where((follow) => follow['followingUid'] == userUid)
+        .map((follow) => follow['followerUid'] as String)
+        .toSet();
+    final following = follows
+        .where((follow) => follow['followerUid'] == userUid)
+        .map((follow) => follow['followingUid'] as String)
+        .toSet();
+
+    List<ProfileModel> profilesFor(Set<String> ids) {
+      return users
+          .where((user) => ids.contains(user['uid']))
+          .map(ProfileModel.fromMap)
+          .toList();
+    }
+
+    final oldUser = UserModel.fromMap(userDoc);
+    return UserModel(
+      uid: oldUser.uid,
+      name: oldUser.name,
+      email: oldUser.email,
+      photo: oldUser.photo,
+      isPremium: oldUser.isPremium,
+      followers: profilesFor(followers),
+      following: profilesFor(following),
+    );
   }
 
-  Future<void> updateUserName(String userUid, newName) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    var query = await firestore
-        .collection("users")
-        .where("uid", isEqualTo: userUid)
-        .get();
-    QueryDocumentSnapshot doc = query.docs[0];
-    var docRef = doc.reference;
+  Future<void> updateUserName(String userUid, String newName) async {
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      userUid,
+    );
+    if (userDoc == null) {
+      return;
+    }
 
-    docRef.update({"name": newName});
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.usersCollectionId,
+      documentId: userUid,
+      data: {
+        ...sanitizeDocumentData(userDoc),
+        'name': newName,
+      },
+    );
   }
 
   Future<void> updateProfilePic(String userUid, XFile image) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    firebase_storage.FirebaseStorage storage =
-        firebase_storage.FirebaseStorage.instance;
+    final bytes = await image.readAsBytes();
+    final fileId = await _repository.uploadFile(
+      filename: 'profile_$userUid.png',
+      bytes: bytes,
+      fileId: 'profile-$userUid',
+    );
+    final imageUrl = _repository.getFileView(fileId);
 
-    var query = await firestore
-        .collection("users")
-        .where("uid", isEqualTo: userUid)
-        .get();
-    QueryDocumentSnapshot doc = query.docs[0];
-    String documentId = doc.id;
-    Uint8List bytes = await image.readAsBytes();
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      userUid,
+    );
+    if (userDoc == null) {
+      return;
+    }
 
-    Reference ref = storage.ref().child('profile_pics/$userUid.png');
-    UploadTask uploadTask =
-        ref.putData(bytes, SettableMetadata(contentType: 'image/png'));
-    TaskSnapshot taskSnapshot =
-        await uploadTask.whenComplete(() => print('image uploaded!'));
-
-    String imageUrl = await taskSnapshot.ref.getDownloadURL();
-
-    var docRef = doc.reference;
-
-    docRef.update({"profile_pic": imageUrl});
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.usersCollectionId,
+      documentId: userUid,
+      data: {
+        ...sanitizeDocumentData(userDoc),
+        'profile_pic': imageUrl,
+      },
+    );
   }
 
-  Future<void> buyPremium(
-    String userUid,
-  ) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore
-        .collection("users")
-        .doc(userUid)
-        .update({"isPremium": true, "premiumLevel": FieldValue.increment(1)});
+  Future<void> buyPremium(String userUid) async {
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      userUid,
+    );
+    if (userDoc == null) {
+      return;
+    }
+
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.usersCollectionId,
+      documentId: userUid,
+      data: {
+        ...sanitizeDocumentData(userDoc),
+        'isPremium': true,
+        'premiumLevel': ((userDoc['premiumLevel'] ?? 0) as num).toInt() + 1,
+      },
+    );
   }
 }

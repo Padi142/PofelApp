@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 
 class NotificationModel extends Equatable {
   const NotificationModel({
@@ -29,18 +29,18 @@ class NotificationModel extends Equatable {
   List<Object?> get props => [];
 
   static NotificationModel notificationFromMap(
-    QueryDocumentSnapshot<Object?> map,
+    Map<String, dynamic> map,
   ) {
     return NotificationModel(
       message: map["message"],
       sentByName: map["sentByName"],
       sentByProfilePic: map["sentByProfilePic"],
-      id: map["id"],
+      id: map["id"] ?? map[r'$id'],
       userId: map["userId"],
       pofelId: map["pofelId"],
-      shown: map["shown"],
+      shown: parseBool(map["shown"]),
       type: getNotTypeFromText(map["type"]),
-      sentOn: map["sentOn"].toDate(),
+      sentOn: parseDateTime(map["sentOn"]),
     );
   }
 

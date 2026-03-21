@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class ProfileModel extends Equatable {
@@ -15,7 +14,7 @@ class ProfileModel extends Equatable {
   final bool isPremium;
 
   factory ProfileModel.fromMap(
-    QueryDocumentSnapshot<Object?> map,
+    Map<String, dynamic> map,
   ) {
     return ProfileModel(
         uid: map["uid"],
@@ -33,7 +32,7 @@ List<ProfileModel> profilesFromList(List<dynamic> list) {
   List<ProfileModel> users = [];
   for (var user in list) {
     try {
-      users.add(ProfileModel.fromMap(user));
+      users.add(ProfileModel.fromMap(Map<String, dynamic>.from(user)));
     } catch (e) {
       users.add(ProfileModel(
           uid: user["uid"],

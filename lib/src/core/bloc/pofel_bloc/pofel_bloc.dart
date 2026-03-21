@@ -1,10 +1,8 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:pofel_app/src/core/appwrite/app_services.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
+import 'package:pofel_app/src/core/models/geo_point.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/providers/pofel_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,13 +37,12 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     on<DeletePofel>(_onDeletePofel);
   }
   PofelProvider pofelApiProvider = PofelProvider();
+  final AppTelemetry _telemetry = AppTelemetry();
 
   _onCreatePofel(CreatePofel event, Emitter<PofelState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
-    await FirebaseAnalytics.instance.logEvent(
-      name: 'pofel_created',
-    );
+    await _telemetry.logEvent('pofel_created');
     try {
       if (uid != null) {
         pofelApiProvider.createPofel(
@@ -74,25 +71,18 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
           if (error == "") {
             emit((state as PofelStateWithData)
                 .copyWith(pofelStateEnum: PofelStateEnum.POFEL_JOINED));
-            await FirebaseAnalytics.instance.logEvent(
-              name: 'pofel_joined',
-            );
+            await _telemetry.logEvent('pofel_joined');
           } else {
             emit((state as PofelStateWithData).copyWith(
                 pofelStateEnum: PofelStateEnum.ERROR_JOINING,
                 errorMessage: error));
-            await FirebaseAnalytics.instance.logEvent(
-              name: 'pofel_join_error',
-            );
+            await _telemetry.logEvent('pofel_join_error');
           }
         } catch (e) {
           emit((state as PofelStateWithData).copyWith(
               pofelStateEnum: PofelStateEnum.ERROR_JOINING,
               errorMessage: "Nepodařilo se připojit"));
-          await FirebaseAnalytics.instance.logEvent(
-            name: 'pofel_join_error',
-          );
-          print(e);
+          await _telemetry.logEvent('pofel_join_error');
         }
       }
     }
@@ -110,9 +100,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       emit((state as PofelStateWithData).copyWith(
           pofelStateEnum: PofelStateEnum.ERROR_LOADING,
           errorMessage: "Nepodařilo se najit pofel"));
-      await FirebaseAnalytics.instance.logEvent(
-        name: 'pofel_load_error',
-      );
+      await _telemetry.logEvent('pofel_load_error');
     }
   }
 
@@ -127,9 +115,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
       emit((state as PofelStateWithData).copyWith(
           pofelStateEnum: PofelStateEnum.ERROR_LOADING,
           errorMessage: "Nepodařilo se najit pofel"));
-      await FirebaseAnalytics.instance.logEvent(
-        name: 'pofel_load_error',
-      );
+      await _telemetry.logEvent('pofel_load_error');
     }
   }
 
@@ -165,14 +151,15 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
 
     emit((state as PofelStateWithData)
         .copyWith(pofelStateEnum: PofelStateEnum.POFEL_UPDATED));
-    await FirebaseAnalytics.instance.logEvent(
-      name: 'pofel_updated',
-    );
+    await _telemetry.logEvent('pofel_updated');
   }
 
   _onUpdateWillArive(UpdateWillArrive event, Emitter<PofelState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
 
     await pofelApiProvider.updateUserArrivalDate(
         event.pofelId, uid, event.newDate);
@@ -200,12 +187,13 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
 
   _onChangeChatNotPref(ChatNotification event, Emitter<PofelState> emit) async {
     if (event.user.chatNotification) {
-      await FirebaseMessaging.instance
-          .unsubscribeFromTopic(event.pofelId + "chat");
+      await pofelApiProvider.updateChatNotification(
+          event.pofelId, event.user.uid, false);
       emit((state as PofelStateWithData)
           .copyWith(pofelStateEnum: PofelStateEnum.NOT_TURNED_OFF));
     } else {
-      await FirebaseMessaging.instance.subscribeToTopic(event.pofelId + "chat");
+      await pofelApiProvider.updateChatNotification(
+          event.pofelId, event.user.uid, true);
       emit((state as PofelStateWithData)
           .copyWith(pofelStateEnum: PofelStateEnum.NOT_TURNED_ON));
     }

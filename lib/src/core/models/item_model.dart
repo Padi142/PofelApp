@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 
 class ItemModel extends Equatable {
   const ItemModel({
+    required this.documentId,
     required this.name,
     required this.count,
     required this.price,
@@ -13,6 +14,7 @@ class ItemModel extends Equatable {
     required this.itemType,
   });
 
+  final String documentId;
   final String name;
   final int count;
   final double price;
@@ -29,25 +31,14 @@ class ItemModel extends Equatable {
     Map<String, dynamic> map,
   ) {
     return ItemModel(
+      documentId: map[r'$id'] ?? '',
       name: map["name"],
-      count: map["count"],
-      price: map["price"],
+      count: parseInt(map["count"]),
+      price: parseDouble(map["price"]),
       addedBy: map["addedBy"],
       addedByUid: map["addedByUid"],
       addedByProfilePic: map["addedByProfilePic"],
-      addedOn: map["addedOn"].toDate(),
-      itemType: getTypeFromString(map["itemType"]),
-    );
-  }
-  factory ItemModel.fromObject(QueryDocumentSnapshot<Object?> map) {
-    return ItemModel(
-      name: map["name"],
-      count: map["count"],
-      price: map["price"],
-      addedBy: map["addedBy"],
-      addedByUid: map["addedByUid"],
-      addedByProfilePic: map["addedByProfilePic"],
-      addedOn: map["addedOn"].toDate(),
+      addedOn: parseDateTime(map["addedOn"]),
       itemType: getTypeFromString(map["itemType"]),
     );
   }
@@ -92,7 +83,7 @@ String getStringFromType(ItemType type) {
 List<ItemModel> pofelUsersFromList(List<dynamic> list) {
   List<ItemModel> users = [];
   for (var item in list) {
-    users.add(ItemModel.fromMap(item.data()));
+    users.add(ItemModel.fromMap(Map<String, dynamic>.from(item)));
   }
   return users;
 }

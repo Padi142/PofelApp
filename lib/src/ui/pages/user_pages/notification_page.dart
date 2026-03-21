@@ -1,11 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfire_ui/firestore.dart';
-import 'package:pofel_app/src/core/bloc/notification_bloc/notification_bloc.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_event.dart';
-import 'package:pofel_app/src/core/bloc/social_bloc/social_state.dart';
 import 'package:pofel_app/src/core/models/notification_model.dart';
 import 'package:pofel_app/src/core/models/profile_model.dart';
 import 'package:pofel_app/src/core/providers/notification_provider.dart';
@@ -24,142 +20,107 @@ class NotificationsPage extends StatefulWidget {
 
 class _DashboardPageState extends State<NotificationsPage> {
   final myController = TextEditingController();
-  NotificationBloc notificationBloc = NotificationBloc();
+  final NotificationProvider _notificationProvider = NotificationProvider();
   int notOption = 0;
+
   @override
   Widget build(BuildContext context) {
-    final notificationsQuery = FirebaseFirestore.instance
-        .collection("users")
-        .doc(widget.currentUid)
-        .collection("notifications")
-        .orderBy("sentOn", descending: true);
-
-    final followsQuery = FirebaseFirestore.instance
-        .collection("users")
-        .doc(widget.currentUid)
-        .collection("notifications")
-        .where("type", isEqualTo: "FOLLOW")
-        .orderBy("sentOn", descending: true);
-
-    final invitesQuery = FirebaseFirestore.instance
-        .collection("users")
-        .doc(widget.currentUid)
-        .collection("notifications")
-        .where("type", isEqualTo: "INVITE")
-        .orderBy("sentOn", descending: true);
-    return BlocProvider(
-      create: (context) => notificationBloc,
-      child: Flex(
-          direction: Axis.vertical,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: (Text("Upozornění",
-                    style: TextStyle(color: Colors.black87, fontSize: 17))),
-              ),
+    return Flex(
+        direction: Axis.vertical,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text("Upozornění",
+                  style: TextStyle(color: Colors.black87, fontSize: 17)),
             ),
-            Expanded(
-                child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        notOption = 0;
-                      });
-                    },
-                    child: Text("Všechno")),
-                ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        notOption = 1;
-                      });
-                    },
-                    child: Text("Pozvánky")),
-                ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        notOption = 2;
-                      });
-                    },
-                    child: Text("Follows")),
-              ],
-            )),
-            if (notOption == 0)
-              Expanded(
-                  flex: 5,
-                  child: FirestoreListView(
-                      pageSize: 30,
-                      query: notificationsQuery,
-                      itemBuilder: (context, snapshot) {
-                        NotificationModel notification =
-                            NotificationModel.notificationFromMap(snapshot);
-                        switch (notification.type) {
-                          case NotificationType.FOLLOW:
-                            return followNotification(context, notification);
-                          case NotificationType.INIVTE:
-                            return inviteNotification(context, notification);
+          ),
+          Expanded(
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      notOption = 0;
+                    });
+                  },
+                  child: const Text("Všechno")),
+              ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      notOption = 1;
+                    });
+                  },
+                  child: const Text("Pozvánky")),
+              ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      notOption = 2;
+                    });
+                  },
+                  child: const Text("Follows")),
+            ],
+          )),
+          Expanded(
+            flex: 5,
+            child: FutureBuilder<List<NotificationModel>>(
+              future: _notificationProvider.fetchNotifications(widget.currentUid),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Column(
+                    children: const [
+                      Text("Notifikace loadujici..."),
+                      CircularProgressIndicator()
+                    ],
+                  );
+                }
 
-                          case NotificationType.MESSAGE:
-                            return Container();
-                          case NotificationType.NONE:
-                          default:
-                            return Container();
-                        }
-                      },
-                      loadingBuilder: (context) => Column(
-                            children: const [
-                              Text("Notifikace loadujici..."),
-                              CircularProgressIndicator()
-                            ],
-                          ))),
-            if (notOption == 1)
-              Expanded(
-                  flex: 5,
-                  child: FirestoreListView(
-                      pageSize: 30,
-                      query: invitesQuery,
-                      itemBuilder: (context, snapshot) {
-                        NotificationModel notification =
-                            NotificationModel.notificationFromMap(snapshot);
-                        return inviteNotification(context, notification);
-                      },
-                      loadingBuilder: (context) => Column(
-                            children: const [
-                              Text("Notifikace loadujici..."),
-                              CircularProgressIndicator()
-                            ],
-                          ))),
-            if (notOption == 2)
-              Expanded(
-                  flex: 5,
-                  child: FirestoreListView(
-                      pageSize: 30,
-                      query: followsQuery,
-                      itemBuilder: (context, snapshot) {
-                        NotificationModel notification =
-                            NotificationModel.notificationFromMap(snapshot);
+                var notifications = snapshot.data!;
+                if (notOption == 1) {
+                  notifications = notifications
+                      .where((notification) =>
+                          notification.type == NotificationType.INIVTE)
+                      .toList();
+                } else if (notOption == 2) {
+                  notifications = notifications
+                      .where((notification) =>
+                          notification.type == NotificationType.FOLLOW)
+                      .toList();
+                }
 
+                if (notifications.isEmpty) {
+                  return const Center(child: Text("Zatím žádné notifikace."));
+                }
+
+                return ListView.builder(
+                  itemCount: notifications.length,
+                  itemBuilder: (context, index) {
+                    final notification = notifications[index];
+                    switch (notification.type) {
+                      case NotificationType.FOLLOW:
                         return followNotification(context, notification);
-                      },
-                      loadingBuilder: (context) => Column(
-                            children: const [
-                              Text("Notifikace loadujici..."),
-                              CircularProgressIndicator()
-                            ],
-                          )))
-          ]),
-    );
+                      case NotificationType.INIVTE:
+                        return inviteNotification(context, notification);
+                      case NotificationType.MESSAGE:
+                      case NotificationType.NONE:
+                      default:
+                        return Container();
+                    }
+                  },
+                );
+              },
+            ),
+          )
+        ]);
   }
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     myController.dispose();
     super.dispose();
   }

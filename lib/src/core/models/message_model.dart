@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 
 class MessageModel extends Equatable {
   const MessageModel({
@@ -20,14 +20,14 @@ class MessageModel extends Equatable {
   List<Object?> get props => [];
 
   factory MessageModel.fromMap(
-    QueryDocumentSnapshot<Object?> map,
+    Map<String, dynamic> map,
   ) {
     return MessageModel(
       message: map["message"],
       sentByName: map["sentByName"],
       sentByProfilePic: map["sentByProfilePic"],
       sentByUid: map["sentByUid"],
-      sentOn: map["sentOn"].toDate(),
+      sentOn: parseDateTime(map["sentOn"]),
     );
   }
 }

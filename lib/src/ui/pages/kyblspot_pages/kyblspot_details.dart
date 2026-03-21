@@ -4,7 +4,6 @@ import 'package:pofel_app/src/ui/components/review_container.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_bloc.dart';
 import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_event.dart';
@@ -12,7 +11,6 @@ import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_state.dart';
 import 'package:pofel_app/src/core/models/kyblspot_model.dart';
 import 'package:pofel_app/src/core/models/kyblspot_review_model.dart';
 
-import 'package:flutter_focus_watcher/flutter_focus_watcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KyblspotDetailsPage extends StatefulWidget {
@@ -38,8 +36,7 @@ class _KyblspotDetailsPageState extends State<KyblspotDetailsPage> {
     BlocProvider.of<KyblspotBloc>(context).add(LoadKyblspotReviews(
       spotId: widget.model.spotId,
     ));
-    return FocusWatcher(
-      child: Scaffold(
+    return Scaffold(
           resizeToAvoidBottomInset: false,
           body: SafeArea(
             child: Center(
@@ -170,21 +167,19 @@ class _KyblspotDetailsPageState extends State<KyblspotDetailsPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(value.toString()),
-                                      SmoothStarRating(
-                                          allowHalfRating: true,
-                                          onRatingChanged: (v) {
+                                      Expanded(
+                                        child: Slider(
+                                          value: value,
+                                          min: 0.5,
+                                          max: 5,
+                                          divisions: 9,
+                                          label: value.toString(),
+                                          onChanged: (v) {
                                             value = ((2 * v).round()) / 2;
-                                            if (value < 0.5) {
-                                              value = 0.5;
-                                            }
                                             setState(() {});
                                           },
-                                          starCount: 5,
-                                          rating: value,
-                                          size: 40.0,
-                                          color: Colors.yellow,
-                                          borderColor: Colors.yellow,
-                                          spacing: 0.0),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   SizedBox(
@@ -257,7 +252,6 @@ class _KyblspotDetailsPageState extends State<KyblspotDetailsPage> {
                 },
               ),
             ),
-          )),
-    );
+          ));
   }
 }

@@ -1,21 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
-import 'package:intl/intl.dart';
-import 'package:pofel_app/src/core/bloc/pofel_navigation_bloc/pofeldetailnavigation_bloc.dart';
 import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
-import 'package:pofel_app/src/ui/pages/pofel_info/pofel_info_page.dart';
-import 'package:pofel_app/src/ui/pages/pofel_info/pofel_settings_page.dart';
-import 'package:pofel_app/src/ui/pages/pofel_info/pofel_signed_users.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class UserDetailPage extends StatefulWidget {
@@ -131,7 +120,6 @@ class _DashboardPageState extends State<UserDetailPage> {
                   },
                   child: const Text("Odhlásit se"),
                 ),
-                
                 Expanded(flex: 1, child: Container())
               ],
             );

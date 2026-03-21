@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pofel_app/src/core/appwrite/app_services.dart';
 import 'package:pofel_app/src/core/models/login_models/user.dart';
 import 'package:pofel_app/src/core/providers/user_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,9 +16,13 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UpdateUserProfilePic>(_onUpdateuserProfilePic);
   }
   UserProvider userProvider = UserProvider();
+  final AppTelemetry _telemetry = AppTelemetry();
   _onLoadUser(LoadUser event, Emitter<UserState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     String? uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
     UserModel user = await userProvider.fetchUserData(uid!);
 
     emit(UserLoadedState(currentUser: user, userStateEnum: UserStateEnum.NONE));
@@ -29,7 +33,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     String? uid = prefs.getString("uid");
     await userProvider.updateUserName(uid!, event.newName);
 
-    UserModel user = await userProvider.fetchUserData(uid);
+    UserModel user = await userProvider.fetchUserData(uid!);
 
     emit(UserLoadedState(
         userStateEnum: UserStateEnum.NAME_UPDATED, currentUser: user));
@@ -41,11 +45,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     String? uid = prefs.getString("uid");
     await userProvider.updateProfilePic(uid!, event.newPic);
 
-    UserModel user = await userProvider.fetchUserData(uid);
+    UserModel user = await userProvider.fetchUserData(uid!);
 
     emit(UserLoadedState(
         userStateEnum: UserStateEnum.PHOTO_UPDATED, currentUser: user));
 
-    await FirebaseAnalytics.instance.logEvent(name: 'profile_pic_updated');
+    await _telemetry.logEvent('profile_pic_updated');
   }
 }

@@ -3,13 +3,8 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
-import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/premuim_bloc/premium_bloc.dart';
 import 'package:pofel_app/src/core/bloc/premuim_bloc/premium_event.dart';
-import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
 import 'package:pofel_app/src/ui/components/toast_premium_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
@@ -24,7 +19,6 @@ class UserPremiumPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<UserPremiumPage> {
-  StreamSubscription<List<PurchaseDetails>>? _subscription;
   @override
   Widget build(BuildContext context) {
     PremiumBloc _premiumBloc = PremiumBloc();
@@ -140,7 +134,7 @@ class _DashboardPageState extends State<UserPremiumPage> {
                             height: 70,
                             child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    primary: Colors.amberAccent),
+                                    backgroundColor: Colors.amberAccent),
                                 onPressed: () {
                                   _premiumBloc.add(const BuyPremium());
                                 },

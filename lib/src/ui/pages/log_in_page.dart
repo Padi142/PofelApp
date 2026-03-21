@@ -4,29 +4,36 @@ import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
-import 'package:the_apple_sign_in/apple_sign_in_button.dart' as appleUi;
-import 'package:the_apple_sign_in/the_apple_sign_in.dart' as appleLogin;
 
 class LogInPage extends StatefulWidget {
-  LogInPage({Key? key}) : super(key: key);
+  const LogInPage({super.key});
 
   @override
   State<LogInPage> createState() => _DashboardPageState();
 }
 
 class _DashboardPageState extends State<LogInPage> {
+  static const Color _brandColor = Color(0xFF8F3BB7);
+
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<LoginBloc>(context).add(LogInInitial());
+  }
+
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<LoginBloc>(context).add(LogInInitial());
     return Scaffold(
       body: SafeArea(
         child: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
             if (state is LoginStateWithData) {
               switch (state.loginStateEnum) {
-                case LoginStateEnum.LOG_IN_FAILED:
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBarError(context, "Chyba při přihlašování"));
+                case LoginStateEnum.logInFailed:
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBarError(context,
+                        state.errorMessage ?? "Chyba při přihlašování"));
                   break;
                 default:
                   break;
@@ -53,7 +60,7 @@ class _DashboardPageState extends State<LogInPage> {
                             child: Container(
                               width: 80,
                               height: 100,
-                              color: const Color(0xFF8F3BB7),
+                              color: _brandColor,
                             ),
                           ),
                         ),
@@ -66,29 +73,12 @@ class _DashboardPageState extends State<LogInPage> {
                     ),
                   ),
                 ),
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 25, right: 25, top: 10, bottom: 5),
-                    child: SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            BlocProvider.of<LoginBloc>(context)
-                                .add(FacebookLogInEvent());
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Fb přihlášení',
-                                style: TextStyle(color: Color(0xFF3b5998))),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0)),
-                            side: const BorderSide(
-                                width: 1, color: Color(0xFF3b5998)),
-                          ),
-                        )),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: Text(
+                    'Vyber si zpusob, jak pokracovat do aplikace.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
                   ),
                 ),
                 Flexible(
@@ -96,14 +86,82 @@ class _DashboardPageState extends State<LogInPage> {
                     padding: const EdgeInsets.only(
                         left: 25, right: 25, top: 10, bottom: 5),
                     child: SizedBox(
-                        width: double.infinity,
-                        child: appleUi.AppleSignInButton(
-                          style: appleUi.ButtonStyle.black,
-                          onPressed: () {
-                            BlocProvider.of<LoginBloc>(context)
-                                .add(GoogleLogInEvent());
-                          },
-                        )),
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          BlocProvider.of<LoginBloc>(context).add(
+                            GoogleLogInEvent(),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.black87,
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0)),
+                          side:
+                              BorderSide(width: 1, color: Colors.grey.shade300),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _GoogleIcon(),
+                              SizedBox(width: 12),
+                              Text('Pokracovat s Googlem'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 25, right: 25, top: 10, bottom: 5),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          BlocProvider.of<LoginBloc>(context).add(
+                            AppleLogInEvent(),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0)),
+                          side: const BorderSide(width: 1, color: Colors.black),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _AppleIcon(),
+                              SizedBox(width: 12),
+                              Text('Pokracovat s Applem'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 25, right: 25, top: 10, bottom: 5),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        'Pri prvnim prihlaseni vytvorime tvuj profil. Jmeno a fotku pak muzes zmenit v profilu.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(flex: 3, child: Container()),
@@ -115,5 +173,44 @@ class _DashboardPageState extends State<LogInPage> {
         ),
       ),
     );
+  }
+}
+
+class _GoogleIcon extends StatelessWidget {
+  const _GoogleIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: RichText(
+        text: const TextSpan(
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            height: 1,
+          ),
+          children: [
+            TextSpan(text: 'G', style: TextStyle(color: Color(0xFF4285F4))),
+            TextSpan(text: '', style: TextStyle(color: Color(0xFF34A853))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppleIcon extends StatelessWidget {
+  const _AppleIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(Icons.apple, size: 22, color: Colors.white);
   }
 }
