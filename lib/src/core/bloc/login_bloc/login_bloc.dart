@@ -22,6 +22,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<AppleLogInEvent>(
       (event, emit) => _onOAuthLogIn(appwrite_enums.OAuthProvider.apple, emit),
     );
+    on<EmailPasswordLogInEvent>(_onEmailPasswordLogIn);
     on<LogOut>(_onLogOut);
     on<LogInInitial>(_onInitial);
     on<ReturnFromInvite>(_onReturnFromInivte);
@@ -44,6 +45,37 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       }
     } catch (e, st) {
       _logLoginError('Failed to restore the current session', e, st);
+    }
+  }
+
+  Future<void> _onEmailPasswordLogIn(
+    EmailPasswordLogInEvent event,
+    Emitter<LoginState> emit,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final logedInUser = await _authService.signInWithEmailPassword(
+        email: event.email.trim(),
+        password: event.password,
+      );
+      await prefs.setString("uid", logedInUser.uid);
+      await _telemetry.setUserId(logedInUser.uid);
+
+      emit((state as LoginStateWithData).copyWith(
+          isLoggedIn: true,
+          user: logedInUser,
+          errorMessage: null,
+          loginStateEnum: LoginStateEnum.loggedIn));
+    } on AppAuthException catch (e, st) {
+      _logLoginError('Email/password login failed', e, st);
+      emit((state as LoginStateWithData).copyWith(
+          errorMessage: e.userMessage,
+          loginStateEnum: LoginStateEnum.logInFailed));
+    } catch (e, st) {
+      _logLoginError('Unexpected email/password login failure', e, st);
+      emit((state as LoginStateWithData).copyWith(
+          errorMessage: 'Chyba pri prihlasovani. Zkus to prosim znovu.',
+          loginStateEnum: LoginStateEnum.logInFailed));
     }
   }
 

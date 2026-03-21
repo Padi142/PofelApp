@@ -48,6 +48,24 @@ class AppAuthService {
     }
   }
 
+  Future<UserModel> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    _validateLoginConfiguration();
+
+    try {
+      await _services.account.createEmailPasswordSession(
+        email: email,
+        password: password,
+      );
+      final accountUser = await _services.account.get();
+      return await _ensureUserProfile(accountUser);
+    } on AppwriteException catch (error) {
+      throw _mapAppwriteError(error);
+    }
+  }
+
   Future<void> signOut() async {
     if (!AppwriteEnvironment.hasProjectConfig) {
       return;
@@ -152,6 +170,14 @@ class AppAuthService {
     if (type.contains('collection')) {
       return AppAuthException(
         userMessage: 'Nepodarilo se dokoncit prihlaseni. Zkus to pozdeji.',
+        debugMessage: details,
+      );
+    }
+
+    if (type.contains('user_invalid_credentials') ||
+        message.toLowerCase().contains('invalid credentials')) {
+      return AppAuthException(
+        userMessage: 'Neplatny email nebo heslo.',
         debugMessage: details,
       );
     }
