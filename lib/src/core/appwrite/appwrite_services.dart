@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:flutter/foundation.dart';
@@ -113,12 +111,7 @@ class AppwriteRepository {
   }
 
   String getFileView(String fileId) {
-    return _services.storage
-        .getFileView(
-          bucketId: AppwriteEnvironment.bucketId,
-          fileId: fileId,
-        )
-        .toString();
+    return buildAppwriteFileViewUrl(fileId);
   }
 
   Map<String, dynamic> _documentToMap(models.Document document) {
@@ -127,4 +120,63 @@ class AppwriteRepository {
       ...document.data,
     };
   }
+}
+
+String buildAppwriteFileViewUrl(String fileId) {
+  final endpoint = Uri.parse(AppwriteEnvironment.endpoint);
+  final normalizedBasePath = endpoint.path.endsWith('/')
+      ? endpoint.path.substring(0, endpoint.path.length - 1)
+      : endpoint.path;
+
+  return endpoint
+      .replace(
+        path:
+            '$normalizedBasePath/storage/buckets/${AppwriteEnvironment.bucketId}/files/$fileId/view',
+        queryParameters: {
+          'project': AppwriteEnvironment.projectId,
+        },
+      )
+      .toString();
+}
+
+String resolveStoredImageUrl({
+  required Object? rawValue,
+  required String fallbackFileId,
+}) {
+  final value = rawValue?.toString().trim();
+  if (value != null && value.isNotEmpty && !value.startsWith('Instance of ')) {
+    return normalizeAppwriteFileUrl(value);
+  }
+  return buildAppwriteFileViewUrl(fallbackFileId);
+}
+
+String normalizeAppwriteFileUrl(String url) {
+  final parsed = Uri.tryParse(url);
+  final endpoint = Uri.parse(AppwriteEnvironment.endpoint);
+  if (parsed == null) {
+    return url;
+  }
+
+  final endpointAuthority = '${endpoint.scheme}://${endpoint.authority}';
+  final parsedAuthority = '${parsed.scheme}://${parsed.authority}';
+  if (endpointAuthority != parsedAuthority) {
+    return url;
+  }
+
+  final normalizedBasePath = endpoint.path.endsWith('/')
+      ? endpoint.path.substring(0, endpoint.path.length - 1)
+      : endpoint.path;
+  final expectedStoragePrefix = '$normalizedBasePath/storage/';
+
+  if (parsed.path.startsWith(expectedStoragePrefix)) {
+    return url;
+  }
+
+  if (!parsed.path.startsWith('/storage/')) {
+    return url;
+  }
+
+  return parsed
+      .replace(path: '$normalizedBasePath${parsed.path}')
+      .toString();
 }

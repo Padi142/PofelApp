@@ -56,6 +56,11 @@ class UserProvider {
   }
 
   Future<void> updateUserName(String userUid, String newName) async {
+    final trimmedName = newName.trim();
+    if (trimmedName.isEmpty) {
+      return;
+    }
+
     final userDoc = await _repository.getDocument(
       AppwriteEnvironment.usersCollectionId,
       userUid,
@@ -69,7 +74,7 @@ class UserProvider {
       documentId: userUid,
       data: {
         ...sanitizeDocumentData(userDoc),
-        'name': newName,
+        'name': trimmedName,
       },
     );
   }
@@ -79,7 +84,6 @@ class UserProvider {
     final fileId = await _repository.uploadFile(
       filename: 'profile_$userUid.png',
       bytes: bytes,
-      fileId: 'profile-$userUid',
     );
     final imageUrl = _repository.getFileView(fileId);
 

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 
 class PofelUserModel extends Equatable {
   const PofelUserModel({
@@ -28,7 +29,10 @@ class PofelUserModel extends Equatable {
     return PofelUserModel(
       uid: map["uid"],
       name: map["name"],
-      photo: map["profile_pic"],
+      photo: resolveStoredImageUrl(
+        rawValue: map["profile_pic"],
+        fallbackFileId: 'profile-${map["uid"]}',
+      ),
       acceptedInvitation: parseBool(map["acceptedInvitation"]),
       joinedOn: parseDateTime(map["signedOn"]),
       willArrive: parseDateTime(map["willArrive"]),

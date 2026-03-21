@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 
 class PofelImage extends Equatable {
   const PofelImage({
@@ -23,7 +24,10 @@ class PofelImage extends Equatable {
       uploadedByUid: map["uploadedByUid"],
       uploadedByName: map["uploadedByName"],
       name: map["name"],
-      photo: map["photo"],
+      photo: resolveStoredImageUrl(
+        rawValue: map["photo"],
+        fallbackFileId: map["fileId"] ?? map["name"],
+      ),
       uploadedAt: parseDateTime(map["uploadedAt"]),
     );
   }

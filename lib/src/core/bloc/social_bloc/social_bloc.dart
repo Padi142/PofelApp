@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_event.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_state.dart';
 import 'package:pofel_app/src/core/models/profile_model.dart';
@@ -16,9 +15,12 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
   SocialProvider socialProvider = SocialProvider();
   _onFollow(Follow event, Emitter<SocialState> emit) async {
     final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString("uid");
+    final uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
 
-    await socialProvider.follow(uid!, event.userId);
+    await socialProvider.follow(uid, event.userId);
   }
 
   _onSearchUsers(SearchUsers event, Emitter<SocialState> emit) async {
@@ -37,11 +39,15 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
 
   _onInviteUser(InviteUser event, Emitter<SocialState> emit) async {
     final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString("uid");
-    bool canInvite = await socialProvider.isFollowing(uid!, event.uid);
+    final uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
+
+    bool canInvite = await socialProvider.isFollowing(uid, event.uid);
     if (canInvite) {
       await socialProvider.inviteUserToPofel(
-        currentUserId: uid!,
+        currentUserId: uid,
         userId: event.uid,
         pofelName: event.pofelName,
         pofelJoinCode: event.pofelId,

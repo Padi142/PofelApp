@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 import 'package:pofel_app/src/core/models/profile_model.dart';
 
 class UserModel extends Equatable {
@@ -35,7 +36,10 @@ class UserModel extends Equatable {
       uid: map["uid"],
       email: map["email"],
       name: map["name"],
-      photo: map["profile_pic"],
+      photo: resolveStoredImageUrl(
+        rawValue: map["profile_pic"],
+        fallbackFileId: 'profile-${map["uid"]}',
+      ),
       isPremium: map["isPremium"] ?? false,
     );
   }

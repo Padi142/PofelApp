@@ -16,12 +16,16 @@ class UserDetailPage extends StatefulWidget {
 
 class _DashboardPageState extends State<UserDetailPage> {
   final myController = TextEditingController();
+  late final UserBloc _userBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _userBloc = UserBloc()..add(const LoadUser());
+  }
 
   @override
   Widget build(BuildContext context) {
-    UserBloc _userBloc = UserBloc();
-    _userBloc.add(const LoadUser());
-
     return BlocProvider(
       create: (context) => _userBloc,
       child: BlocBuilder<UserBloc, UserState>(
@@ -87,9 +91,9 @@ class _DashboardPageState extends State<UserDetailPage> {
                                       color: Colors.white, fontSize: 20),
                                 ),
                                 onPressed: () {
-                                  BlocProvider.of<UserBloc>(context).add(
-                                      UpdateUserName(
-                                          newName: myController.text));
+                                  _userBloc.add(
+                                    UpdateUserName(newName: myController.text),
+                                  );
                                   Navigator.pop(context);
                                 },
                                 width: 120,
@@ -105,8 +109,7 @@ class _DashboardPageState extends State<UserDetailPage> {
                           final XFile? image = await _picker.pickImage(
                               source: ImageSource.gallery);
                           if (image != null) {
-                            BlocProvider.of<UserBloc>(context)
-                                .add(UpdateUserProfilePic(newPic: image));
+                            _userBloc.add(UpdateUserProfilePic(newPic: image));
                           }
                         },
                         child: const AutoSizeText("Upravit profilovku"),
@@ -131,5 +134,12 @@ class _DashboardPageState extends State<UserDetailPage> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    myController.dispose();
+    _userBloc.close();
+    super.dispose();
   }
 }

@@ -142,9 +142,8 @@ class _DashboardPageState extends State<PofelDetailPage> {
                           );
                         } else if (state is LoadChatPageState) {
                           return PofelChatPage(
-                            context,
-                            pofelState.choosenPofel,
-                            state.uid,
+                            pofel: pofelState.choosenPofel,
+                            currentUserUid: state.uid,
                           );
                         } else if (state is LoadTodosPageState) {
                           return PofelTodosPage(

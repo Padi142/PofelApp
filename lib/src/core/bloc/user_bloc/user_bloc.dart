@@ -19,21 +19,25 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   final AppTelemetry _telemetry = AppTelemetry();
   _onLoadUser(LoadUser event, Emitter<UserState> emit) async {
     final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString("uid");
+    final uid = prefs.getString("uid");
     if (uid == null) {
       return;
     }
-    UserModel user = await userProvider.fetchUserData(uid!);
+    UserModel user = await userProvider.fetchUserData(uid);
 
     emit(UserLoadedState(currentUser: user, userStateEnum: UserStateEnum.NONE));
   }
 
   _onUpdateUser(UpdateUserName event, Emitter<UserState> emit) async {
     final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString("uid");
-    await userProvider.updateUserName(uid!, event.newName);
+    final uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
 
-    UserModel user = await userProvider.fetchUserData(uid!);
+    await userProvider.updateUserName(uid, event.newName);
+
+    UserModel user = await userProvider.fetchUserData(uid);
 
     emit(UserLoadedState(
         userStateEnum: UserStateEnum.NAME_UPDATED, currentUser: user));
@@ -42,10 +46,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   _onUpdateuserProfilePic(
       UpdateUserProfilePic event, Emitter<UserState> emit) async {
     final prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString("uid");
-    await userProvider.updateProfilePic(uid!, event.newPic);
+    final uid = prefs.getString("uid");
+    if (uid == null) {
+      return;
+    }
 
-    UserModel user = await userProvider.fetchUserData(uid!);
+    await userProvider.updateProfilePic(uid, event.newPic);
+
+    UserModel user = await userProvider.fetchUserData(uid);
 
     emit(UserLoadedState(
         userStateEnum: UserStateEnum.PHOTO_UPDATED, currentUser: user));

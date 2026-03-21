@@ -1,111 +1,159 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:pofel_app/src/core/models/message_model.dart';
+import 'package:pofel_app/src/ui/components/pofel_design.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 
 Widget myChat(BuildContext context, MessageModel message) {
   return InkWell(
-      borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
-          bottomLeft: Radius.circular(10),
-          bottomRight: Radius.circular(10)),
+      borderRadius: BorderRadius.circular(24),
       onLongPress: () {
-        String text = message.message;
-
         Clipboard.setData(ClipboardData(
-          text: text,
+          text: message.message,
         ));
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBarAlert(context, 'Zkopírováno'));
       },
-      highlightColor: Colors.grey,
+      highlightColor: Colors.transparent,
       child: Ink(
-          padding: const EdgeInsets.only(left: 60, top: 3, bottom: 3, right: 3),
-          decoration: const BoxDecoration(
-              color: Colors.lightBlue,
-              borderRadius: BorderRadius.all(Radius.circular(10))),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(
-                  flex: 7,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: AutoSizeText(message.message,
-                        minFontSize: 14,
-                        maxLines: 15,
-                        overflow: TextOverflow.fade,
-                        style: const TextStyle(fontSize: 17)),
-                  )),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 2),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.network(message.sentByProfilePic,
-                        height: 50, width: 50),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.72,
+            ),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: PofelPalette.buttonGradient,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  message.message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
                   ),
                 ),
-              ),
-            ],
-          )));
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _formatMessageTime(message.sentOn),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.78),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _ChatAvatar(imageUrl: message.sentByProfilePic),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ));
 }
 
 Widget otherChat(BuildContext context, MessageModel message) {
   return InkWell(
-      borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
-          bottomLeft: Radius.circular(10),
-          bottomRight: Radius.circular(10)),
+      borderRadius: BorderRadius.circular(24),
       onLongPress: () {
-        String text = message.message;
-
         Clipboard.setData(ClipboardData(
-          text: text,
+          text: message.message,
         ));
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBarAlert(context, 'Zkopírováno'));
       },
-      highlightColor: Colors.grey,
+      highlightColor: Colors.transparent,
       child: Ink(
-        child: Column(
-          children: [
-            Align(
-                alignment: Alignment.bottomLeft,
-                child: Text(message.sentByName)),
-            Container(
-                margin: const EdgeInsets.only(
-                    left: 3, top: 3, bottom: 3, right: 60),
-                decoration: const BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.76,
+            ),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: PofelPalette.softLilac.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 2),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.network(message.sentByProfilePic,
-                              height: 50, width: 50),
+                    _ChatAvatar(imageUrl: message.sentByProfilePic),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        message.sentByName,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: PofelPalette.text,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    Expanded(
-                        flex: 8,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(message.message,
-                              maxLines: 12,
-                              style: const TextStyle(fontSize: 17)),
-                        )),
                   ],
-                )),
-          ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  message.message,
+                  style: const TextStyle(
+                    color: PofelPalette.text,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  _formatMessageTime(message.sentOn),
+                  style: TextStyle(
+                    color: PofelPalette.text.withValues(alpha: 0.55),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ));
+}
+
+class _ChatAvatar extends StatelessWidget {
+  const _ChatAvatar({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 13,
+      foregroundImage: NetworkImage(imageUrl),
+      onForegroundImageError: (_, __) {},
+      backgroundColor: Colors.white.withValues(alpha: 0.85),
+      child: const Icon(
+        Icons.person_rounded,
+        size: 15,
+        color: PofelPalette.primary,
+      ),
+    );
+  }
+}
+
+String _formatMessageTime(DateTime value) {
+  return DateFormat('HH:mm').format(value);
 }

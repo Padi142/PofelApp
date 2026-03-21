@@ -10,6 +10,10 @@ class SocialProvider {
   final AppwriteRepository _repository;
 
   Future<void> follow(String currentUserId, String userId) async {
+    if (currentUserId == userId) {
+      return;
+    }
+
     final follows = await _repository.listDocuments(
       AppwriteEnvironment.followsCollectionId,
     );
@@ -24,7 +28,6 @@ class SocialProvider {
 
     await _repository.createDocument(
       collectionId: AppwriteEnvironment.followsCollectionId,
-      documentId: '${currentUserId}_$userId',
       data: {
         'followerUid': currentUserId,
         'followingUid': userId,

@@ -197,9 +197,9 @@ class _UserDetailPageState extends State<UserDetailPage> {
       buttons: [
         DialogButton(
           onPressed: () {
-            context.read<UserBloc>().add(
-                  UpdateUserName(newName: myController.text),
-                );
+            _userBloc.add(
+              UpdateUserName(newName: myController.text),
+            );
             Navigator.pop(context);
           },
           width: 140,
