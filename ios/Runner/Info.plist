@@ -26,6 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Pofel uses your location to show relevant places and features near you while you use the app.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Pofel uses your location to show relevant places and features near you while you use the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pofel needs access to your photo library so you can select and share photos in the app.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Pofel needs permission to save photos you create or export from the app.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

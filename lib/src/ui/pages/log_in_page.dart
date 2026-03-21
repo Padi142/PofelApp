@@ -48,8 +48,7 @@ class _LogInPageState extends State<LogInPage> {
     WidgetsBinding.instance.addObserver(_lifecycleObserver);
   }
 
-  late final WidgetsBindingObserver _lifecycleObserver =
-      _LoginLifecycleObserver(onResumed: _refreshLoginState);
+  late final WidgetsBindingObserver _lifecycleObserver = _LoginLifecycleObserver(onResumed: _refreshLoginState);
 
   @override
   void dispose() {
@@ -66,8 +65,7 @@ class _LogInPageState extends State<LogInPage> {
         showBottomBlobs: true,
         child: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
-            if (state is LoginStateWithData &&
-                state.loginStateEnum == LoginStateEnum.logInFailed) {
+            if (state is LoginStateWithData && state.loginStateEnum == LoginStateEnum.logInFailed) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(SnackBarError(
@@ -90,11 +88,9 @@ class _LogInPageState extends State<LogInPage> {
                       alignment: Alignment.centerLeft,
                       child: PofelWordmark(showVersion: true, size: 64),
                     ),
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 280),
                     PofelGradientButton(
-                      label: _isEmailFormVisible
-                          ? 'Skrýt email login'
-                          : 'Email Login',
+                      label: _isEmailFormVisible ? 'Skrýt email login' : 'Email Login',
                       icon: Icons.mail_outline_rounded,
                       onPressed: () {
                         setState(() {
@@ -143,9 +139,7 @@ class _LogInPageState extends State<LogInPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    PofelGradientButton(
-                      label: 'Apple Login',
-                      icon: Icons.apple_rounded,
+                    PofelAppleSignInButton(
                       onPressed: () {
                         BlocProvider.of<LoginBloc>(context).add(
                           AppleLogInEvent(),
@@ -175,7 +169,7 @@ class _LogInPageState extends State<LogInPage> {
                     ),
                     const SizedBox(height: 36),
                     const Text(
-                      'By: Matyáš Krejza - © Padisoft\nUI by: @obrazkymemikove',
+                      'By: Matyáš Krejza - © Padisoft',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,

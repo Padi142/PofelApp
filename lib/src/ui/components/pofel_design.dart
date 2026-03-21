@@ -285,6 +285,51 @@ class PofelGradientButton extends StatelessWidget {
   }
 }
 
+class PofelAppleSignInButton extends StatelessWidget {
+  const PofelAppleSignInButton({
+    super.key,
+    required this.onPressed,
+  });
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.nunito(
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.apple, size: 20),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                'Sign in with Apple',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class PofelOutlineButton extends StatelessWidget {
   const PofelOutlineButton({
     super.key,
