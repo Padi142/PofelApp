@@ -10,6 +10,9 @@ import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
 import 'package:pofel_app/src/core/models/login_models/user.dart';
 
 class AppAuthService {
+  static const Duration _oauthSessionRetryDelay = Duration(milliseconds: 400);
+  static const int _oauthSessionRetryCount = 5;
+
   AppAuthService({AppwriteServices? services, AppwriteRepository? repository})
       : _services = services ?? AppwriteServices.instance,
         _repository = repository ?? AppwriteRepository();
@@ -41,7 +44,7 @@ class AppAuthService {
         success: _webOAuthRedirectUrl,
         failure: _webOAuthRedirectUrl,
       );
-      final accountUser = await _services.account.get();
+      final accountUser = await _waitForOAuthSession();
       return await _ensureUserProfile(accountUser);
     } on AppwriteException catch (error) {
       throw _mapAppwriteError(error);
@@ -64,6 +67,25 @@ class AppAuthService {
     } on AppwriteException catch (error) {
       throw _mapAppwriteError(error);
     }
+  }
+
+  Future<models.User> _waitForOAuthSession() async {
+    AppwriteException? lastError;
+
+    for (var attempt = 0; attempt < _oauthSessionRetryCount; attempt++) {
+      try {
+        return await _services.account.get();
+      } on AppwriteException catch (error) {
+        lastError = error;
+        if (attempt == _oauthSessionRetryCount - 1) {
+          rethrow;
+        }
+        await Future<void>.delayed(_oauthSessionRetryDelay);
+      }
+    }
+
+    throw lastError ??
+        AppwriteException('OAuth session was not available after callback.');
   }
 
   Future<void> signOut() async {

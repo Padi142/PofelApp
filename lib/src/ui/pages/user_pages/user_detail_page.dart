@@ -1,372 +1,267 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
+import 'package:pofel_app/src/ui/components/pofel_design.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/past_pofels_list_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_followers_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_premium_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class UserDetailPage extends StatefulWidget {
-  const UserDetailPage({Key? key}) : super(key: key);
+  const UserDetailPage({super.key});
 
   @override
-  State<UserDetailPage> createState() => _DashboardPageState();
+  State<UserDetailPage> createState() => _UserDetailPageState();
 }
 
-class _DashboardPageState extends State<UserDetailPage> {
-  final myController = TextEditingController();
+class _UserDetailPageState extends State<UserDetailPage> {
+  final TextEditingController myController = TextEditingController();
+  late final UserBloc _userBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _userBloc = UserBloc()..add(const LoadUser());
+  }
 
   @override
   Widget build(BuildContext context) {
-    UserBloc _userBloc = UserBloc();
-    _userBloc.add(const LoadUser());
-
-    return BlocProvider(
-      create: (context) => _userBloc,
+    return BlocProvider.value(
+      value: _userBloc,
       child: BlocBuilder<UserBloc, UserState>(
         builder: (context, userState) {
-          if (userState is UserLoadedState) {
-            return Column(
+          if (userState is! UserLoadedState) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final user = userState.currentUser;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 18),
+            child: Column(
               children: [
-                Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 8, bottom: 8, left: 30, right: 30),
-                      child: Container(
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(20)),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Color(0xFF0066C3),
-                                  Color(0xFF7D00A9),
-                                ],
-                              )),
-                          child: Column(
-                            children: [
-                              const Expanded(
-                                child: Text(
-                                  "Můj profil",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    final ImagePicker _picker = ImagePicker();
-                                    final XFile? image = await _picker
-                                        .pickImage(source: ImageSource.gallery);
-                                    if (image != null) {
-                                      BlocProvider.of<UserBloc>(context).add(
-                                          UpdateUserProfilePic(newPic: image));
-                                    }
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color:
-                                            userState.currentUser.isPremium ==
-                                                    true
-                                                ? const Color.fromARGB(
-                                                    255, 247, 190, 67)
-                                                : Colors.grey,
-                                        shape: BoxShape.circle),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(4),
-                                      child: CircleAvatar(
-                                        radius: 40,
-                                        foregroundImage: NetworkImage(
-                                          userState.currentUser.photo!,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    userState.currentUser.name!,
-                                    style: const TextStyle(
-                                        fontSize: 25,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              )
-                            ],
-                          )),
-                    )),
-                Expanded(
-                    flex: 1,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => UserFollowersPage(
-                                          profiles:
-                                              userState.currentUser.followers!,
-                                        )),
-                              );
-                            },
-                            child: Column(
-                              children: [
-                                const Text('Sledující: ',
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold)),
-                                Text(
-                                    userState.currentUser.followers!.length
-                                        .toString(),
-                                    style: const TextStyle(
-                                        color: Color(0xFF3F33D4),
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.bold)),
-                              ],
+                PofelPanel(
+                  child: Column(
+                    children: [
+                      const PofelSectionTitle('Můj profil'),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () async {
+                          final userBloc = _userBloc;
+                          final image = await ImagePicker()
+                              .pickImage(source: ImageSource.gallery);
+                          if (!mounted || image == null) {
+                            return;
+                          }
+                          userBloc.add(UpdateUserProfilePic(newPic: image));
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: user.isPremium == true
+                                  ? PofelPalette.premium
+                                  : Colors.white,
+                              width: 4,
                             ),
-                            style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              side: const BorderSide(
-                                  width: 5.0, color: Colors.black),
-                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 64,
+                            foregroundImage: NetworkImage(user.photo!),
                           ),
                         ),
-                        const SizedBox(
-                          width: 50,
-                        ),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => UserFollowersPage(
-                                          profiles:
-                                              userState.currentUser.following!,
-                                        )),
-                              );
-                            },
-                            child: Column(
-                              children: [
-                                const Text('Sleduji: ',
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold)),
-                                Text(
-                                    userState.currentUser.following!.length
-                                        .toString(),
-                                    style: const TextStyle(
-                                        color: Color(0xFF3F33D4),
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              side: const BorderSide(
-                                  width: 5.0, color: Colors.black),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                      ],
-                    )),
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(left: 30, right: 30, top: 10),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  Alert(
-                                    context: context,
-                                    type: AlertType.none,
-                                    desc: "Zadejte nové jméno",
-                                    content: Column(
-                                      children: [
-                                        TextField(
-                                          controller: myController,
-                                          decoration: const InputDecoration(),
-                                        ),
-                                      ],
-                                    ),
-                                    buttons: [
-                                      DialogButton(
-                                        child: const Text(
-                                          "Přejmenovat",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20),
-                                        ),
-                                        onPressed: () {
-                                          BlocProvider.of<UserBloc>(context)
-                                              .add(UpdateUserName(
-                                                  newName: myController.text));
-                                          Navigator.pop(context);
-                                        },
-                                        width: 120,
-                                      )
-                                    ],
-                                  ).show();
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Upravit jméno",
-                                    style: TextStyle(
-                                        color: Color(0xFF7D00A9),
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15)),
-                                  side: const BorderSide(
-                                      width: 5.0, color: Color(0xFF7D00A9)),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => PastPofelsPage()),
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Proběhlé pofely",
-                                    style: TextStyle(
-                                        color: Color(0xFF7D00A9),
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15)),
-                                  side: const BorderSide(
-                                      width: 5.0, color: Color(0xFF7D00A9)),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  BlocProvider.of<LoginBloc>(context)
-                                      .add(LogOut());
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Odhlásit se",
-                                    style: TextStyle(
-                                        color: Color(0xFF7D00A9),
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15)),
-                                  side: const BorderSide(
-                                      width: 5.0, color: Color(0xFF7D00A9)),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => UserPremiumPage()),
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Premium Page",
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFEE500),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15)),
-                                  side: const BorderSide(
-                                      width: 5.0, color: Colors.black),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
+                      const SizedBox(height: 12),
+                      Text(
+                        user.name!,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        title: 'Sledující',
+                        value: user.followers!.length.toString(),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserFollowersPage(
+                                profiles: user.followers!,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _StatCard(
+                        title: 'Sleduji',
+                        value: user.following!.length.toString(),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserFollowersPage(
+                                profiles: user.following!,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                PofelOutlineButton(
+                  label: 'Upravit jméno',
+                  onPressed: _showRenameDialog,
+                ),
+                const SizedBox(height: 16),
+                PofelOutlineButton(
+                  label: 'Proběhlé pofely',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PastPofelsPage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                PofelOutlineButton(
+                  label: 'Odhlásit se',
+                  onPressed: () {
+                    context.read<LoginBloc>().add(LogOut());
+                  },
+                ),
+                const SizedBox(height: 18),
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserPremiumPage(),
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(62),
+                    side: const BorderSide(color: Colors.black, width: 3.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    backgroundColor: PofelPalette.premium,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text(
+                    'Premium Page',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
               ],
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+            ),
+          );
         },
+      ),
+    );
+  }
+
+  void _showRenameDialog() {
+    myController.clear();
+    Alert(
+      context: context,
+      type: AlertType.none,
+      desc: "Zadejte nové jméno",
+      content: Column(
+        children: [
+          TextField(controller: myController),
+        ],
+      ),
+      buttons: [
+        DialogButton(
+          onPressed: () {
+            context.read<UserBloc>().add(
+                  UpdateUserName(newName: myController.text),
+                );
+            Navigator.pop(context);
+          },
+          width: 140,
+          child: const Text(
+            "Přejmenovat",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
+      ],
+    ).show();
+  }
+
+  @override
+  void dispose() {
+    myController.dispose();
+    _userBloc.close();
+    super.dispose();
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.onPressed,
+  });
+
+  final String title;
+  final String value;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: Colors.black, width: 3.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(140),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '$title:',
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              color: PofelPalette.accentBlue,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -3,151 +3,126 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_event.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_state.dart';
-import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
-import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
-import 'package:pofel_app/src/ui/components/toast_alert.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
-
-import '../../core/bloc/pofel_bloc/pofel_bloc.dart';
+import 'package:pofel_app/src/ui/components/pofel_design.dart';
 
 class PofelListPage extends StatefulWidget {
-  PofelListPage({Key? key}) : super(key: key);
+  const PofelListPage({super.key});
 
   @override
-  State<PofelListPage> createState() => _DashboardPageState();
+  State<PofelListPage> createState() => _PofelListPageState();
 }
 
-class _DashboardPageState extends State<PofelListPage> {
-  final myController = TextEditingController();
+class _PofelListPageState extends State<PofelListPage> {
   @override
-  Widget build(BuildContext context) {
-    BlocProvider.of<LoadpofelsBloc>(context).add(LoadMyPofels());
-    return Flex(
-        direction: Axis.vertical,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: (Text("Moje pofely: ",
-                  style: TextStyle(color: Colors.black87, fontSize: 17))),
-            ),
-          ),
-          Expanded(
-              flex: 3,
-              child: BlocBuilder<LoadpofelsBloc, LoadpofelsState>(
-                builder: (context, state) {
-                  if (state is LoadPofelsWithData) {
-                    if (state.loadPofelStateEnum ==
-                        LoadPofelsStateEnum.POFELS_LOADED) {
-                      return ListView.builder(
-                          itemCount: state.myPofels.length,
-                          itemBuilder: (BuildContext ctx, index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: GestureDetector(
-                                onTap: () {
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(PofelDetailPageEvent(
-                                    pofelId: state.myPofels[index].pofelId,
-                                  ));
-                                },
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                      color: Color(0xFF73BCFC),
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5))),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: InkWell(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            state.myPofels[index].name,
-                                            style: const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          Row(
-                                            children: [
-                                              const Text("za: "),
-                                              Text(
-                                                daysBetween(
-                                                        DateTime.now(),
-                                                        state.myPofels[index]
-                                                            .dateFrom!)
-                                                    .toString(),
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20),
-                                              ),
-                                              const Text(" dní"),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          });
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  } else {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                },
-              )),
-          Center(
-            child: OutlinedButton(
-              onPressed: () {
-                BlocProvider.of<NavigationBloc>(context)
-                    .add(const LoadPublicPofelPage());
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  "Veřejné pofely",
-                  style: TextStyle(
-                      color: Color(0xFF7D00A9),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                side: const BorderSide(width: 5.0, color: Color(0xFF7D00A9)),
-                backgroundColor: Colors.white,
-              ),
-            ),
-          ),
-        ]);
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<LoadpofelsBloc>().add(const LoadMyPofels());
+      }
+    });
   }
 
   @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    myController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+      child: PofelPanel(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Center(child: PofelSectionTitle('Moje pofely')),
+            const SizedBox(height: 16),
+            BlocBuilder<LoadpofelsBloc, LoadpofelsState>(
+              builder: (context, state) {
+                if (state is LoadPofelsWithData &&
+                    state.loadPofelStateEnum ==
+                        LoadPofelsStateEnum.POFELS_LOADED) {
+                  if (state.myPofels.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 36),
+                      child: Center(
+                        child: Text(
+                          'Zatím tu není žádný pofel.',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return Column(
+                    children: state.myPofels.map((pofel) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: GestureDetector(
+                          onTap: () {
+                            context.read<NavigationBloc>().add(
+                                  PofelDetailPageEvent(pofelId: pofel.pofelId),
+                                );
+                          },
+                          child: PofelSurfaceCard(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    pofel.name,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'za: ${daysBetween(DateTime.now(), pofel.dateFrom!)} dní',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: SizedBox(
+                width: 260,
+                child: PofelOutlineButton(
+                  label: 'Veřejné pofely',
+                  onPressed: () {
+                    context.read<NavigationBloc>().add(
+                          const LoadPublicPofelPage(),
+                        );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day, from.hour, from.minute);
     to = DateTime(to.year, to.month, to.day, to.hour, to.minute);
-    return (to.difference(from).inDays);
+    return to.difference(from).inDays;
   }
 }

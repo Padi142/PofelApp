@@ -20,16 +20,14 @@ class PofelProvider {
       AppwriteEnvironment.activePofelsCollectionId,
     );
     final sortDate = DateTime.now().subtract(const Duration(days: 4));
-    final filtered = pofels
-        .where((doc) {
-          final signedUsers = parseStringList(doc['signedUsers']);
-          return signedUsers.contains(userUid) &&
-              parseDateTime(doc['dateFrom']).isAfter(sortDate);
-        })
-        .toList()
+    final filtered = pofels.where((doc) {
+      final signedUsers = parseStringList(doc['signedUsers']);
+      return signedUsers.contains(userUid) &&
+          parseDateTime(doc['dateFrom']).isAfter(sortDate);
+    }).toList()
       ..sort(
-        (a, b) =>
-            parseDateTime(a['dateFrom']).compareTo(parseDateTime(b['dateFrom'])),
+        (a, b) => parseDateTime(a['dateFrom'])
+            .compareTo(parseDateTime(b['dateFrom'])),
       );
     return Future.wait(filtered.map(_mapPofelSummary));
   }
@@ -37,9 +35,6 @@ class PofelProvider {
   Future<List<PublicPofelModel>> fetchPublicPofels(String userUid) async {
     final pofels = await _repository.listDocuments(
       AppwriteEnvironment.activePofelsCollectionId,
-    );
-    final signedUsers = await _repository.listDocuments(
-      AppwriteEnvironment.signedUsersCollectionId,
     );
     final sortDate = DateTime.now().subtract(const Duration(days: 4));
 
@@ -57,9 +52,7 @@ class PofelProvider {
             joinCode: doc['joinId'],
             spotifyLink: doc['spotifyLink'] ?? '',
             pofelId: doc['pofelId'],
-            signedUsers: signedUsers
-                .where((user) => user['pofelId'] == doc['pofelId'])
-                .length,
+            signedUsers: parseStringList(doc['signedUsers']).length,
             createdAt: parseDateTime(doc['createdAt']),
             pofelLocation: parseGeoPoint(doc['pofelLocation']),
             showDrugItems: parseBool(doc['showDrugItems']),
@@ -76,16 +69,14 @@ class PofelProvider {
       AppwriteEnvironment.activePofelsCollectionId,
     );
     final sortDate = DateTime.now().subtract(const Duration(days: 4));
-    final filtered = pofels
-        .where((doc) {
-          final signedUsers = parseStringList(doc['signedUsers']);
-          return signedUsers.contains(userUid) &&
-              parseDateTime(doc['dateFrom']).isBefore(sortDate);
-        })
-        .toList()
+    final filtered = pofels.where((doc) {
+      final signedUsers = parseStringList(doc['signedUsers']);
+      return signedUsers.contains(userUid) &&
+          parseDateTime(doc['dateFrom']).isBefore(sortDate);
+    }).toList()
       ..sort(
-        (a, b) =>
-            parseDateTime(b['dateFrom']).compareTo(parseDateTime(a['dateFrom'])),
+        (a, b) => parseDateTime(b['dateFrom'])
+            .compareTo(parseDateTime(a['dateFrom'])),
       );
     return Future.wait(filtered.map(_mapPofelSummary));
   }
@@ -155,9 +146,9 @@ class PofelProvider {
       },
     );
 
-    await _repository.createDocument(
-      collectionId: AppwriteEnvironment.signedUsersCollectionId,
-      documentId: '${pofelDoc['pofelId']}_$uid',
+    await _upsertSignedUserDocument(
+      pofelId: pofelDoc['pofelId'] as String,
+      uid: userDoc['uid'] as String,
       data: {
         'pofelId': pofelDoc['pofelId'],
         'name': userDoc['name'],
@@ -218,9 +209,9 @@ class PofelProvider {
         'showDrugItems': false,
       },
     );
-    await _repository.createDocument(
-      collectionId: AppwriteEnvironment.signedUsersCollectionId,
-      documentId: '${documentId}_$adminUid',
+    await _upsertSignedUserDocument(
+      pofelId: documentId,
+      uid: adminUid,
       data: {
         'pofelId': documentId,
         'signedOn': serializeDateTime(DateTime.now()),
@@ -264,20 +255,17 @@ class PofelProvider {
     String uid,
     DateTime newdate,
   ) async {
-    final documentId = '${pofelId}_$uid';
-    final userDoc = await _repository.getDocument(
-      AppwriteEnvironment.signedUsersCollectionId,
-      documentId,
-    );
-    if (userDoc == null) {
+    final signedUserDoc = await _getSignedUserDocument(pofelId, uid);
+    if (signedUserDoc == null) {
       return;
     }
+    final documentId = signedUserDoc[r'$id'] as String;
 
     await _repository.updateDocument(
       collectionId: AppwriteEnvironment.signedUsersCollectionId,
       documentId: documentId,
       data: {
-        ...sanitizeDocumentData(userDoc),
+        ...sanitizeDocumentData(signedUserDoc),
         'willArrive': serializeDateTime(newdate),
       },
     );
@@ -288,20 +276,17 @@ class PofelProvider {
     String uid,
     bool enabled,
   ) async {
-    final documentId = '${pofelId}_$uid';
-    final userDoc = await _repository.getDocument(
-      AppwriteEnvironment.signedUsersCollectionId,
-      documentId,
-    );
-    if (userDoc == null) {
+    final signedUserDoc = await _getSignedUserDocument(pofelId, uid);
+    if (signedUserDoc == null) {
       return;
     }
+    final documentId = signedUserDoc[r'$id'] as String;
 
     await _repository.updateDocument(
       collectionId: AppwriteEnvironment.signedUsersCollectionId,
       documentId: documentId,
       data: {
-        ...sanitizeDocumentData(userDoc),
+        ...sanitizeDocumentData(signedUserDoc),
         'chatNotification': enabled,
       },
     );
@@ -343,10 +328,13 @@ class PofelProvider {
       },
     );
 
-    await _repository.deleteDocument(
-      collectionId: AppwriteEnvironment.signedUsersCollectionId,
-      documentId: '${pofelId}_$uid',
-    );
+    final signedUserDocs = await _getSignedUserDocuments(pofelId, uid);
+    for (final document in signedUserDocs) {
+      await _repository.deleteDocument(
+        collectionId: AppwriteEnvironment.signedUsersCollectionId,
+        documentId: document[r'$id'] as String,
+      );
+    }
   }
 
   Future<void> deletePofel(String pofelId) async {
@@ -378,9 +366,7 @@ class PofelProvider {
   }
 
   Future<PofelModel> _mapPofelSummary(Map<String, dynamic> doc) async {
-    final signedUsers = await _repository.listDocuments(
-      AppwriteEnvironment.signedUsersCollectionId,
-    );
+    final signedUsers = await _loadSignedUsersForPofel(doc);
     return PofelModel(
       name: doc['name'],
       description: doc['description'],
@@ -390,10 +376,7 @@ class PofelProvider {
       joinCode: doc['joinId'],
       spotifyLink: doc['spotifyLink'] ?? '',
       pofelId: doc['pofelId'],
-      signedUsers: signedUsers
-          .where((user) => user['pofelId'] == doc['pofelId'])
-          .map(PofelUserModel.fromMap)
-          .toList(),
+      signedUsers: signedUsers,
       createdAt: parseDateTime(doc['createdAt']),
       pofelLocation: parseGeoPoint(doc['pofelLocation']),
       showDrugItems: parseBool(doc['showDrugItems']),
@@ -404,9 +387,7 @@ class PofelProvider {
   }
 
   Future<PofelModel> _mapPofel(Map<String, dynamic> doc) async {
-    final signedUsers = await _repository.listDocuments(
-      AppwriteEnvironment.signedUsersCollectionId,
-    );
+    final signedUsers = await _loadSignedUsersForPofel(doc);
     final photos = await _repository.listDocuments(
       AppwriteEnvironment.pofelPhotosCollectionId,
     );
@@ -420,10 +401,7 @@ class PofelProvider {
       joinCode: doc['joinId'],
       spotifyLink: doc['spotifyLink'] ?? '',
       pofelId: doc['pofelId'],
-      signedUsers: signedUsers
-          .where((user) => user['pofelId'] == doc['pofelId'])
-          .map(PofelUserModel.fromMap)
-          .toList(),
+      signedUsers: signedUsers,
       createdAt: parseDateTime(doc['createdAt']),
       pofelLocation: parseGeoPoint(doc['pofelLocation']),
       showDrugItems: parseBool(doc['showDrugItems']),
@@ -468,5 +446,102 @@ class PofelProvider {
         documentId: document[r'$id'] as String,
       );
     }
+  }
+
+  Future<Map<String, dynamic>?> _getSignedUserDocument(
+    String pofelId,
+    String uid,
+  ) async {
+    final documents = await _getSignedUserDocuments(pofelId, uid);
+    if (documents.isEmpty) {
+      return null;
+    }
+    return documents.first;
+  }
+
+  Future<List<Map<String, dynamic>>> _getSignedUserDocuments(
+    String pofelId,
+    String uid,
+  ) async {
+    final documents = await _repository.listDocuments(
+      AppwriteEnvironment.signedUsersCollectionId,
+    );
+    return documents
+        .where(
+          (document) =>
+              document['pofelId'] == pofelId && document['uid'] == uid,
+        )
+        .toList();
+  }
+
+  Future<void> _upsertSignedUserDocument({
+    required String pofelId,
+    required String uid,
+    required Map<String, dynamic> data,
+  }) async {
+    final existingDocument = await _getSignedUserDocument(pofelId, uid);
+    if (existingDocument == null) {
+      await _repository.createDocument(
+        collectionId: AppwriteEnvironment.signedUsersCollectionId,
+        data: data,
+      );
+      return;
+    }
+
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.signedUsersCollectionId,
+      documentId: existingDocument[r'$id'] as String,
+      data: {
+        ...sanitizeDocumentData(existingDocument),
+        ...data,
+      },
+    );
+  }
+
+  Future<List<PofelUserModel>> _loadSignedUsersForPofel(
+    Map<String, dynamic> pofelDoc,
+  ) async {
+    final signedUserDocs = await _repository.listDocuments(
+      AppwriteEnvironment.signedUsersCollectionId,
+    );
+    final users = await _repository.listDocuments(
+      AppwriteEnvironment.usersCollectionId,
+    );
+    final userByUid = {
+      for (final user in users) user['uid'] as String: user,
+    };
+    final signedUserByUid = {
+      for (final document in signedUserDocs.where(
+        (document) => document['pofelId'] == pofelDoc['pofelId'],
+      ))
+        document['uid'] as String: document,
+    };
+
+    return parseStringList(pofelDoc['signedUsers'])
+        .map((uid) {
+          final signedUserDoc = signedUserByUid[uid];
+          if (signedUserDoc != null) {
+            return PofelUserModel.fromMap(signedUserDoc);
+          }
+
+          final userDoc = userByUid[uid];
+          if (userDoc == null) {
+            return null;
+          }
+
+          return PofelUserModel(
+            uid: uid,
+            name: userDoc['name'] ?? 'Pofel user',
+            photo: userDoc['profile_pic'] ??
+                'https://ui-avatars.com/api/?background=8F3BB7&color=ffffff&name=Pofel%20user',
+            acceptedInvitation: true,
+            joinedOn: parseDateTime(pofelDoc['createdAt']),
+            willArrive: DateTime.utc(1989, 11, 9).toLocal(),
+            chatNotification: true,
+            isPremium: userDoc['isPremium'] ?? false,
+          );
+        })
+        .whereType<PofelUserModel>()
+        .toList();
   }
 }

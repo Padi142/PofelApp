@@ -15,6 +15,7 @@ import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
 import 'package:pofel_app/src/ui/pages/invite_link_page.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/main_page.dart';
+import 'package:pofel_app/src/ui/components/pofel_design.dart';
 
 class PofelApp extends StatelessWidget {
   const PofelApp({super.key});
@@ -35,10 +36,31 @@ class PofelApp extends StatelessWidget {
         BlocProvider<KyblCreationBloc>(create: (ctx) => KyblCreationBloc()),
       ],
       child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: ThemeData(
-              scaffoldBackgroundColor: Colors.white,
-              canvasColor: primaryColor,
-              textTheme: GoogleFonts.poppinsTextTheme()),
+            useMaterial3: true,
+            scaffoldBackgroundColor: bgColor,
+            canvasColor: primaryColor,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: PofelPalette.primary,
+              brightness: Brightness.light,
+              primary: PofelPalette.primary,
+              secondary: PofelPalette.accentBlue,
+              surface: Colors.white,
+            ),
+            textTheme: GoogleFonts.nunitoTextTheme(),
+            snackBarTheme: SnackBarThemeData(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: PofelPalette.primaryDark,
+              contentTextStyle: GoogleFonts.nunito(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
           home: BlocBuilder<LoginBloc, LoginState>(
             builder: (context, state) {
               if (state is LoginStateWithData) {

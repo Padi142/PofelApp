@@ -45,7 +45,7 @@ class PofelBloc extends Bloc<PofelEvent, PofelState> {
     await _telemetry.logEvent('pofel_created');
     try {
       if (uid != null) {
-        pofelApiProvider.createPofel(
+        await pofelApiProvider.createPofel(
             event.pofelName, event.pofelDesc, uid, event.date, DateTime.now());
         emit((state as PofelStateWithData)
             .copyWith(pofelStateEnum: PofelStateEnum.POFEL_CREATED));
