@@ -1,8 +1,1 @@
-{
-  "functions": {
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" run lint",
-      "npm --prefix \"$RESOURCE_DIR\" run build"
-    ]
-  }
-}
+{"functions":{"predeploy":["npm --prefix \"$RESOURCE_DIR\" run lint","npm --prefix \"$RESOURCE_DIR\" run build"]},"flutter":{"platforms":{"android":{"default":{"projectId":"pofelapp-420","appId":"1:64901511903:android:e3d79b75e1e1052b95c76a","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"pofelapp-420","configurations":{"android":"1:64901511903:android:e3d79b75e1e1052b95c76a","ios":"1:64901511903:ios:fbff39ec5b82571595c76a","web":"1:64901511903:web:582fe0013e35c08395c76a"}}}}}}

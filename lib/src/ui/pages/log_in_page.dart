@@ -74,111 +74,120 @@ class _LogInPageState extends State<LogInPage> {
                 ));
             }
           },
-          child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height - 52,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: PofelWordmark(showVersion: true, size: 64),
-                    ),
-                    const SizedBox(height: 280),
-                    PofelGradientButton(
-                      label: _isEmailFormVisible ? 'Skrýt email login' : 'Email Login',
-                      icon: Icons.mail_outline_rounded,
-                      onPressed: () {
-                        setState(() {
-                          _isEmailFormVisible = !_isEmailFormVisible;
-                        });
-                      },
-                    ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 260),
-                      curve: Curves.easeOutCubic,
-                      margin: EdgeInsets.only(
-                        top: _isEmailFormVisible ? 16 : 0,
-                        bottom: _isEmailFormVisible ? 12 : 0,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 50, 24, 50),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 100,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: PofelWordmark(showVersion: true, size: 64),
                       ),
-                      padding: EdgeInsets.all(_isEmailFormVisible ? 18 : 0),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.94),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: _isEmailFormVisible
-                            ? const [
-                                BoxShadow(
-                                  color: PofelPalette.shadow,
-                                  blurRadius: 16,
-                                  offset: Offset(0, 8),
-                                ),
-                              ]
-                            : const [],
+                      const SizedBox(height: 200),
+                      PofelGradientButton(
+                        label: _isEmailFormVisible ? 'Skrýt email login' : 'Email Login',
+                        icon: Icons.mail_outline_rounded,
+                        onPressed: () {
+                          setState(() {
+                            _isEmailFormVisible = !_isEmailFormVisible;
+                          });
+                        },
                       ),
-                      child: ClipRect(
-                        child: AnimatedAlign(
-                          duration: const Duration(milliseconds: 260),
-                          curve: Curves.easeOutCubic,
-                          alignment: Alignment.topCenter,
-                          heightFactor: _isEmailFormVisible ? 1 : 0,
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 180),
-                            opacity: _isEmailFormVisible ? 1 : 0,
-                            child: _EmailLoginForm(
-                              formKey: _emailSignInFormKey,
-                              emailController: _emailController,
-                              passwordController: _passwordController,
-                              onSubmit: _submitEmailPasswordLogIn,
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        margin: EdgeInsets.only(
+                          top: _isEmailFormVisible ? 16 : 0,
+                          bottom: _isEmailFormVisible ? 12 : 0,
+                        ),
+                        padding: EdgeInsets.all(_isEmailFormVisible ? 18 : 0),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.94),
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: _isEmailFormVisible
+                              ? const [
+                                  BoxShadow(
+                                    color: PofelPalette.shadow,
+                                    blurRadius: 16,
+                                    offset: Offset(0, 8),
+                                  ),
+                                ]
+                              : const [],
+                        ),
+                        child: ClipRect(
+                          child: AnimatedAlign(
+                            duration: const Duration(milliseconds: 260),
+                            curve: Curves.easeOutCubic,
+                            alignment: Alignment.topCenter,
+                            heightFactor: _isEmailFormVisible ? 1 : 0,
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 180),
+                              opacity: _isEmailFormVisible ? 1 : 0,
+                              child: _EmailLoginForm(
+                                formKey: _emailSignInFormKey,
+                                emailController: _emailController,
+                                passwordController: _passwordController,
+                                onSubmit: _submitEmailPasswordLogIn,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    PofelAppleSignInButton(
-                      onPressed: () {
-                        BlocProvider.of<LoginBloc>(context).add(
-                          AppleLogInEvent(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    PofelGradientButton(
-                      label: 'Google Login',
-                      icon: Icons.g_mobiledata_rounded,
-                      gradient: PofelPalette.warmGradient,
-                      onPressed: () {
-                        BlocProvider.of<LoginBloc>(context).add(
-                          GoogleLogInEvent(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Při prvním přihlášení vytvoříme tvůj profil. Jméno i fotku pak upravíš v profilu.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.94),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(height: 16),
+                      PofelAppleSignInButton(
+                        onPressed: () {
+                          BlocProvider.of<LoginBloc>(context).add(
+                            AppleLogInEvent(),
+                          );
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 36),
-                    const Text(
-                      'By: Matyáš Krejza - © Padisoft',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(height: 16),
+                      PofelGradientButton(
+                        label: 'Google Login',
+                        icon: Icons.g_mobiledata_rounded,
+                        gradient: PofelPalette.warmGradient,
+                        onPressed: () {
+                          BlocProvider.of<LoginBloc>(context).add(
+                            GoogleLogInEvent(),
+                          );
+                        },
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Při prvním přihlášení vytvoříme tvůj profil. Jméno i fotku pak upravíš v profilu.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.94),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 36),
+                      const Text(
+                        'By: Matyáš Krejza - © Padisoft',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),

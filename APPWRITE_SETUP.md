@@ -26,6 +26,7 @@ Optional collection overrides are available through:
 - `APPWRITE_POFEL_PHOTOS_COLLECTION_ID`
 - `APPWRITE_KYBLSPOTS_COLLECTION_ID`
 - `APPWRITE_KYBLSPOT_REVIEWS_COLLECTION_ID`
+- `APPWRITE_PUSH_PROVIDER_ID`
 
 These values must be the real Appwrite collection IDs inside your database, not just display names. If your Appwrite console created IDs like `67f...` instead of `users`, you must pass those exact IDs with `--dart-define`.
 
@@ -57,3 +58,18 @@ Key schema notes:
 - `user_notifications` carries `recipientUserId`.
 
 The login flow now creates an anonymous Appwrite session and a default user profile document on first launch.
+
+## Push notifications
+
+The app now registers a mobile push target with Appwrite after notification permission is granted and a user session is available.
+
+Current live Appwrite project notes:
+
+- an FCM push provider already exists in Appwrite Messaging
+- the app can optionally pin the provider through `APPWRITE_PUSH_PROVIDER_ID`
+- Appwrite Function `push-dispatcher` is configured to react to new `user_notifications` rows and send push messages to the recipient user
+
+Mobile requirements outside this repo:
+
+- Android needs `android/app/src/google-services.json`
+- iOS needs a Firebase app configured for the bundle ID and APNs uploaded in Firebase if you want iOS push through FCM

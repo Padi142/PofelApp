@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:pofel_app/src/core/bloc/todo_bloc/todo_bloc_event.dart';
 import 'package:pofel_app/src/core/bloc/todo_bloc/todo_bloc_state.dart';
 import 'package:pofel_app/src/core/models/to_do_model.dart';
+import 'package:pofel_app/src/core/providers/notification_provider.dart';
 import 'package:pofel_app/src/core/providers/pofel_todo_provider.dart';
 
 class TodoBloc extends Bloc<TodoBlocEvent, TodoBlocState> {
@@ -19,6 +19,7 @@ class TodoBloc extends Bloc<TodoBlocEvent, TodoBlocState> {
     on<UnfinishTodo>(_onUnFinishTodo);
   }
   TodoProvider todoProvider = TodoProvider();
+  final NotificationProvider _notificationProvider = NotificationProvider();
   _onLoadTodos(LoadTodos event, Emitter<TodoBlocState> emit) async {
     List<TodoModel> todos = await todoProvider.fetchTodos(event.pofelId);
 
@@ -63,12 +64,23 @@ class TodoBloc extends Bloc<TodoBlocEvent, TodoBlocState> {
         todoTitle: event.todoTitle);
 
     await todoProvider.addTodo(event.pofelId, todo);
+    await _notificationProvider.notifyQuestAssigned(
+      pofelId: event.pofelId,
+      todo: todo,
+    );
 
     emit((state as TodosWithData).copyWith(todosEnum: TodosEnum.TODO_ADDED));
   }
 
   _onFinishTodo(FinishTodo event, Emitter<TodoBlocState> emit) async {
-    await todoProvider.todoIsDone(event.pofelId, event.todoId);
+    final completedTodo =
+        await todoProvider.todoIsDone(event.pofelId, event.todoId);
+    if (completedTodo != null) {
+      await _notificationProvider.notifyQuestCompleted(
+        pofelId: event.pofelId,
+        todo: completedTodo,
+      );
+    }
 
     emit((state as TodosWithData).copyWith(todosEnum: TodosEnum.TODO_UPDATED));
   }

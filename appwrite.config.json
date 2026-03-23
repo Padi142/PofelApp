@@ -39,6 +39,30 @@
             }
         }
     },
+    "functions": [
+        {
+            "$id": "push-dispatcher",
+            "name": "push-dispatcher",
+            "enabled": true,
+            "live": true,
+            "logging": true,
+            "runtime": "node-22",
+            "deployment": "69c166e39e2aef40dffe",
+            "vars": [],
+            "events": [
+                "databases.*.tables.*.rows.*.create"
+            ],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "scopes": [
+                "messages.write"
+            ],
+            "version": "v5",
+            "path": "appwrite_functions/push_dispatcher"
+        }
+    ],
     "tablesDB": [
         {
             "$id": "pofel-db",

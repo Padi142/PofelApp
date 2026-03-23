@@ -5,6 +5,7 @@ import 'package:pofel_app/src/core/appwrite/app_services.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/core/models/login_models/user.dart';
+import 'package:pofel_app/src/core/notifications/push_notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
@@ -29,6 +30,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
   final AppAuthService _authService = AppAuthService();
   final AppTelemetry _telemetry = AppTelemetry();
+  final PushNotificationService _pushNotificationService =
+      PushNotificationService();
 
   Future<void> _onInitial(LogInInitial event, Emitter<LoginState> emit) async {
     final prefs = await SharedPreferences.getInstance();
@@ -108,6 +111,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onLogOut(LogOut event, Emitter<LoginState> emit) async {
+    await _pushNotificationService.clearRegisteredTarget();
     await _authService.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("uid");

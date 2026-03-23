@@ -5,10 +5,11 @@ import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/user_bloc/user_bloc.dart';
 import 'package:pofel_app/src/ui/components/pofel_design.dart';
+import 'package:pofel_app/src/ui/components/pofel_modal.dart';
+import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/past_pofels_list_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_followers_page.dart';
 import 'package:pofel_app/src/ui/pages/user_pages/user_premium_page.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 class UserDetailPage extends StatefulWidget {
   const UserDetailPage({super.key});
@@ -185,31 +186,50 @@ class _UserDetailPageState extends State<UserDetailPage> {
 
   void _showRenameDialog() {
     myController.clear();
-    Alert(
+    showPofelModalSheet<void>(
       context: context,
-      type: AlertType.none,
-      desc: "Zadejte nové jméno",
-      content: Column(
-        children: [
-          TextField(controller: myController),
-        ],
-      ),
-      buttons: [
-        DialogButton(
-          onPressed: () {
-            _userBloc.add(
-              UpdateUserName(newName: myController.text),
-            );
-            Navigator.pop(context);
-          },
-          width: 140,
-          child: const Text(
-            "Přejmenovat",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
+      builder: (sheetContext) => PofelModalSheet(
+        icon: Icons.edit_rounded,
+        title: 'Upravit jméno',
+        subtitle: 'Tohle jméno uvidí ostatní napříč aplikací.',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: myController,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.done,
+              decoration: pofelModalInputDecoration(
+                labelText: 'Nové jméno',
+                hintText: 'Jak ti máme říkat?',
+                prefixIcon: Icons.person_rounded,
+              ),
+              onSubmitted: (_) => _submitRename(sheetContext),
+            ),
+            const SizedBox(height: 20),
+            PofelModalActions(
+              secondaryLabel: 'Zrušit',
+              onSecondary: () => Navigator.pop(sheetContext),
+              primaryLabel: 'Uložit jméno',
+              primaryIcon: Icons.check_rounded,
+              onPrimary: () => _submitRename(sheetContext),
+            ),
+          ],
         ),
-      ],
-    ).show();
+      ),
+    );
+  }
+
+  void _submitRename(BuildContext sheetContext) {
+    final name = myController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBarError(context, 'Zadej nové jméno.'),
+      );
+      return;
+    }
+    _userBloc.add(UpdateUserName(newName: name));
+    Navigator.pop(sheetContext);
   }
 
   @override

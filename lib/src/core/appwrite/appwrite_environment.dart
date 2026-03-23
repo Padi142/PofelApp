@@ -19,6 +19,10 @@ class AppwriteEnvironment {
     'APPWRITE_BUCKET_ID',
     defaultValue: 'pofel-bucket',
   );
+  static const pushProviderId = String.fromEnvironment(
+    'APPWRITE_PUSH_PROVIDER_ID',
+    defaultValue: '',
+  );
 
   static const usersCollectionId = String.fromEnvironment(
     'APPWRITE_USERS_COLLECTION_ID',

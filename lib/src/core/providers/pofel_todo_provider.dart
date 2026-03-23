@@ -13,14 +13,11 @@ class TodoProvider {
     final todos = await _repository.listDocuments(
       AppwriteEnvironment.pofelTodosCollectionId,
     );
-    final filtered = todos
-        .where((todo) => todo['pofelId'] == pofelId)
-        .toList()
+    final filtered = todos.where((todo) => todo['pofelId'] == pofelId).toList()
       ..sort(
-        (a, b) =>
-            DateTime.parse(a['assignedOn'] as String).compareTo(
-              DateTime.parse(b['assignedOn'] as String),
-            ),
+        (a, b) => DateTime.parse(a['assignedOn'] as String).compareTo(
+          DateTime.parse(b['assignedOn'] as String),
+        ),
       );
     return filtered.map(TodoModel.fromMap).toList();
   }
@@ -51,6 +48,18 @@ class TodoProvider {
     );
   }
 
+  Future<TodoModel?> fetchTodo(String pofelId, String todoId) async {
+    final todo = await _repository.getDocument(
+      AppwriteEnvironment.pofelTodosCollectionId,
+      todoId,
+    );
+    if (todo == null || todo['pofelId'] != pofelId) {
+      return null;
+    }
+
+    return TodoModel.fromMap(todo);
+  }
+
   Future<void> removeTodo(String pofelId, String todoId) async {
     await _repository.deleteDocument(
       collectionId: AppwriteEnvironment.pofelTodosCollectionId,
@@ -58,16 +67,16 @@ class TodoProvider {
     );
   }
 
-  Future<void> todoIsDone(String pofelId, String todoId) async {
+  Future<TodoModel?> todoIsDone(String pofelId, String todoId) async {
     final todo = await _repository.getDocument(
       AppwriteEnvironment.pofelTodosCollectionId,
       todoId,
     );
     if (todo == null || todo['pofelId'] != pofelId) {
-      return;
+      return null;
     }
 
-    await _repository.updateDocument(
+    final updatedTodo = await _repository.updateDocument(
       collectionId: AppwriteEnvironment.pofelTodosCollectionId,
       documentId: todoId,
       data: {
@@ -76,6 +85,8 @@ class TodoProvider {
         'doneOn': serializeDateTime(DateTime.now()),
       },
     );
+
+    return TodoModel.fromMap(updatedTodo);
   }
 
   Future<void> todoIsNotDone(String pofelId, String todoId) async {

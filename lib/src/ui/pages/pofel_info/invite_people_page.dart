@@ -13,8 +13,7 @@ import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:share_plus/share_plus.dart';
 
 class InvitePeoplePage extends StatefulWidget {
-  InvitePeoplePage({Key? key, required this.uid, required this.pofel})
-      : super(key: key);
+  InvitePeoplePage({Key? key, required this.uid, required this.pofel}) : super(key: key);
   final String uid;
   final PofelModel pofel;
 
@@ -36,162 +35,121 @@ class _DashboardPageState extends State<InvitePeoplePage> {
               if (state is MyFollowingState) {
                 switch (state.inviteEnum) {
                   case InviteEnum.INVITED:
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBarAlert(context, 'Úspěšně pozváno'));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBarAlert(context, 'Úspěšně pozváno'));
                     break;
                   case InviteEnum.FAILED:
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBarError(context, "Uživatel tě nesleduje zpátky"));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBarError(context, "Uživatel tě nesleduje zpátky"));
                     break;
                   default:
                     break;
                 }
               }
             },
-            child: Flex(
-                direction: Axis.vertical,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text("Zpět")),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: (Text("Pozvat uživatele: ",
-                          style:
-                              TextStyle(color: Colors.black87, fontSize: 17))),
-                    ),
-                  ),
-                  Expanded(
-                      flex: 3,
-                      child: BlocBuilder<SocialBloc, SocialState>(
-                        builder: (context, state) {
-                          if (state is MyFollowingState) {
-                            return ListView.builder(
-                                itemCount: state.profiles.length,
-                                itemBuilder: (BuildContext ctx, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Container(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.08,
-                                      decoration: const BoxDecoration(
-                                          color: Color(0xFF73BCFC),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(5))),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(1),
-                                        child: InkWell(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Expanded(
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(4),
-                                                  child: CircleAvatar(
-                                                    radius: 30,
-                                                    foregroundImage:
-                                                        NetworkImage(
-                                                      state.profiles[index]
-                                                          .photo,
-                                                      scale: 0.4,
-                                                    ),
-                                                  ),
+            child: Flex(direction: Axis.vertical, crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Zpět")),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: (Text("Pozvat uživatele: ", style: TextStyle(color: Colors.black87, fontSize: 17))),
+                ),
+              ),
+              Expanded(
+                  flex: 3,
+                  child: BlocBuilder<SocialBloc, SocialState>(
+                    builder: (context, state) {
+                      if (state is MyFollowingState) {
+                        return ListView.builder(
+                            itemCount: state.profiles.length,
+                            itemBuilder: (BuildContext ctx, index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Container(
+                                  height: MediaQuery.of(context).size.height * 0.08,
+                                  decoration: const BoxDecoration(color: Color(0xFF73BCFC), borderRadius: BorderRadius.all(Radius.circular(5))),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(1),
+                                    child: InkWell(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: CircleAvatar(
+                                                radius: 30,
+                                                foregroundImage: NetworkImage(
+                                                  state.profiles[index].photo,
+                                                  scale: 0.4,
                                                 ),
                                               ),
-                                              Expanded(
-                                                child: FittedBox(
-                                                  fit: BoxFit.fitHeight,
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(2),
-                                                    child: AutoSizeText(
-                                                        state.profiles[index]
-                                                            .name,
-                                                        style: const TextStyle(
-                                                            color:
-                                                                Colors.black87,
-                                                            fontSize: 22,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(12),
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      socialBloc.add(InviteUser(
-                                                          uid: state
-                                                              .profiles[index]
-                                                              .uid,
-                                                          pofelId: widget
-                                                              .pofel.joinCode,
-                                                          pofelName: widget
-                                                              .pofel.name));
-                                                    },
-                                                    child: const Text("Pozvat"),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
+                                            ),
                                           ),
-                                        ),
+                                          Expanded(
+                                            child: FittedBox(
+                                              fit: BoxFit.fitHeight,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(2),
+                                                child: AutoSizeText(state.profiles[index].name, style: const TextStyle(color: Colors.black87, fontSize: 22, fontWeight: FontWeight.bold)),
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(12),
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  socialBloc.add(InviteUser(uid: state.profiles[index].uid, pofelId: widget.pofel.joinCode, pofelName: widget.pofel.name));
+                                                },
+                                                child: const Text("Pozvat"),
+                                              ),
+                                            ),
+                                          )
+                                        ],
                                       ),
                                     ),
-                                  );
-                                });
-                          } else {
-                            socialBloc.add(LoadMyFollowing(uid: widget.uid));
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                        },
-                      )),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          String link = "https://pofel.me/?invite=" +
-                              widget.pofel.joinCode;
-                          await Share.share(
-                            'Právě jsi byl pozván na epesní pofel: ${widget.pofel.name}\n$link',
-                            subject: widget.pofel.name,
-                          );
-                        },
-                        child: const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Sdílet pozvánku:',
-                              style: TextStyle(
-                                  color: Color(0xFF8F3BB7), fontSize: 18)),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0)),
-                          side: const BorderSide(
-                              width: 1, color: Color(0xFF8F3BB7)),
-                        ),
-                      ),
+                                  ),
+                                ),
+                              );
+                            });
+                      } else {
+                        socialBloc.add(LoadMyFollowing(uid: widget.uid));
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                    },
+                  )),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      String link = "https://pofel.me/?invite=" + widget.pofel.joinCode;
+                      await Share.share(
+                        'Právě jsi byl pozván/a/o na epesní pofel: ${widget.pofel.name}\nKód: ${widget.pofel.joinCode}',
+                        subject: widget.pofel.name,
+                      );
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Sdílet pozvánku:', style: TextStyle(color: Color(0xFF8F3BB7), fontSize: 18)),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+                      side: const BorderSide(width: 1, color: Color(0xFF8F3BB7)),
                     ),
                   ),
-                ]),
+                ),
+              ),
+            ]),
           ),
         ),
       ),

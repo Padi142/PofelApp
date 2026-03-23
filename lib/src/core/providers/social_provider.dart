@@ -1,13 +1,19 @@
 import 'package:pofel_app/src/core/appwrite/appwrite_environment.dart';
 import 'package:pofel_app/src/core/appwrite/appwrite_serializers.dart';
 import 'package:pofel_app/src/core/appwrite/appwrite_services.dart';
+import 'package:pofel_app/src/core/models/notification_model.dart';
 import 'package:pofel_app/src/core/models/profile_model.dart';
+import 'package:pofel_app/src/core/providers/notification_provider.dart';
 
 class SocialProvider {
   SocialProvider({AppwriteRepository? repository})
-      : _repository = repository ?? AppwriteRepository();
+      : _repository = repository ?? AppwriteRepository(),
+        _notificationProvider = NotificationProvider(
+          repository: repository ?? AppwriteRepository(),
+        );
 
   final AppwriteRepository _repository;
+  final NotificationProvider _notificationProvider;
 
   Future<void> follow(String currentUserId, String userId) async {
     if (currentUserId == userId) {
@@ -40,20 +46,14 @@ class SocialProvider {
       currentUserId,
     );
     if (currentUser != null) {
-      await _repository.createDocument(
-        collectionId: AppwriteEnvironment.notificationsCollectionId,
-        data: {
-          'userId': currentUserId,
-          'recipientUserId': userId,
-          'pofelId': '',
-          'message': '${currentUser['name']} tě začal/a sledovat.',
-          'sentByName': currentUser['name'],
-          'sentByProfilePic': currentUser['profile_pic'],
-          'type': 'FOLLOW',
-          'shown': false,
-          'sentOn': serializeDateTime(DateTime.now()),
-          'id': '',
-        },
+      await _notificationProvider.createNotification(
+        actorUserId: currentUserId,
+        recipientUserId: userId,
+        pofelId: '',
+        message: '${currentUser['name']} tě začal/a sledovat.',
+        sentByName: currentUser['name'].toString(),
+        sentByProfilePic: currentUser['profile_pic'].toString(),
+        type: NotificationType.follow,
       );
     }
   }
@@ -70,7 +70,10 @@ class SocialProvider {
                 .toString()
                 .toLowerCase()
                 .contains(normalizedQuery) ||
-            (user['uid'] ?? '').toString().toLowerCase().contains(normalizedQuery))
+            (user['uid'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains(normalizedQuery))
         .take(10)
         .map(ProfileModel.fromMap)
         .toList();
@@ -100,7 +103,8 @@ class SocialProvider {
       AppwriteEnvironment.followsCollectionId,
     );
     return follows.any(
-      (follow) => follow['followerUid'] == uid && follow['followingUid'] == followeUid,
+      (follow) =>
+          follow['followerUid'] == uid && follow['followingUid'] == followeUid,
     );
   }
 
@@ -118,20 +122,14 @@ class SocialProvider {
       return;
     }
 
-    await _repository.createDocument(
-      collectionId: AppwriteEnvironment.notificationsCollectionId,
-      data: {
-        'userId': currentUserId,
-        'recipientUserId': userId,
-        'pofelId': pofelJoinCode,
-        'message': '${currentUser['name']} tě zve na $pofelName.',
-        'sentByName': currentUser['name'],
-        'sentByProfilePic': currentUser['profile_pic'],
-        'type': 'INVITE',
-        'shown': false,
-        'sentOn': serializeDateTime(DateTime.now()),
-        'id': '',
-      },
+    await _notificationProvider.createNotification(
+      actorUserId: currentUserId,
+      recipientUserId: userId,
+      pofelId: pofelJoinCode,
+      message: '${currentUser['name']} tě zve na $pofelName.',
+      sentByName: currentUser['name'].toString(),
+      sentByProfilePic: currentUser['profile_pic'].toString(),
+      type: NotificationType.invite,
     );
   }
 }

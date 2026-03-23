@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pofel_app/src/ui/components/pofel_modal.dart';
 
 class SimpleDateTimePicker extends StatefulWidget {
   const SimpleDateTimePicker({
@@ -22,6 +23,7 @@ class SimpleDateTimePicker extends StatefulWidget {
 }
 
 class _SimpleDateTimePickerState extends State<SimpleDateTimePicker> {
+  static const _pickerLocale = Locale('cs', 'CZ');
   DateTime? _selectedDateTime;
 
   @override
@@ -34,20 +36,21 @@ class _SimpleDateTimePickerState extends State<SimpleDateTimePicker> {
   Widget build(BuildContext context) {
     final formattedValue = _selectedDateTime == null
         ? widget.labelText
-        : DateFormat('yyyy-MM-dd HH:mm').format(_selectedDateTime!);
+        : DateFormat('dd.MM.yyyy HH:mm', 'cs_CZ').format(_selectedDateTime!);
 
     return InkWell(
       onTap: _pickDateTime,
       child: InputDecorator(
-        decoration: InputDecoration(
+        decoration: pofelModalInputDecoration(
           labelText: widget.labelText,
-          border: const OutlineInputBorder(),
+          hintText: 'Vyber datum a čas',
+          prefixIcon: Icons.event_rounded,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(formattedValue),
-            const Icon(Icons.calendar_today),
+            const Icon(Icons.calendar_today_rounded),
           ],
         ),
       ),
@@ -58,23 +61,33 @@ class _SimpleDateTimePickerState extends State<SimpleDateTimePicker> {
     final now = DateTime.now();
     final firstDate = widget.firstDate ?? DateTime(now.year - 10);
     final lastDate = widget.lastDate ?? DateTime(now.year + 20);
-    final currentDate = _clampDate(_selectedDateTime ?? widget.initialDate ?? now,
-        firstDate, lastDate);
+    final currentDate = _clampDate(
+        _selectedDateTime ?? widget.initialDate ?? now, firstDate, lastDate);
 
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: currentDate,
       firstDate: firstDate,
       lastDate: lastDate,
+      locale: _pickerLocale,
     );
     if (pickedDate == null || !mounted) {
       return;
     }
 
-    final initialTime = TimeOfDay.fromDateTime(_selectedDateTime ?? currentDate);
+    final initialTime =
+        TimeOfDay.fromDateTime(_selectedDateTime ?? currentDate);
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: initialTime,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
     );
     if (pickedTime == null) {
       return;

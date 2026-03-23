@@ -8,10 +8,10 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/ui/components/pofel_design.dart';
+import 'package:pofel_app/src/ui/components/pofel_modal.dart';
 import 'package:pofel_app/src/ui/components/simple_date_time_picker.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -76,9 +76,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   const SizedBox(height: 14),
                   BlocBuilder<LoadpofelsBloc, LoadpofelsState>(
                     builder: (context, state) {
-                      if (state is LoadPofelsWithData &&
-                          state.loadPofelStateEnum ==
-                              LoadPofelsStateEnum.POFELS_LOADED) {
+                      if (state is LoadPofelsWithData && state.loadPofelStateEnum == LoadPofelsStateEnum.POFELS_LOADED) {
                         if (state.myPofels.isEmpty) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 32),
@@ -180,78 +178,117 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _showJoinDialog() {
     myController.clear();
-    Alert(
+    showPofelModalSheet<void>(
       context: context,
-      type: AlertType.none,
-      title: "Připojit k pofelu",
-      desc: "Zadejte pofel join ID",
-      content: Column(
-        children: [
-          TextField(controller: myController),
-        ],
+      builder: (sheetContext) => PofelModalSheet(
+        icon: Icons.group_add_rounded,
+        title: 'Připojit k pofelu',
+        subtitle: 'Zadej kód pofelu',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: myController,
+              textCapitalization: TextCapitalization.characters,
+              textInputAction: TextInputAction.done,
+              decoration: pofelModalInputDecoration(
+                labelText: 'Join kód',
+                hintText: 'Např. abcd1',
+                prefixIcon: Icons.vpn_key_rounded,
+              ),
+              onSubmitted: (_) => _submitJoin(sheetContext),
+            ),
+            const SizedBox(height: 20),
+            PofelModalActions(
+              secondaryLabel: 'Zrušit',
+              onSecondary: () => Navigator.pop(sheetContext),
+              primaryLabel: 'Připojit',
+              primaryIcon: Icons.arrow_forward_rounded,
+              onPrimary: () => _submitJoin(sheetContext),
+            ),
+          ],
+        ),
       ),
-      buttons: [
-        DialogButton(
-          onPressed: () {
-            context.read<PofelBloc>().add(JoinPofel(joinId: myController.text));
-            Navigator.pop(context);
-          },
-          width: 120,
-          child: const Text(
-            "Join",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        )
-      ],
-    ).show();
+    );
   }
 
   void _showCreateDialog() {
     myController.clear();
     DateTime pickedDate = DateTime.utc(1989, 11, 9);
-    Alert(
+    showPofelModalSheet<void>(
       context: context,
-      type: AlertType.none,
-      title: "Zadejte jméno pofelu a datum",
-      content: Column(
-        children: [
-          TextField(
-            controller: myController,
-            decoration: const InputDecoration(labelText: "Jméno"),
-          ),
-          const SizedBox(height: 5),
-          SimpleDateTimePicker(
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2100),
-            labelText: 'Datum a čas',
-            onChanged: (value) {
-              pickedDate = value;
-            },
-          )
-        ],
-      ),
-      buttons: [
-        DialogButton(
-          onPressed: () {
-            if (pickedDate != DateTime.utc(1989, 11, 9)) {
-              context.read<PofelBloc>().add(
-                    CreatePofel(
-                      pofelDesc: 'Žádný popis :/',
-                      pofelName: myController.text,
-                      date: pickedDate,
-                    ),
+      builder: (sheetContext) => PofelModalSheet(
+        icon: Icons.celebration_rounded,
+        title: 'Vytvořit pofel',
+        subtitle: 'Pojmenuj akci a nastav termín.',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: myController,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+              decoration: pofelModalInputDecoration(
+                labelText: 'Jméno pofelu',
+                hintText: 'Např. Birthday warmup',
+                prefixIcon: Icons.badge_rounded,
+              ),
+            ),
+            const SizedBox(height: 14),
+            SimpleDateTimePicker(
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2100),
+              labelText: 'Datum a čas',
+              onChanged: (value) {
+                pickedDate = value;
+              },
+            ),
+            const SizedBox(height: 20),
+            PofelModalActions(
+              secondaryLabel: 'Zrušit',
+              onSecondary: () => Navigator.pop(sheetContext),
+              primaryLabel: 'Vytvořit',
+              primaryIcon: Icons.check_rounded,
+              onPrimary: () {
+                final name = myController.text.trim();
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBarError(context, 'Zadej jméno pofelu.'),
                   );
-              Navigator.pop(context);
-            }
-          },
-          width: 120,
-          child: const Text(
-            "Create",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        )
-      ],
-    ).show();
+                  return;
+                }
+                if (pickedDate == DateTime.utc(1989, 11, 9)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBarError(context, 'Vyber datum a čas.'),
+                  );
+                  return;
+                }
+                context.read<PofelBloc>().add(
+                      CreatePofel(
+                        pofelDesc: 'Žádný popis :/',
+                        pofelName: name,
+                        date: pickedDate,
+                      ),
+                    );
+                Navigator.pop(sheetContext);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _submitJoin(BuildContext sheetContext) {
+    final joinId = myController.text.trim();
+    if (joinId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBarError(context, 'Zadej join kód.'),
+      );
+      return;
+    }
+    context.read<PofelBloc>().add(JoinPofel(joinId: joinId));
+    Navigator.pop(sheetContext);
   }
 
   @override

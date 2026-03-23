@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:async';
 import 'package:pofel_app/constants.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
+import 'package:pofel_app/src/core/notifications/push_notification_service.dart';
 import 'package:pofel_app/src/ui/components/pofel_design.dart';
 import 'package:pofel_app/src/ui/pages/dashboard_page.dart';
 import 'package:pofel_app/src/ui/pages/kyblspot_pages/kyblspots_page.dart';
@@ -21,6 +24,10 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
+  final PushNotificationService _pushNotificationService =
+      PushNotificationService();
+  StreamSubscription<RemoteMessage>? _foregroundMessagesSubscription;
+  String? _lastForegroundMessageId;
 
   @override
   void initState() {
@@ -29,6 +36,7 @@ class _MainPageState extends State<MainPage> {
       if (!mounted) return;
       context.read<NavigationBloc>().add(const DashboardEvent());
     });
+    _initializePushNotifications();
   }
 
   void _syncSelectedIndex(NavigationState state) {
@@ -46,6 +54,35 @@ class _MainPageState extends State<MainPage> {
         _selectedIndex = selectedIndex;
       });
     }
+  }
+
+  Future<void> _initializePushNotifications() async {
+    await _pushNotificationService.initialize();
+    _foregroundMessagesSubscription = _pushNotificationService
+        .foregroundMessages
+        .listen(_onForegroundMessage);
+  }
+
+  void _onForegroundMessage(RemoteMessage message) {
+    if (!mounted) {
+      return;
+    }
+
+    final messageId = message.messageId ?? message.sentTime?.toIso8601String();
+    if (messageId != null && messageId == _lastForegroundMessageId) {
+      return;
+    }
+    _lastForegroundMessageId = messageId;
+
+    final title = message.notification?.title ?? 'Nová notifikace';
+    final body = message.notification?.body ?? '';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(body.isEmpty ? title : '$title\n$body'),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
@@ -193,5 +230,12 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _foregroundMessagesSubscription?.cancel();
+    _pushNotificationService.dispose();
+    super.dispose();
   }
 }

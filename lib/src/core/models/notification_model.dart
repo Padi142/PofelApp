@@ -26,7 +26,17 @@ class NotificationModel extends Equatable {
   final String userId;
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [
+        message,
+        sentByName,
+        sentByProfilePic,
+        id,
+        type,
+        sentOn,
+        shown,
+        pofelId,
+        userId,
+      ];
 
   static NotificationModel notificationFromMap(
     Map<String, dynamic> map,
@@ -37,38 +47,62 @@ class NotificationModel extends Equatable {
       sentByProfilePic: map["sentByProfilePic"],
       id: map["id"] ?? map[r'$id'],
       userId: map["userId"],
-      pofelId: map["pofelId"],
+      pofelId: (map["pofelId"] ?? '').toString(),
       shown: parseBool(map["shown"]),
-      type: getNotTypeFromText(map["type"]),
+      type: NotificationType.fromText((map["type"] ?? '').toString()),
       sentOn: parseDateTime(map["sentOn"]),
     );
   }
+}
 
-  static NotificationType getNotTypeFromText(String type) {
-    switch (type) {
-      case "INVITE":
-        return NotificationType.INIVTE;
-      case "FOLLOW":
-        return NotificationType.FOLLOW;
-      case "MESSAGE":
-        return NotificationType.MESSAGE;
-      default:
-        return NotificationType.NONE;
-    }
-  }
+enum NotificationType {
+  invite,
+  follow,
+  message,
+  announcement,
+  questAssigned,
+  questCompleted,
+  none;
 
-  String getTextFromNotType(NotificationType type) {
-    switch (type) {
-      case NotificationType.INIVTE:
-        return "INVITE";
-      case NotificationType.FOLLOW:
-        return "FOLLOW";
-      case NotificationType.MESSAGE:
-        return "MESSAGE";
+  static NotificationType fromText(String type) {
+    switch (type.toUpperCase()) {
+      case 'INVITE':
+      case 'INIVTE':
+        return NotificationType.invite;
+      case 'FOLLOW':
+        return NotificationType.follow;
+      case 'MESSAGE':
+        return NotificationType.message;
+      case 'ANNOUNCEMENT':
+      case 'ALERT':
+        return NotificationType.announcement;
+      case 'QUEST_ASSIGNED':
+        return NotificationType.questAssigned;
+      case 'QUEST_COMPLETED':
+        return NotificationType.questCompleted;
       default:
-        return "NONE";
+        return NotificationType.none;
     }
   }
 }
 
-enum NotificationType { INIVTE, FOLLOW, MESSAGE, NONE }
+extension NotificationTypeText on NotificationType {
+  String get backendValue {
+    switch (this) {
+      case NotificationType.invite:
+        return 'INVITE';
+      case NotificationType.follow:
+        return 'FOLLOW';
+      case NotificationType.message:
+        return 'MESSAGE';
+      case NotificationType.announcement:
+        return 'ANNOUNCEMENT';
+      case NotificationType.questAssigned:
+        return 'QUEST_ASSIGNED';
+      case NotificationType.questCompleted:
+        return 'QUEST_COMPLETED';
+      case NotificationType.none:
+        return 'NONE';
+    }
+  }
+}
