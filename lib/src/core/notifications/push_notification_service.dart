@@ -81,8 +81,6 @@ class PushNotificationService {
       return;
     }
 
-    await requestNotificationPermissions();
-
     final token = await FirebaseMessaging.instance.getToken();
     if (token != null && token.isNotEmpty) {
       await _syncToken(token);

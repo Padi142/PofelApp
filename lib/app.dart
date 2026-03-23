@@ -10,6 +10,7 @@ import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
+import 'package:pofel_app/src/core/notifications/push_notification_service.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/public_pofel_bloc/public_pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
@@ -18,10 +19,28 @@ import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/main_page.dart';
 import 'package:pofel_app/src/ui/components/pofel_design.dart';
 
-class PofelApp extends StatelessWidget {
+class PofelApp extends StatefulWidget {
   const PofelApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<PofelApp> createState() => _PofelAppState();
+}
+
+class _PofelAppState extends State<PofelApp> {
+  bool _permissionRequestScheduled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_permissionRequestScheduled) {
+        return;
+      }
+      _permissionRequestScheduled = true;
+      PushNotificationService.requestNotificationPermissions();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(

@@ -9,7 +9,6 @@ void main() async {
       await PushNotificationService.ensureFirebaseInitialized();
   if (firebaseReady) {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    await PushNotificationService.requestNotificationPermissions();
   }
   runApp(const PofelApp());
 }
