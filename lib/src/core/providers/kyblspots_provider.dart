@@ -39,10 +39,13 @@ class KyblspotsProvider {
         .map(
           (doc) => SpotReviewModel(
             review: doc['review'],
-            reviewedByProfilePic: doc['reviewedByProfilePic'],
+            reviewedByProfilePic: resolveStoredImageUrl(
+              rawValue: doc['reviewedByProfilePic'],
+              fallbackFileId: 'profile-${doc['reviewedByUid']}',
+            ),
             rating: parseDouble(doc['rating']),
             reviewedByUid: doc['reviewedByUid'],
-            reviewedByName: doc['reviewedByName'],
+            reviewedByName: (doc['reviewedByName'] ?? '').toString(),
             isPremium: parseBool(doc['isPremium']),
             reviewId: doc[r'$id'] as String,
           ),
@@ -68,31 +71,26 @@ class KyblspotsProvider {
   }
 
   Future<void> addReview(SpotReviewModel review, KyblspotModel kyblspot) async {
+    final currentSpot = await _loadCurrentSpot(kyblspot);
+    final reviewData = await _buildReviewData(review, kyblspot.spotId);
     await _repository.createDocument(
       collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
-      data: {
-        'spotId': kyblspot.spotId,
-        'reviewedByUid': review.reviewedByUid,
-        'reviewedByProfilePic': review.reviewedByProfilePic,
-        'reviewedByName': review.reviewedByName,
-        'isPremium': review.isPremium,
-        'review': review.review,
-        'rating': review.rating,
-      },
+      data: reviewData,
     );
 
-    final newRating = (kyblspot.weight * kyblspot.rating + review.rating) /
-        (kyblspot.weight + 1);
+    final newRating =
+        (currentSpot.weight * currentSpot.rating + review.rating) /
+            (currentSpot.weight + 1);
 
     await _repository.updateDocument(
       collectionId: AppwriteEnvironment.kyblspotsCollectionId,
       documentId: kyblspot.spotId,
       data: {
-        'name': kyblspot.name,
-        'location': serializeGeoPoint(kyblspot.location!),
-        'description': kyblspot.description,
-        'createdBy': kyblspot.createdBy,
-        'weight': kyblspot.weight + 1,
+        'name': currentSpot.name,
+        'location': serializeGeoPoint(currentSpot.location!),
+        'description': currentSpot.description,
+        'createdBy': currentSpot.createdBy,
+        'weight': currentSpot.weight + 1,
         'rating': newRating,
       },
     );
@@ -103,33 +101,58 @@ class KyblspotsProvider {
     KyblspotModel kyblspot,
     SpotReviewModel oldReview,
   ) async {
+    final currentSpot = await _loadCurrentSpot(kyblspot);
+    final reviewData = await _buildReviewData(review, kyblspot.spotId);
     await _repository.updateDocument(
       collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
       documentId: oldReview.reviewId,
-      data: {
-        'spotId': kyblspot.spotId,
-        'reviewedByUid': review.reviewedByUid,
-        'reviewedByProfilePic': review.reviewedByProfilePic,
-        'reviewedByName': review.reviewedByName,
-        'isPremium': review.isPremium,
-        'review': review.review,
-        'rating': review.rating,
-      },
+      data: reviewData,
     );
 
-    final newRating =
-        ((kyblspot.weight - 1) * kyblspot.rating + review.rating) /
-            kyblspot.weight;
+    final newRating = ((currentSpot.weight * currentSpot.rating) -
+            oldReview.rating +
+            review.rating) /
+        currentSpot.weight;
 
     await _repository.updateDocument(
       collectionId: AppwriteEnvironment.kyblspotsCollectionId,
       documentId: kyblspot.spotId,
       data: {
-        'name': kyblspot.name,
-        'location': serializeGeoPoint(kyblspot.location!),
-        'description': kyblspot.description,
-        'createdBy': kyblspot.createdBy,
-        'weight': kyblspot.weight,
+        'name': currentSpot.name,
+        'location': serializeGeoPoint(currentSpot.location!),
+        'description': currentSpot.description,
+        'createdBy': currentSpot.createdBy,
+        'weight': currentSpot.weight,
+        'rating': newRating,
+      },
+    );
+  }
+
+  Future<void> removeReview(
+    SpotReviewModel review,
+    KyblspotModel kyblspot,
+  ) async {
+    final currentSpot = await _loadCurrentSpot(kyblspot);
+    await _repository.deleteDocument(
+      collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
+      documentId: review.reviewId,
+    );
+
+    final newWeight = currentSpot.weight > 0 ? currentSpot.weight - 1 : 0;
+    final newRating = newWeight == 0
+        ? 0.0
+        : ((currentSpot.weight * currentSpot.rating) - review.rating) /
+            newWeight;
+
+    await _repository.updateDocument(
+      collectionId: AppwriteEnvironment.kyblspotsCollectionId,
+      documentId: kyblspot.spotId,
+      data: {
+        'name': currentSpot.name,
+        'location': serializeGeoPoint(currentSpot.location!),
+        'description': currentSpot.description,
+        'createdBy': currentSpot.createdBy,
+        'weight': newWeight,
         'rating': newRating,
       },
     );
@@ -139,7 +162,8 @@ class KyblspotsProvider {
     final reviews = await _repository.listDocuments(
       AppwriteEnvironment.kyblspotReviewsCollectionId,
     );
-    for (final review in reviews.where((review) => review['spotId'] == kyblspot.spotId)) {
+    for (final review
+        in reviews.where((review) => review['spotId'] == kyblspot.spotId)) {
       await _repository.deleteDocument(
         collectionId: AppwriteEnvironment.kyblspotReviewsCollectionId,
         documentId: review[r'$id'] as String,
@@ -149,6 +173,54 @@ class KyblspotsProvider {
     await _repository.deleteDocument(
       collectionId: AppwriteEnvironment.kyblspotsCollectionId,
       documentId: kyblspot.spotId,
+    );
+  }
+
+  Future<Map<String, dynamic>> _buildReviewData(
+    SpotReviewModel review,
+    String spotId,
+  ) async {
+    final userDoc = await _repository.getDocument(
+      AppwriteEnvironment.usersCollectionId,
+      review.reviewedByUid,
+    );
+
+    final reviewedByName =
+        (userDoc?['name'] ?? review.reviewedByName).toString().trim();
+    final reviewedByProfilePic = resolveStoredImageUrl(
+      rawValue: userDoc?['profile_pic'] ?? review.reviewedByProfilePic,
+      fallbackFileId: 'profile-${review.reviewedByUid}',
+    );
+    final isPremium = userDoc?['isPremium'] ?? review.isPremium;
+
+    return {
+      'spotId': spotId,
+      'reviewedByUid': review.reviewedByUid,
+      'reviewedByProfilePic': reviewedByProfilePic,
+      'reviewedByName': reviewedByName.isEmpty ? 'Pofel user' : reviewedByName,
+      'isPremium': isPremium,
+      'review': review.review,
+      'rating': review.rating,
+    }..removeWhere((key, value) => value == null);
+  }
+
+  Future<KyblspotModel> _loadCurrentSpot(KyblspotModel fallback) async {
+    final spotDoc = await _repository.getDocument(
+      AppwriteEnvironment.kyblspotsCollectionId,
+      fallback.spotId,
+    );
+    if (spotDoc == null) {
+      return fallback;
+    }
+
+    return KyblspotModel(
+      location: parseGeoPoint(spotDoc['location']),
+      weight: parseInt(spotDoc['weight']),
+      rating: parseDouble(spotDoc['rating']),
+      name: spotDoc['name'],
+      spotId: spotDoc[r'$id'] as String,
+      createdBy: spotDoc['createdBy'],
+      description: spotDoc['description'],
     );
   }
 }

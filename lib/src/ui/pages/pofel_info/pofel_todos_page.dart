@@ -27,16 +27,13 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
       create: (context) => todoBloc,
       child: BlocListener<TodoBloc, TodoBlocState>(
         listener: (context, state) {
-          if (state is TodosWithData &&
-              state.todosEnum == TodosEnum.TODO_UPDATED) {
+          if (state is TodosWithData && state.todosEnum == TodosEnum.TODO_UPDATED) {
             todoBloc.add(LoadTodos(pofelId: pofel.pofelId));
           }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _QuestHero(),
-            const SizedBox(height: 14),
             Expanded(
               child: BlocBuilder<TodoBloc, TodoBlocState>(
                 builder: (context, state) {
@@ -48,8 +45,7 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                     );
                   }
 
-                  final totalTodos =
-                      state.notDoneTodos.length + state.doneTodos.length;
+                  final totalTodos = state.notDoneTodos.length + state.doneTodos.length;
 
                   return ListView(
                     padding: EdgeInsets.zero,
@@ -66,8 +62,7 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
                         color: const Color(0xFF2F6FD6),
                         icon: Icons.timelapse_rounded,
                         todos: state.notDoneTodos,
-                        emptyMessage:
-                            'Všechny aktivní questy jsou hotové. Můžeš přidat další.',
+                        emptyMessage: 'Všechny aktivní questy jsou hotové. Můžeš přidat další.',
                         pofel: pofel,
                         todoBloc: todoBloc,
                       ),
@@ -120,59 +115,6 @@ Widget PofelTodosPage(BuildContext context, PofelModel pofel) {
       ),
     ),
   );
-}
-
-class _QuestHero extends StatelessWidget {
-  const _QuestHero();
-
-  @override
-  Widget build(BuildContext context) {
-    return PofelPanel(
-      child: Row(
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(14),
-              child: Icon(
-                Icons.assignment_turned_in_rounded,
-                color: Colors.white,
-                size: 30,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Questy pofelu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Rozděl úkoly mezi lidi a měj přehled, co už je hotové.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _QuestStatsCard extends StatelessWidget {
@@ -330,8 +272,7 @@ class _QuestSection extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
@@ -420,8 +361,7 @@ Future<void> _showAddTodoSheet(
     builder: (sheetContext) => PofelModalSheet(
       icon: Icons.assignment_turned_in_rounded,
       title: 'Přidat quest',
-      subtitle:
-          'Sepiš úkol a rovnou ho přiřaď člověku, který si ho má vzít na starost.',
+      subtitle: 'Sepiš úkol a rovnou ho přiřaď člověku, který si ho má vzít na starost.',
       child: ReactiveForm(
         formGroup: form,
         child: Column(
@@ -477,8 +417,7 @@ Future<void> _showAddTodoSheet(
 
                 final prefs = await SharedPreferences.getInstance();
                 final uid = prefs.getString("uid");
-                final questName =
-                    (form.control('name').value as String?)?.trim() ?? '';
+                final questName = (form.control('name').value as String?)?.trim() ?? '';
                 final assignedUid = form.control('clovek').value as String?;
 
                 if (uid == null || questName.isEmpty || assignedUid == null) {

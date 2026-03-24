@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,12 +5,21 @@ import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_event.dart';
 import 'package:pofel_app/src/core/models/kyblspot_review_model.dart';
-import 'package:pofel_app/src/core/models/message_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-Widget reviewContainer(BuildContext context, SpotReviewModel review) {
+Widget reviewContainer(
+  BuildContext context,
+  SpotReviewModel review, {
+  String? currentUid,
+  VoidCallback? onDelete,
+}) {
+  final canDelete = currentUid != null &&
+      currentUid.isNotEmpty &&
+      currentUid == review.reviewedByUid &&
+      onDelete != null;
+
   if (review.isPremium) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -22,7 +30,7 @@ Widget reviewContainer(BuildContext context, SpotReviewModel review) {
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10)),
         onLongPress: () {
-          String text = review.rating.toString() + "/5 : " + review.review;
+          final text = '${review.rating}/5 : ${review.review}';
 
           Clipboard.setData(ClipboardData(
             text: text,
@@ -41,7 +49,7 @@ Widget reviewContainer(BuildContext context, SpotReviewModel review) {
                 bottomRight: Radius.circular(10)),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: Colors.grey.withValues(alpha: 0.5),
                 spreadRadius: 3,
                 blurRadius: 4,
                 offset: const Offset(0, 3), // changes position of shadow
@@ -52,11 +60,25 @@ Widget reviewContainer(BuildContext context, SpotReviewModel review) {
             padding: const EdgeInsets.all(3),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(review.reviewedByName,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(review.reviewedByName,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18)),
+                      ),
+                    ),
+                    if (canDelete)
+                      IconButton(
+                        onPressed: onDelete,
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                  ],
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -108,7 +130,7 @@ Widget reviewContainer(BuildContext context, SpotReviewModel review) {
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10)),
         onLongPress: () {
-          String text = review.rating.toString() + "/5 : " + review.review;
+          final text = '${review.rating}/5 : ${review.review}';
 
           Clipboard.setData(ClipboardData(
             text: text,
@@ -127,7 +149,7 @@ Widget reviewContainer(BuildContext context, SpotReviewModel review) {
                 bottomRight: Radius.circular(10)),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: Colors.grey.withValues(alpha: 0.5),
                 spreadRadius: 3,
                 blurRadius: 4,
                 offset: const Offset(0, 3), // changes position of shadow
@@ -138,6 +160,17 @@ Widget reviewContainer(BuildContext context, SpotReviewModel review) {
             padding: const EdgeInsets.all(3),
             child: Column(
               children: [
+                if (canDelete)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      onPressed: onDelete,
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
                 Row(
                   children: [
                     CircleAvatar(
@@ -186,25 +219,25 @@ Alert alert(
                   .add(Follow(userId: user.uid));
               Navigator.pop(context);
             },
-            child: const Text("Follow"),
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15)),
             ),
+            child: const Text("Follow"),
           ),
         ],
       ),
     ),
     buttons: [
       DialogButton(
-        child: const Text(
-          "Zavřít",
-          style: TextStyle(color: Colors.white, fontSize: 20),
-        ),
         onPressed: () {
           Navigator.pop(context);
         },
         width: 120,
+        child: const Text(
+          "Zavřít",
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
       )
     ],
   );

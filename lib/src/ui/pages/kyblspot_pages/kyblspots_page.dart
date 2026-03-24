@@ -12,18 +12,28 @@ import 'package:geolocator/geolocator.dart';
 import '../../components/snack_bar_error.dart';
 
 class KyblspotsPage extends StatefulWidget {
-  KyblspotsPage({Key? key}) : super(key: key);
+  const KyblspotsPage({super.key});
 
   @override
   State<KyblspotsPage> createState() => _DashboardPageState();
 }
 
 class _DashboardPageState extends State<KyblspotsPage> {
+  final MapController _controller = MapController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      context.read<KyblspotBloc>().add(const LoadKyblspots());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<KyblspotBloc>(context).add(const LoadKyblspots());
-    MapController controller = MapController();
-
     return Flex(
         direction: Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,13 +43,13 @@ class _DashboardPageState extends State<KyblspotsPage> {
           BlocBuilder<KyblspotBloc, KyblspotState>(
             builder: (context, state) {
               if (state is KyblspotLoadedState) {
-                if (state.kyblspotEnum == KyblspotEnum.LOADED ||
-                    state.kyblspotEnum == KyblspotEnum.REVIEWS_LOADED) {
+                if (state.kyblspotEnum == KyblspotEnum.loaded ||
+                    state.kyblspotEnum == KyblspotEnum.reviewsLoaded) {
                   return Expanded(
                     child: Stack(
                       children: [
                         FlutterMap(
-                          mapController: controller,
+                          mapController: _controller,
                           options: MapOptions(
                             initialCenter: LatLng(49.826860, 15.479491),
                             initialZoom: 6.8,
@@ -83,50 +93,56 @@ class _DashboardPageState extends State<KyblspotsPage> {
                                 const EdgeInsets.only(bottom: 105, right: 15),
                             child: ElevatedButton(
                                 onPressed: () async {
-                                  bool serviceEnabled;
-                                  LocationPermission permission;
-
-                                  serviceEnabled = await Geolocator
+                                  final serviceEnabled = await Geolocator
                                       .isLocationServiceEnabled();
                                   if (!serviceEnabled) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBarError(
-                                            context, 'Lokace je zakázána :/'));
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    _showLocationError();
+                                    return;
                                   }
 
-                                  permission =
+                                  var permission =
                                       await Geolocator.checkPermission();
                                   if (permission == LocationPermission.denied) {
                                     permission =
                                         await Geolocator.requestPermission();
                                     if (permission ==
                                         LocationPermission.denied) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBarError(context,
-                                              'Lokace je zakázána :/'));
+                                      if (!mounted) {
+                                        return;
+                                      }
+                                      _showLocationError();
+                                      return;
                                     }
                                   }
 
                                   if (permission ==
                                       LocationPermission.deniedForever) {
-                                    // Permissions are denied forever, handle appropriately.
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBarError(
-                                            context, 'Lokace je zakázána :/'));
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    _showLocationError();
+                                    return;
                                   }
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBarAlert(
-                                          context, 'Získávám koordináty'));
+                                  if (!mounted) {
+                                    return;
+                                  }
+                                  _showLocationLoading();
 
                                   await Geolocator.getCurrentPosition();
                                   await Future.delayed(
                                       const Duration(seconds: 1));
                                   final location =
                                       await Geolocator.getCurrentPosition();
+                                  if (!mounted) {
+                                    return;
+                                  }
 
                                   LatLng position = LatLng(
                                       location.latitude, location.longitude);
-                                  controller.move(position, 15.0);
+                                  _controller.move(position, 15.0);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   shape: const CircleBorder(),
@@ -157,5 +173,17 @@ class _DashboardPageState extends State<KyblspotsPage> {
   void dispose() {
     // Clean up the controller when the widget is disposed.
     super.dispose();
+  }
+
+  void _showLocationError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBarError(context, 'Lokace je zakázána :/'),
+    );
+  }
+
+  void _showLocationLoading() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBarAlert(context, 'Získávám koordináty'),
+    );
   }
 }

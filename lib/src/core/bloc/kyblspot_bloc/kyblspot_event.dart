@@ -42,3 +42,16 @@ class AddReview extends KyblspotEvent {
   @override
   List<Object> get props => [];
 }
+
+class RemoveReview extends KyblspotEvent {
+  final KyblspotModel spot;
+  final SpotReviewModel review;
+
+  const RemoveReview({
+    required this.spot,
+    required this.review,
+  });
+
+  @override
+  List<Object> get props => [];
+}

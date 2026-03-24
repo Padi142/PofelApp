@@ -20,11 +20,12 @@ class KyblspotBloc extends Bloc<KyblspotEvent, KyblspotState> {
       : super(const KyblspotLoadedState(
             markers: [],
             spots: [],
-            kyblspotEnum: KyblspotEnum.NONE,
+            kyblspotEnum: KyblspotEnum.none,
             reviews: [])) {
     on<LoadKyblspots>(_onLoadKyblspots);
     on<LoadKyblspotReviews>(_onLoadReviews);
     on<AddReview>(_onAddReview);
+    on<RemoveReview>(_onRemoveReview);
     on<RemoveSpot>(_onRemoveSpot);
   }
   KyblspotsProvider kyblspotProvider = KyblspotsProvider();
@@ -53,7 +54,7 @@ class KyblspotBloc extends Bloc<KyblspotEvent, KyblspotState> {
     }
 
     emit((state as KyblspotLoadedState).copyWith(
-        spots: spots, kyblspotEnum: KyblspotEnum.LOADED, markers: markers));
+        spots: spots, kyblspotEnum: KyblspotEnum.loaded, markers: markers));
   }
 
   _onLoadReviews(LoadKyblspotReviews event, Emitter<KyblspotState> emit) async {
@@ -61,7 +62,7 @@ class KyblspotBloc extends Bloc<KyblspotEvent, KyblspotState> {
         await kyblspotProvider.fetchKyblspotReviews(event.spotId);
 
     emit((state as KyblspotLoadedState)
-        .copyWith(reviews: reviews, kyblspotEnum: KyblspotEnum.REVIEWS_LOADED));
+        .copyWith(reviews: reviews, kyblspotEnum: KyblspotEnum.reviewsLoaded));
   }
 
   _onRemoveSpot(RemoveSpot event, Emitter<KyblspotState> emit) async {
@@ -81,6 +82,24 @@ class KyblspotBloc extends Bloc<KyblspotEvent, KyblspotState> {
     if (canReview) {
       await kyblspotProvider.addReview(event.review, event.spot);
     }
+
+    final updatedReviews =
+        await kyblspotProvider.fetchKyblspotReviews(event.spot.spotId);
+    emit((state as KyblspotLoadedState).copyWith(
+      reviews: updatedReviews,
+      kyblspotEnum: KyblspotEnum.reviewsLoaded,
+    ));
+  }
+
+  _onRemoveReview(RemoveReview event, Emitter<KyblspotState> emit) async {
+    await kyblspotProvider.removeReview(event.review, event.spot);
+
+    final updatedReviews =
+        await kyblspotProvider.fetchKyblspotReviews(event.spot.spotId);
+    emit((state as KyblspotLoadedState).copyWith(
+      reviews: updatedReviews,
+      kyblspotEnum: KyblspotEnum.reviewsLoaded,
+    ));
   }
 }
 
@@ -159,11 +178,14 @@ Alert alert(BuildContext context, KyblspotModel spot) {
         onPressed: () async {
           final prefs = await SharedPreferences.getInstance();
           String? uid = prefs.getString("uid");
+          if (!context.mounted || uid == null) {
+            return;
+          }
           Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    KyblspotDetailsPage(model: spot, uid: uid!)),
+                    KyblspotDetailsPage(model: spot, uid: uid)),
           );
         },
       )

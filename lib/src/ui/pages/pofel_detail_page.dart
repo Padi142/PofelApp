@@ -157,7 +157,7 @@ class _DashboardPageState extends State<PofelDetailPage> {
                           );
                         } else if (state is PofelSettingsPageState) {
                           if (state.canAcces) {
-                            return PofelSettignsPage(
+                            return buildPofelSettingsPage(
                               context,
                               pofelState.choosenPofel,
                             );

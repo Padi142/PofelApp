@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/models/notification_model.dart';
 import 'package:pofel_app/src/core/models/pofel_model.dart';
 import 'package:pofel_app/src/core/models/pofel_user.dart';
 import 'package:pofel_app/src/core/providers/notification_provider.dart';
 import 'package:pofel_app/src/core/providers/user_provider.dart';
+import 'package:pofel_app/src/ui/components/pofel_design.dart';
 import 'package:pofel_app/src/ui/components/pofel_modal.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
 import 'package:pofel_app/src/ui/components/simple_date_time_picker.dart';
@@ -13,251 +15,551 @@ import 'package:pofel_app/src/ui/components/toast_alert.dart';
 import 'package:pofel_app/src/ui/components/toast_premium_alert.dart';
 import 'package:pofel_app/src/ui/pages/pofel_info/pofel_set_location_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/bloc/pofel_bloc/pofel_event.dart';
 
-Widget PofelSettignsPage(BuildContext context, PofelModel pofel) {
+Widget buildPofelSettingsPage(BuildContext context, PofelModel pofel) {
   final myController = TextEditingController();
   final notificationProvider = NotificationProvider();
   final userProvider = UserProvider();
   return Padding(
-      padding: const EdgeInsets.all(15),
-      child: SingleChildScrollView(
-        child: Center(
-          child: Column(
+    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.zero,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  _showRenamePofelSheet(context, pofel, myController);
-                },
-                child: const Text("Upravit jméno"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyanAccent),
-                onPressed: () {
-                  _showDescriptionSheet(context, pofel, myController);
-                },
-                child: const Text("Upravit popis"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrangeAccent),
-                onPressed: () {
-                  _showDateSheet(context, pofel);
-                },
-                child: const Text("Upravit datum"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightGreenAccent),
-                onPressed: () {
-                  _showSpotifySheet(context, pofel, myController);
-                },
-                child: const Text("Upravit spotify playlist",
-                    style: TextStyle(color: Colors.black)),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigoAccent),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SetLocationPage(pofel: pofel)),
-                  );
-                },
-                child: const Text("📍 Upravit lokaci pofelu"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pinkAccent),
-                onPressed: () {
-                  BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
-                      updatePofelEnum: UpdatePofelEnum.UPDATE_SHOW_DRUGS,
-                      pofelId: pofel.pofelId,
-                      showDrugs: pofel.showDrugItems));
-                },
-                child: const Text("Zapnout/vypnout substance itemy"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amberAccent),
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  String? uid = prefs.getString("uid");
-
-                  PofelUserModel user =
-                      pofel.signedUsers.firstWhere((user) => user.uid == uid);
-                  BlocProvider.of<PofelBloc>(context).add(
-                      ChatNotification(pofelId: pofel.pofelId, user: user));
-                },
-                child: const Text("Zapnout/vypnout chat notifikace",
-                    style: TextStyle(color: Colors.black)),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigoAccent),
-                onPressed: () {
-                  _showTransferAdminSheet(context, pofel);
-                },
-                child: const Text("Předat admina"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigoAccent),
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  String? uid = prefs.getString("uid");
-
-                  PofelUserModel user =
-                      pofel.signedUsers.firstWhere((user) => user.uid == uid);
-                  if (user.isPremium) {
-                    BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
-                        pofelId: pofel.pofelId,
-                        updatePofelEnum: UpdatePofelEnum.UPGRADE_POFEL));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBarPremiumAlert(context, 'Pofel upgradován!'));
-                  } else {
-                    Alert(
-                      context: context,
-                      type: AlertType.error,
-                      title: "Premiová feature :/",
-                      desc:
-                          "Tato funkce je dostupná pouze pro prémiové uživatele.",
-                      buttons: [
-                        DialogButton(
-                          child: const Text(
-                            "Zavřít",
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          ),
-                          onPressed: () async {
-                            Navigator.pop(context);
-                          },
-                          width: 120,
-                        )
-                      ],
-                    ).show();
-                  }
-                },
-                child: const Text("✨ Upgradovat pofel ✨",
-                    style: TextStyle(color: Colors.black)),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.tealAccent),
-                onPressed: () async {
-                  if (pofel.isPremium) {
-                    //Check jestli je nastavená lokace
-                    if (pofel.pofelLocation.latitude != 0) {
-                      BlocProvider.of<PofelBloc>(context).add(UpdatePofel(
-                          pofelId: pofel.pofelId,
-                          updatePofelEnum: UpdatePofelEnum.UPDATE_IS_PUBLIC,
-                          isPublic: pofel.isPublic));
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBarAlert(
-                          context, 'Pofel nastaven jako veřejný!'));
-                    } else {
-                      Alert(
-                        context: context,
-                        type: AlertType.error,
-                        title: "Není nastavená lokace",
-                        desc:
-                            "Nejprve nastav lokaci pofelu. Až poté ho můžeš dát jako veřejný!",
-                        buttons: [
-                          DialogButton(
-                            child: const Text(
-                              "Zavřít",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
-                            ),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                            },
-                            width: 120,
-                          )
-                        ],
-                      ).show();
-                    }
-                  } else {
-                    Alert(
-                      context: context,
-                      type: AlertType.error,
-                      title: "Premiová feature :/",
-                      desc:
-                          "Tato funkce je dostupná pouze pro prémiové pofely. Upgraduj pofel nebo mi napiš na ig a nějak se domluvíme!",
-                      buttons: [
-                        DialogButton(
-                          child: const Text(
-                            "Zavřít",
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          ),
-                          onPressed: () async {
-                            Navigator.pop(context);
-                          },
-                          width: 120,
-                        )
-                      ],
-                    ).show();
-                  }
-                },
-                child: pofel.isPublic
-                    ? const Text("🚫Nastavit pofel jako private",
-                        style: TextStyle(color: Colors.black))
-                    : const Text("🌄Nastavit pofel jako veřejný",
-                        style: TextStyle(color: Colors.black)),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurpleAccent),
-                onPressed: () {
-                  _showAnnouncementSheet(
-                    context,
-                    pofel,
-                    myController,
-                    userProvider,
-                    notificationProvider,
-                  );
-                },
-                child: const Text("📢 Pošli oznámění účastníkům pofelu"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () {
-                  Alert(
-                    context: context,
-                    type: AlertType.none,
-                    title: "Faktr??",
-                    desc: "Opravdu chceš smazat pofel?",
-                    content: Column(
-                      children: const [],
-                    ),
-                    buttons: [
-                      DialogButton(
-                        child: const Text(
-                          "🗑️🗑️",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
+              _SettingsSection(
+                title: 'Základní nastavení',
+                subtitle: 'Jméno, popis, termín, playlist a lokace',
+                children: [
+                  _SettingsActionCard(
+                    title: 'Upravit jméno',
+                    icon: Icons.drive_file_rename_outline_rounded,
+                    color: PofelPalette.primary,
+                    onTap: () {
+                      _showRenamePofelSheet(context, pofel, myController);
+                    },
+                  ),
+                  _SettingsActionCard(
+                    title: 'Upravit popis',
+                    icon: Icons.notes_rounded,
+                    color: const Color(0xFF2F6FD6),
+                    onTap: () {
+                      _showDescriptionSheet(context, pofel, myController);
+                    },
+                  ),
+                  _SettingsActionCard(
+                    title: 'Upravit datum',
+                    icon: Icons.event_available_rounded,
+                    color: const Color(0xFFD96E3C),
+                    statusColor: const Color(0xFFD96E3C),
+                    onTap: () {
+                      _showDateSheet(context, pofel);
+                    },
+                  ),
+                  _SettingsActionCard(
+                    title: 'Upravit playlist',
+                    description: 'Přidej Spotify nebo Apple Music odkaz',
+                    icon: Icons.music_note_rounded,
+                    color: const Color(0xFF29956A),
+                    statusLabel: pofel.spotifyLink.isEmpty ? 'Chybí' : 'Připraveno',
+                    statusColor: pofel.spotifyLink.isEmpty ? const Color(0xFFC36A1B) : const Color(0xFF29956A),
+                    onTap: () {
+                      _showSpotifySheet(context, pofel, myController);
+                    },
+                  ),
+                  _SettingsActionCard(
+                    title: 'Upravit lokaci pofelu',
+                    description: 'Nastav přesné místo. ',
+                    icon: Icons.place_rounded,
+                    color: const Color(0xFF3857D1),
+                    statusLabel: pofel.pofelLocation.latitude == 0 ? 'Chybí' : 'Nastavena',
+                    statusColor: pofel.pofelLocation.latitude == 0 ? const Color(0xFFC36A1B) : const Color(0xFF29956A),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SetLocationPage(pofel: pofel),
                         ),
-                        onPressed: () async {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBarAlert(context, 'Pofel smazar💀'));
-
-                          Navigator.pop(context);
-                          BlocProvider.of<PofelBloc>(context)
-                              .add(DeletePofel(pofelId: pofel.pofelId));
-                        },
-                        width: 120,
-                      )
-                    ],
-                  ).show();
-                },
-                child: const Text("Smazat pofel 💀✋"),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _SettingsSection(
+                title: 'Lidi a komunikace',
+                subtitle: 'Správa rolí, notifikací a oznámení pro všechny účastníky.',
+                children: [
+                  _SettingsActionCard(
+                    title: 'Poslat oznámení účastníkům',
+                    description: 'Pošli krátkou důležitou zprávu všem lidem na pofelu.',
+                    icon: Icons.campaign_rounded,
+                    color: const Color(0xFF7B1BC5),
+                    onTap: () {
+                      _showAnnouncementSheet(
+                        context,
+                        pofel,
+                        myController,
+                        userProvider,
+                        notificationProvider,
+                      );
+                    },
+                  ),
+                  _SettingsActionCard(
+                    title: 'Zapnout nebo vypnout chat notifikace',
+                    description: 'Změň si, jestli chceš dostávat upozornění z pofel chatu.',
+                    icon: Icons.notifications_active_rounded,
+                    color: const Color(0xFFFFA62B),
+                    onTap: () => _toggleChatNotifications(context, pofel),
+                  ),
+                  _SettingsActionCard(
+                    title: 'Předat admina',
+                    description: 'Změnit vlastníka pofelu',
+                    icon: Icons.workspace_premium_rounded,
+                    color: const Color(0xFF3857D1),
+                    onTap: () {
+                      _showTransferAdminSheet(context, pofel);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _SettingsSection(
+                title: 'Funkce pofelu',
+                subtitle: 'Další epické veci',
+                children: [
+                  _SettingsActionCard(
+                    title: 'Substance itemy',
+                    description: 'Přepínej, jestli se mají v itemech zobrazovat i substance.',
+                    icon: Icons.auto_awesome_rounded,
+                    color: const Color(0xFFDB4F8A),
+                    statusLabel: pofel.showDrugItems ? 'Zapnuto' : 'Vypnuto',
+                    statusColor: pofel.showDrugItems ? const Color(0xFF29956A) : const Color(0xFF7E2642),
+                    onTap: () => _toggleSubstanceItems(context, pofel),
+                  ),
+                  _SettingsActionCard(
+                    title: 'Upgradovat pofel',
+                    description: 'Odemkni premium možnosti pro celý pofel. Potřebuješ pofel premium.',
+                    icon: Icons.bolt_rounded,
+                    color: const Color(0xFFE0B01D),
+                    statusLabel: pofel.isPremium ? 'Premium' : 'Basic',
+                    statusColor: pofel.isPremium ? const Color(0xFFE0B01D) : PofelPalette.primaryDark,
+                    onTap: () => _upgradePofel(context, pofel),
+                  ),
+                  _SettingsActionCard(
+                    title: pofel.isPublic ? 'Nastavit pofel jako private' : 'Nastavit pofel jako veřejný',
+                    description: 'Veřejný pofel se může ukázat dalším lidem v appce.',
+                    icon: pofel.isPublic ? Icons.lock_rounded : Icons.public_rounded,
+                    color: const Color(0xFF1AA483),
+                    statusLabel: pofel.isPublic ? 'Veřejný' : 'Private',
+                    statusColor: pofel.isPublic ? const Color(0xFF1AA483) : const Color(0xFF7E2642),
+                    onTap: () => _togglePublicState(context, pofel),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _SettingsSection(
+                title: 'Danger zone',
+                subtitle: 'Smazání pofelu je nevratné a smaže všechno kolem něj.',
+                children: [
+                  _SettingsActionCard(
+                    title: 'Smazat pofel',
+                    icon: Icons.delete_forever_rounded,
+                    color: const Color(0xFFC63F5C),
+                    destructive: true,
+                    onTap: () => _confirmDeletePofel(context, pofel),
+                  ),
+                ],
               ),
             ],
           ),
         ),
-      ));
+        // const SizedBox(height: 14),
+        // PofelOutlineButton(
+        //   label: 'Zpět',
+        //   onPressed: () {
+        //     context.read<PofelDetailNavigationBloc>().add(
+        //           const PofelInfoEvent(),
+        //         );
+        //   },
+        //   color: const Color(0xFFE59AA8),
+        //   textColor: const Color(0xFF7E2642),
+        // ),
+      ],
+    ),
+  );
+}
+
+Future<void> _toggleSubstanceItems(BuildContext context, PofelModel pofel) async {
+  BlocProvider.of<PofelBloc>(context).add(
+    UpdatePofel(
+      updatePofelEnum: UpdatePofelEnum.UPDATE_SHOW_DRUGS,
+      pofelId: pofel.pofelId,
+      showDrugs: pofel.showDrugItems,
+    ),
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBarAlert(
+      context,
+      pofel.showDrugItems ? 'Substance itemy vypnuty' : 'Substance itemy zapnuty',
+    ),
+  );
+}
+
+Future<void> _toggleChatNotifications(
+  BuildContext context,
+  PofelModel pofel,
+) async {
+  final user = await _resolveCurrentPofelUser(pofel);
+  if (!context.mounted) {
+    return;
+  }
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBarError(context, 'Nepodařilo se najít tvoje nastavení notifikací.'),
+    );
+    return;
+  }
+
+  BlocProvider.of<PofelBloc>(context).add(
+    ChatNotification(pofelId: pofel.pofelId, user: user),
+  );
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBarAlert(
+      context,
+      user.chatNotification ? 'Chat notifikace vypnuty' : 'Chat notifikace zapnuty',
+    ),
+  );
+}
+
+Future<void> _upgradePofel(BuildContext context, PofelModel pofel) async {
+  final user = await _resolveCurrentPofelUser(pofel);
+  if (!context.mounted) {
+    return;
+  }
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBarError(context, 'Nepodařilo se dohledat tvůj profil v pofelu.'),
+    );
+    return;
+  }
+
+  if (user.isPremium) {
+    BlocProvider.of<PofelBloc>(context).add(
+      UpdatePofel(
+        pofelId: pofel.pofelId,
+        updatePofelEnum: UpdatePofelEnum.UPGRADE_POFEL,
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBarPremiumAlert(context, 'Pofel upgradován!'),
+    );
+    return;
+  }
+
+  Alert(
+    context: context,
+    type: AlertType.error,
+    title: "Premiová feature :/",
+    desc: "Tato funkce je dostupná pouze pro prémiové uživatele.",
+    buttons: [
+      DialogButton(
+        onPressed: () async {
+          Navigator.pop(context);
+        },
+        width: 120,
+        child: const Text(
+          "Zavřít",
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+      )
+    ],
+  ).show();
+}
+
+Future<void> _togglePublicState(BuildContext context, PofelModel pofel) async {
+  if (pofel.isPremium) {
+    if (pofel.pofelLocation.latitude != 0) {
+      BlocProvider.of<PofelBloc>(context).add(
+        UpdatePofel(
+          pofelId: pofel.pofelId,
+          updatePofelEnum: UpdatePofelEnum.UPDATE_IS_PUBLIC,
+          isPublic: pofel.isPublic,
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBarAlert(
+          context,
+          pofel.isPublic ? 'Pofel je teď private' : 'Pofel je teď veřejný',
+        ),
+      );
+    } else {
+      Alert(
+        context: context,
+        type: AlertType.error,
+        title: "Není nastavená lokace",
+        desc: "Nejprve nastav lokaci pofelu. Až poté ho můžeš dát jako veřejný!",
+        buttons: [
+          DialogButton(
+            onPressed: () async {
+              Navigator.pop(context);
+            },
+            width: 120,
+            child: const Text(
+              "Zavřít",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        ],
+      ).show();
+    }
+  } else {
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: "Premiová feature :/",
+      desc: "Tato funkce je dostupná pouze pro prémiové pofely. Upgraduj pofel nebo mi napiš na ig a nějak se domluvíme!",
+      buttons: [
+        DialogButton(
+          onPressed: () async {
+            Navigator.pop(context);
+          },
+          width: 120,
+          child: const Text(
+            "Zavřít",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        )
+      ],
+    ).show();
+  }
+}
+
+void _confirmDeletePofel(BuildContext context, PofelModel pofel) {
+  Alert(
+    context: context,
+    type: AlertType.none,
+    title: "Fakt jo?",
+    desc: "Opravdu chceš smazat pofel?",
+    content: Column(
+      children: const [],
+    ),
+    buttons: [
+      DialogButton(
+        onPressed: () async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBarAlert(context, 'Pofel smazán'),
+          );
+          Navigator.pop(context);
+          BlocProvider.of<PofelBloc>(context).add(
+            DeletePofel(pofelId: pofel.pofelId),
+          );
+        },
+        width: 140,
+        child: const Text(
+          "Smazat",
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+      )
+    ],
+  ).show();
+}
+
+Future<PofelUserModel?> _resolveCurrentPofelUser(PofelModel pofel) async {
+  final prefs = await SharedPreferences.getInstance();
+  final uid = prefs.getString("uid");
+  if (uid == null) {
+    return null;
+  }
+
+  for (final user in pofel.signedUsers) {
+    if (user.uid == uid) {
+      return user;
+    }
+  }
+
+  return null;
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.title,
+    required this.subtitle,
+    required this.children,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.nunito(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: PofelPalette.text,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: PofelPalette.text.withValues(alpha: 0.64),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ..._withSpacing(children, const SizedBox(height: 12)),
+      ],
+    );
+  }
+}
+
+class _SettingsActionCard extends StatelessWidget {
+  const _SettingsActionCard({
+    required this.title,
+    this.description,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    this.statusLabel,
+    this.statusColor,
+    this.destructive = false,
+  });
+
+  final String title;
+  final String? description;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final String? statusLabel;
+  final Color? statusColor;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDescription = description != null && description!.trim().isNotEmpty;
+    final hasStatus = statusLabel != null && statusColor != null;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(28),
+      child: PofelSurfaceCard(
+        child: Row(
+          crossAxisAlignment: hasDescription || hasStatus ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.nunito(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: destructive ? const Color(0xFF9C2342) : PofelPalette.text,
+                    ),
+                  ),
+                  if (hasDescription) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      description!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: PofelPalette.text.withValues(alpha: 0.64),
+                      ),
+                    ),
+                  ],
+                  if (hasStatus) ...[
+                    SizedBox(height: hasDescription ? 10 : 8),
+                    _SettingsStatusPill(
+                      label: statusLabel!,
+                      color: statusColor!,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: destructive ? const Color(0xFF9C2342) : PofelPalette.text.withValues(alpha: 0.42),
+              size: 28,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsStatusPill extends StatelessWidget {
+  const _SettingsStatusPill({
+    required this.label,
+    required this.color,
+  });
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.nunito(
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+List<Widget> _withSpacing(List<Widget> children, Widget spacer) {
+  if (children.isEmpty) {
+    return const [];
+  }
+
+  final items = <Widget>[];
+  for (var index = 0; index < children.length; index++) {
+    if (index > 0) {
+      items.add(spacer);
+    }
+    items.add(children[index]);
+  }
+  return items;
 }
 
 void _showRenamePofelSheet(
@@ -355,8 +657,7 @@ void _showDescriptionSheet(
     builder: (sheetContext) => PofelModalSheet(
       icon: Icons.notes_rounded,
       title: 'Upravit popis',
-      subtitle:
-          'Napiš ostatním, co je čeká, co vzít s sebou nebo jaký je vibe akce.',
+      subtitle: 'Napiš ostatním, co je čeká, co vzít s sebou nebo jaký je vibe akce.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -468,8 +769,7 @@ void _showSpotifySheet(
     builder: (sheetContext) => PofelModalSheet(
       icon: Icons.music_note_rounded,
       title: 'Playlist pofelu',
-      subtitle:
-          'Přidej odkaz na Spotify nebo Apple Music a nalaď ostatní ještě před startem.',
+      subtitle: 'Přidej odkaz na Spotify nebo Apple Music a nalaď ostatní ještě před startem.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -500,8 +800,7 @@ void _showSpotifySheet(
               }
               if (!value.contains("spotify") && !value.contains("apple")) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBarError(
-                      context, 'Neplatný Spotify nebo Apple Music odkaz.'),
+                  SnackBarError(context, 'Neplatný Spotify nebo Apple Music odkaz.'),
                 );
                 return;
               }
@@ -600,8 +899,7 @@ void _showAnnouncementSheet(
     builder: (sheetContext) => PofelModalSheet(
       icon: Icons.campaign_rounded,
       title: 'Poslat oznámení',
-      subtitle:
-          'Krátká zpráva se pošle všem účastníkům pofelu jako upozornění.',
+      subtitle: 'Krátká zpráva se pošle všem účastníkům pofelu jako upozornění.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -643,8 +941,7 @@ void _showAnnouncementSheet(
                 await notificationProvider.notifyPofelUsers(
                   sentByUid: uid,
                   sentByName: user.name ?? 'Pofel',
-                  sentByProfilePic: user.photo ??
-                      'https://ui-avatars.com/api/?background=8F3BB7&color=ffffff&name=Pofel',
+                  sentByProfilePic: user.photo ?? 'https://ui-avatars.com/api/?background=8F3BB7&color=ffffff&name=Pofel',
                   pofelId: pofel.pofelId,
                   message: message,
                   type: NotificationType.announcement,
@@ -663,8 +960,8 @@ List<DropdownMenuItem<String>> getDropdownItems(List<PofelUserModel> users) {
   for (PofelUserModel user in users) {
     items.add(
       DropdownMenuItem(
-        child: Text(user.name),
         value: user.uid,
+        child: Text(user.name),
       ),
     );
   }

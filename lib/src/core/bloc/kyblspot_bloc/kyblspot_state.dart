@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:pofel_app/src/core/models/kyblspot_model.dart';
-import 'package:pofel_app/src/core/models/public_pofel_model.dart';
 
 import '../../models/kyblspot_review_model.dart';
 
@@ -30,7 +29,7 @@ class KyblspotLoadedState extends KyblspotState {
   });
 
   @override
-  List<Object> get props => [spots, markers, kyblspotEnum];
+  List<Object> get props => [spots, markers, reviews, kyblspotEnum];
 }
 
-enum KyblspotEnum { LOADING, LOADED, NONE, REVIEWS_LOADED }
+enum KyblspotEnum { loading, loaded, none, reviewsLoaded }
