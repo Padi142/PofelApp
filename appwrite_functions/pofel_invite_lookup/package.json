@@ -1,0 +1,8 @@
+{
+  "name": "pofel-invite-lookup",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "node-appwrite": "^18.0.0"
+  }
+}

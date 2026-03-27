@@ -61,6 +61,30 @@
             ],
             "version": "v5",
             "path": "appwrite_functions/push_dispatcher"
+        },
+        {
+            "$id": "pofel-invite-lookup",
+            "name": "pofel-invite-lookup",
+            "enabled": true,
+            "live": true,
+            "logging": true,
+            "runtime": "node-22",
+            "deployment": "",
+            "vars": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "execute": [
+                "any"
+            ],
+            "scopes": [
+                "documents.read",
+                "databases.read"
+            ],
+            "version": "v5",
+            "path": "appwrite_functions/pofel_invite_lookup"
         }
     ],
     "tablesDB": [

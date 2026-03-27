@@ -8,6 +8,7 @@ import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_event.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_state.dart';
 import 'package:pofel_app/src/ui/components/pofel_design.dart';
+import 'package:pofel_app/src/ui/components/join_pofel_sheet.dart';
 import 'package:pofel_app/src/ui/components/pofel_modal.dart';
 import 'package:pofel_app/src/ui/components/simple_date_time_picker.dart';
 import 'package:pofel_app/src/ui/components/snack_bar_error.dart';
@@ -76,7 +77,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   const SizedBox(height: 14),
                   BlocBuilder<LoadpofelsBloc, LoadpofelsState>(
                     builder: (context, state) {
-                      if (state is LoadPofelsWithData && state.loadPofelStateEnum == LoadPofelsStateEnum.POFELS_LOADED) {
+                      if (state is LoadPofelsWithData &&
+                          state.loadPofelStateEnum ==
+                              LoadPofelsStateEnum.POFELS_LOADED) {
                         if (state.myPofels.isEmpty) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 32),
@@ -177,38 +180,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _showJoinDialog() {
-    myController.clear();
-    showPofelModalSheet<void>(
+    showJoinPofelSheet(
       context: context,
-      builder: (sheetContext) => PofelModalSheet(
-        icon: Icons.group_add_rounded,
-        title: 'Připojit k pofelu',
-        subtitle: 'Zadej kód pofelu',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: myController,
-              textCapitalization: TextCapitalization.characters,
-              textInputAction: TextInputAction.done,
-              decoration: pofelModalInputDecoration(
-                labelText: 'Join kód',
-                hintText: 'Např. abcd1',
-                prefixIcon: Icons.vpn_key_rounded,
-              ),
-              onSubmitted: (_) => _submitJoin(sheetContext),
-            ),
-            const SizedBox(height: 20),
-            PofelModalActions(
-              secondaryLabel: 'Zrušit',
-              onSecondary: () => Navigator.pop(sheetContext),
-              primaryLabel: 'Připojit',
-              primaryIcon: Icons.arrow_forward_rounded,
-              onPrimary: () => _submitJoin(sheetContext),
-            ),
-          ],
-        ),
-      ),
+      onSubmit: (joinId) {
+        context.read<PofelBloc>().add(JoinPofel(joinId: joinId));
+      },
     );
   }
 
@@ -277,18 +253,6 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
     );
-  }
-
-  void _submitJoin(BuildContext sheetContext) {
-    final joinId = myController.text.trim();
-    if (joinId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBarError(context, 'Zadej join kód.'),
-      );
-      return;
-    }
-    context.read<PofelBloc>().add(JoinPofel(joinId: joinId));
-    Navigator.pop(sheetContext);
   }
 
   @override

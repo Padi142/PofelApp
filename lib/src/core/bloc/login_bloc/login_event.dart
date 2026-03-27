@@ -44,6 +44,15 @@ class ReturnFromInvite extends LoginEvent {
   List<Object> get props => [];
 }
 
+class ReceiveInviteLink extends LoginEvent {
+  const ReceiveInviteLink({required this.joinId});
+
+  final String joinId;
+
+  @override
+  List<Object> get props => [joinId];
+}
+
 class LogOut extends LoginEvent {
   const LogOut();
   @override

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,13 +11,14 @@ import 'package:pofel_app/src/core/bloc/kybl_creation_bloc/kybl_creation_bloc.da
 import 'package:pofel_app/src/core/bloc/kyblspot_bloc/kyblspot_bloc.dart';
 import 'package:pofel_app/src/core/bloc/load_pofels_bloc/loadpofels_bloc.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_bloc.dart';
+import 'package:pofel_app/src/core/bloc/login_bloc/login_event.dart';
 import 'package:pofel_app/src/core/bloc/login_bloc/login_state.dart';
 import 'package:pofel_app/src/core/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:pofel_app/src/core/notifications/push_notification_service.dart';
 import 'package:pofel_app/src/core/bloc/pofel_bloc/pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/public_pofel_bloc/public_pofel_bloc.dart';
 import 'package:pofel_app/src/core/bloc/social_bloc/social_bloc.dart';
-import 'package:pofel_app/src/ui/pages/invite_link_page.dart';
+import 'package:pofel_app/src/core/deep_links/pofel_deep_link_parser.dart';
 import 'package:pofel_app/src/ui/pages/log_in_page.dart';
 import 'package:pofel_app/src/ui/pages/main_page.dart';
 import 'package:pofel_app/src/ui/components/pofel_design.dart';
@@ -28,10 +32,14 @@ class PofelApp extends StatefulWidget {
 
 class _PofelAppState extends State<PofelApp> {
   bool _permissionRequestScheduled = false;
+  final LoginBloc _loginBloc = LoginBloc();
+  final AppLinks _appLinks = AppLinks();
+  StreamSubscription<Uri>? _deepLinkSubscription;
 
   @override
   void initState() {
     super.initState();
+    _initializeDeepLinks();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_permissionRequestScheduled) {
         return;
@@ -41,12 +49,33 @@ class _PofelAppState extends State<PofelApp> {
     });
   }
 
+  Future<void> _initializeDeepLinks() async {
+    final initialLink = await _appLinks.getInitialLink();
+    _handleDeepLink(initialLink);
+    _deepLinkSubscription = _appLinks.uriLinkStream.listen(_handleDeepLink);
+  }
+
+  void _handleDeepLink(Uri? uri) {
+    final joinId = PofelDeepLinkParser.parseJoinId(uri);
+    if (joinId == null || joinId.isEmpty) {
+      return;
+    }
+
+    _loginBloc.add(ReceiveInviteLink(joinId: joinId));
+  }
+
+  @override
+  void dispose() {
+    _deepLinkSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<NavigationBloc>(create: (ctx) => NavigationBloc()),
-        BlocProvider<LoginBloc>(create: (ctx) => LoginBloc()),
+        BlocProvider<LoginBloc>(create: (ctx) => _loginBloc),
         BlocProvider<PofelBloc>(create: (ctx) => PofelBloc()),
         BlocProvider<LoadpofelsBloc>(create: (ctx) => LoadpofelsBloc()),
         BlocProvider<ChatBloc>(create: (ctx) => ChatBloc()),
@@ -94,13 +123,7 @@ class _PofelAppState extends State<PofelApp> {
             builder: (context, state) {
               if (state is LoginStateWithData) {
                 if (state.loginStateEnum == LoginStateEnum.loggedIn) {
-                  if (state.invite == "") {
-                    return MainPage();
-                  } else {
-                    return (InviteLinkPage(
-                      joinId: state.inviteId,
-                    ));
-                  }
+                  return const MainPage();
                 } else {
                   return LogInPage();
                 }

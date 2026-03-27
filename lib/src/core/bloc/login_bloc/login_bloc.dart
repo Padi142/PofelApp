@@ -27,6 +27,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LogOut>(_onLogOut);
     on<LogInInitial>(_onInitial);
     on<ReturnFromInvite>(_onReturnFromInivte);
+    on<ReceiveInviteLink>(_onReceiveInviteLink);
   }
   final AppAuthService _authService = AppAuthService();
   final AppTelemetry _telemetry = AppTelemetry();
@@ -130,6 +131,22 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit((state as LoginStateWithData).copyWith(
       invite: "",
       inviteId: "",
+    ));
+  }
+
+  void _onReceiveInviteLink(
+    ReceiveInviteLink event,
+    Emitter<LoginState> emit,
+  ) {
+    final joinId = event.joinId.trim();
+    if (joinId.isEmpty) {
+      return;
+    }
+
+    emit((state as LoginStateWithData).copyWith(
+      invite: 'join',
+      inviteId: joinId,
+      errorMessage: null,
     ));
   }
 

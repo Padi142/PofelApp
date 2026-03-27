@@ -14,6 +14,7 @@ dependencies:
     sdk: flutter
 
   appwrite: ^22.0.0
+  app_links: ^6.4.1
   auto_size_text: ^3.0.0
   bloc: ^8.1.4
   cached_network_image: ^3.4.1
